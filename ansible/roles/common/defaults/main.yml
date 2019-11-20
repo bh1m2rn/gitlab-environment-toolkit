@@ -1,0 +1,15 @@
+---
+common_apt_packages:
+  - aptitude
+  - curl
+  - openssh-server
+  - ca-certificates
+  - glances
+  - nano
+  - tzdata
+  - postfix
+  - ack
+  - tree
+  - python-pip
+  - python3-pip
+  - nfs-common
