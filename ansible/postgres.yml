@@ -1,7 +1,7 @@
 ---
-- hosts: 
-    - postgres_primary
-    - postgres_secondary
+- hosts:
+    - postgres_main
+    - postgres_other
   roles:
     - postgres
   become: true

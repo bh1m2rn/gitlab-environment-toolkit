@@ -13,8 +13,8 @@ gitlab_rails['auto_migrate'] = false
 postgresql['pgbouncer_user_password'] = "{{ (pgbouncer_password + 'pgbouncer') | md5 }}"
 postgresql['sql_user_password'] = "{{ (postgres_password + 'gitlab') | md5 }}"
 
-postgresql['max_wal_senders'] = "{{ ((groups['postgres_primary'] + groups['postgres_secondary']) | length) + 1 }}"
-postgresql['max_replication_slots'] = "{{ ((groups['postgres_primary'] + groups['postgres_secondary']) | length) + 1 }}"
+postgresql['max_wal_senders'] = "{{ postgres_max_wal_senders }}"
+postgresql['max_replication_slots'] = "{{ postgres_max_replication_slots }}"
 
 postgresql['trust_auth_cidr_addresses'] = %w(0.0.0.0/0)
 repmgr['trust_auth_cidr_addresses'] = %w(0.0.0.0/0)
@@ -26,6 +26,7 @@ consul['services'] = %w(postgresql)
 consul['enable'] = true
 consul['configuration'] = {
   retry_join: %w({{ consul_int_ips | join(' ') }}),
+  datacenter: '{{ consul_datacenter }}',
   bind_addr: '{{ ansible_default_ipv4.address }}'
 }
 consul['monitoring_service_discovery'] =  true

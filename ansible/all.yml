@@ -3,6 +3,8 @@
   roles:
     - common
   become: true
+  tasks:
+    - set_fact: running_all="true"
 
 - import_playbook: haproxy.yml
 - import_playbook: gitlab-nfs.yml
@@ -13,4 +15,5 @@
 - import_playbook: gitaly.yml
 - import_playbook: sidekiq.yml
 - import_playbook: gitlab-rails.yml
+# - import_playbook: gitlab-geo.yml  # FIXME: needs to run with both primary & secondary inventory
 - import_playbook: monitor.yml

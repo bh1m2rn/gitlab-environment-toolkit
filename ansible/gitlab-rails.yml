@@ -1,7 +1,7 @@
 ---
-- hosts: 
-    - gitlab_rails_primary
-    - gitlab_rails_secondary
+- hosts:
+    - gitlab_rails_main    # maps to gitlab_node_level: gitlab-rails-main label
+    - gitlab_rails_other   # maps to gitlab_node_level: gitlab-rails-other label
   roles:
     - gitlab-rails
   become: true

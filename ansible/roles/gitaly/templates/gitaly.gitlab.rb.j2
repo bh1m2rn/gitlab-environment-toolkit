@@ -48,7 +48,7 @@ gitaly['listen_addr'] = "0.0.0.0:8075"
 gitaly['auth_token'] = "{{ gitaly_token }}"
 
 gitaly['storage'] = [
-{% if 'gitaly_primary' in group_names %}
+{% if 'gitaly_main' in group_names %}
   { 'name' => 'default', 'path' => '/mnt/gitlab/default/repositories' },
 {% endif %}
   { 'name' => "storage{{ gitaly_number }}", 'path' => "/mnt/gitlab/storage{{ gitaly_number }}/repositories" },
@@ -77,6 +77,7 @@ gitaly['env'] = {
 consul['enable'] = true
 consul['configuration'] = {
   retry_join: %w({{ consul_int_ips | join(' ') }}),
+  datacenter: '{{ consul_datacenter }}',
   bind_addr: '{{ ansible_default_ipv4.address }}'
 }
 consul['monitoring_service_discovery'] =  true

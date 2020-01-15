@@ -8,7 +8,7 @@
 
 - name: Install python packages
   pip:
-    name: 
+    name:
     - requests
     - google-auth
     - netaddr
@@ -26,12 +26,12 @@
     dest: /tmp/gitlab_install_repository.sh
     force: yes
   register: repo_file
-  when: 
+  when:
     - install_gitlab
 
 - name: Install GitLab repository
   command: bash /tmp/gitlab_install_repository.sh
-  when: 
+  when:
     - install_gitlab
     - repo_file.changed
 
@@ -42,9 +42,9 @@
   with_items:
     - apt-mark install gitlab-ee
     - apt-get remove gitlab-ee -y
-  when: 
+  when:
     - uninstall_gitlab | bool
-  
+
 - name: Install GitLab package
   command: "{{ item }}"
   with_items:
@@ -53,7 +53,7 @@
     - apt-mark hold gitlab-ee
   args:
     warn: false
-  when: 
+  when:
     - install_gitlab
     - gitlab_package is defined
 

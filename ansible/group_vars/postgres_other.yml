@@ -1,0 +1,2 @@
+postgres_repmgr_master: "false"
+postgres_main_ip: "{{ groups['postgres_main'] | map('extract', hostvars, ['networkInterfaces']) |  map('first') | map(attribute='networkIP') | join('') }}"

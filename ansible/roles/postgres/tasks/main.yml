@@ -35,7 +35,7 @@
     - debug
 
 - name: Debug show output of 'gitlab-ctl repmgr cluster show'
-  debug: 
+  debug:
     msg: "{{ cluster_show.stdout }}"
   when: cluster_show.stdout != ''
   tags:
@@ -43,17 +43,17 @@
 
 - name: Check secondary standby status
   shell: (gitlab-ctl repmgr cluster show 2>/dev/null | grep -E 'standby \| {{ ansible_hostname }}') || echo ""
-  register: postgres_secondary_standby_status
-  tags: postgres_secondary_standby
-  when: 
-    - "'postgres_secondary' in group_names"
+  register: postgres_other_standby_status
+  tags: postgres_other_standby
+  when:
+    - "'postgres_other' in group_names"
 
 - name: Enable secondary standby
-  shell: "gitlab-ctl repmgr standby setup {{ postgres_primary_ip }} -w"
-  tags: postgres_secondary_standby
-  when: 
-    - "'postgres_secondary' in group_names"
-    - postgres_secondary_standby_status.stdout == ''
+  shell: "gitlab-ctl repmgr standby setup {{ postgres_main_ip }} -w"
+  tags: postgres_other_standby
+  when:
+    - "'postgres_other' in group_names"
+    - postgres_other_standby_status.stdout == ''
 
 - name: Create skip-auto-reconfigure file
   file:

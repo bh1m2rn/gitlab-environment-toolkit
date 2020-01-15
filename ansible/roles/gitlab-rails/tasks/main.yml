@@ -13,7 +13,7 @@
     path: /etc/ssh/sshd_config
     regexp: "^{{ item.setting }}="
     line: "{{ item.setting }}={{ item.value }}"
-  with_items: 
+  with_items:
     - { setting: 'AuthorizedKeysCommand', value: '/opt/gitlab/embedded/service/gitlab-shell/bin/gitlab-shell-authorized-keys-check git %u %k'}
     - { setting: 'AuthorizedKeysCommandUser', value: 'git'}
 
@@ -32,19 +32,19 @@
     gsutil cp gs://{{ gitlab_secrets_storage }}/{{ serviceaccount_filename }} {{ serviceaccount_path }} 2>/dev/null || true
   tags: secrets
 
-- name: Reconfigure GitLab Primary
+- name: Reconfigure main GitLab
   shell: gitlab-ctl reconfigure
   # environment:
   #  SKIP_POST_DEPLOYMENT_MIGRATIONS: 'true'
   tags: reconfigure
-  when: "'gitlab_rails_primary' in group_names"
+  when: "'gitlab_rails_main' in group_names"
 
 - name: Upload secrets file if missing
   shell: "gsutil cp -n /etc/gitlab/gitlab-secrets.json gs://{{ gitlab_secrets_storage }}"
   tags: secrets
   run_once: true
 
-- name: Restart GitLab Primary
+- name: Restart main GitLab
   command: gitlab-ctl restart
   register: result
   retries: 2
@@ -52,14 +52,14 @@
   tags:
     - reconfigure
     - restart
-  when: "'gitlab_rails_primary' in group_names"
+  when: "'gitlab_rails_main' in group_names"
 
-- name: Reconfigure GitLab Secondaries
+- name: Reconfigure other GitLab instances
   shell: gitlab-ctl reconfigure
   tags: reconfigure
-  when: "'gitlab_rails_secondary' in group_names"
+  when: "'gitlab_rails_other' in group_names"
 
-- name: Restart GitLab Secondaries
+- name: Restart other GitLab instances
   command: gitlab-ctl restart
   register: result
   retries: 2
@@ -67,14 +67,14 @@
   tags:
     - reconfigure
     - restart
-  when: "'gitlab_rails_secondary' in group_names"
+  when: "'gitlab_rails_other' in group_names"
 
 # - name: Perform Post Deployment DB Migrations
 #  command: gitlab-rake db:migrate
 #  register: result
 #  retries: 3
 #  until: result is success
-#  when: "'gitlab_rails_primary' in group_names"
+#  when: "'gitlab_rails_main' in group_names"
 
 - name: Create skip-auto-reconfigure file
   file:

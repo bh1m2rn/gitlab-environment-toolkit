@@ -1,15 +1,22 @@
 plugin: gcp_compute
 projects:
-  - gitlab-qa-10k-cd77c7
+  - group-geo-f9c951
 filters:
+  - labels.gitlab_cluster_name = "geo-ash-10k"  # TODO: CHANGEME
+  - labels.gitlab_geo_role = "primary" # TODO: CHANGEME
+  # - labels.gitlab_geo_role = "secondary" # TODO: CHANGEME
 keyed_groups:
   - key: labels.gitlab_node_type
     separator: ''
   - key: labels.gitlab_node_level
     separator: ''
+  - prefix: geo_role
+    key: labels.gitlab_geo_role
+    separator: '_'
+
 scopes:
   - https://www.googleapis.com/auth/compute
-service_account_file: ../secrets/serviceaccount-10k.json
+service_account_file: ../secrets/group-geo-f9c951-b5620cc0bf35.json
 auth_kind: serviceaccount
 hostnames:
   # List host by name instead of the default public ip

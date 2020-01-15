@@ -21,7 +21,7 @@ gitlab_rails['db_password'] = '{{ postgres_password }}'
 gitlab_rails['auto_migrate'] = false
 
 # Redis Servers Config
-{% if 'redis' in groups %} 
+{% if 'redis' in groups %}
 redis['master_name'] = 'gitlab-redis'
 redis['master_password'] = '{{ redis_password }}'
 
@@ -30,7 +30,7 @@ gitlab_rails['redis_sentinels'] = [
   {host: '{{ ip }}', port: {{ redis_sentinel_port }}},
 {% endfor %}
 ]
-{% else %} 
+{% else %}
 gitlab_rails['redis_cache_instance'] = 'redis://:{{ redis_password }}@gitlab-redis-cache'
 gitlab_rails['redis_queues_instance'] = 'redis://:{{ redis_password }}@gitlab-redis-persistent'
 gitlab_rails['redis_shared_state_instance'] = 'redis://:{{ redis_password }}@gitlab-redis-persistent'
@@ -50,7 +50,7 @@ gitlab_rails['redis_shared_state_sentinels'] = [
   {host: '{{ ip }}', port: {{ redis_sentinel_port }}},
 {% endfor %}
 ]
-{% endif %} 
+{% endif %}
 
 {% if jaeger %}
 gitlab_rails['env'] = {
@@ -70,6 +70,7 @@ registry['gid'] = 9003
 consul['enable'] = true
 consul['configuration'] = {
   retry_join: %w({{ consul_int_ips | join(' ') }}),
+  datacenter: '{{ consul_datacenter }}',
   bind_addr: '{{ ansible_default_ipv4.address }}'
 }
 consul['monitoring_service_discovery'] = true
@@ -142,9 +143,9 @@ gitlab_ci['builds_directory'] = '{{ gitlab_nfs_path }}/builds'
 
 # Gitaly
 git_data_dirs({
-  'default' => { 'gitaly_address' => 'tcp://{{ gitaly_primary_int_ip }}:8075' },
-  'storage1' => { 'gitaly_address' => 'tcp://{{ gitaly_primary_int_ip }}:8075' },
-{% for gitaly_secondary_ip in gitaly_secondary_int_ips %}
-  "storage{{loop.index + 1}}" => { 'gitaly_address' => 'tcp://{{ gitaly_secondary_ip }}:8075' },
+  'default' => { 'gitaly_address' => 'tcp://{{ gitaly_main_int_ip }}:8075' },
+  'storage1' => { 'gitaly_address' => 'tcp://{{ gitaly_main_int_ip }}:8075' },
+{% for gitaly_other_ip in gitaly_other_int_ips %}
+  "storage{{loop.index + 1}}" => { 'gitaly_address' => 'tcp://{{ gitaly_other_ip }}:8075' },
 {% endfor %}
 })

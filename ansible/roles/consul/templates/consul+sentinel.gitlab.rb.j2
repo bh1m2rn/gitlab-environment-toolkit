@@ -1,7 +1,7 @@
 roles ['consul_role', 'redis_sentinel_role']
 
 redis['master_name'] = 'gitlab-redis'
-redis['master_ip'] = '{{ redis_primary_int_ip }}'
+redis['master_ip'] = '{{ redis_main_int_ip }}'
 redis['master_password'] = '{{ redis_password }}'
 redis['port'] = {{ redis_port }}
 
@@ -14,6 +14,7 @@ consul['enable'] = true
 consul['configuration'] = {
   server: true,
   retry_join: %w({{ consul_int_ips | join(' ') }}),
+  datacenter: '{{ consul_datacenter }}',
   bind_addr: '{{ ansible_default_ipv4.address }}'
 }
 consul['monitoring_service_discovery'] =  true

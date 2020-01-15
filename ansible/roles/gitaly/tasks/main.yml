@@ -37,7 +37,7 @@
     mode: '0755'
     owner: git
     group: git
-  when: "'gitaly_primary' in group_names"
+  when: "'gitaly_main' in group_names"
 
 - name: Create Additional Gitaly directories
   file:

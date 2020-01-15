@@ -5,13 +5,13 @@ sentinel['quorum'] = 2
 
 {% if (group_names | select("match", ".*_cache_.*") | list | count > 0) %}
 redis['master_name'] = 'gitlab-redis-cache'
-redis['master_ip'] = '{{ redis_cache_primary_int_ip }}'
+redis['master_ip'] = '{{ redis_cache_main_int_ip }}'
 {% elif (group_names | select("match", ".*_persistent_.*") | list | count > 0) %}
 redis['master_name'] = 'gitlab-redis-persistent'
-redis['master_ip'] = '{{ redis_persistent_primary_int_ip }}'
+redis['master_ip'] = '{{ redis_persistent_main_int_ip }}'
 {% else %}
 redis['master_name'] = 'gitlab-redis'
-redis['master_ip'] = '{{ redis_primary_int_ip }}'
+redis['master_ip'] = '{{ redis_main_int_ip }}'
 {% endif %}
 redis['master_password'] = '{{ redis_password }}'
 
@@ -20,6 +20,7 @@ gitlab_rails['auto_migrate'] = false
 consul['enable'] = true
 consul['configuration'] = {
   retry_join: %w({{ consul_int_ips | join(' ') }}),
+  datacenter: '{{ consul_datacenter }}',
   bind_addr: '{{ ansible_default_ipv4.address }}'
 }
 consul['monitoring_service_discovery'] =  true

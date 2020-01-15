@@ -1,0 +1,11 @@
+---
+- hosts:
+    - gitlab_rails*  # maps to gitlab_node_level: gitlab-rails-* label
+    - postgres*
+    - pgbouncer*
+    - sidekiq*
+  vars_files:
+    - vars/gitlab_geo.yml
+  roles:
+    - gitlab-geo
+  become: true
