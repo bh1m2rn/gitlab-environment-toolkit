@@ -10,7 +10,8 @@ provider "google" {
 terraform {
   required_version = "= 0.12.18"
   backend "gcs" {
-    bucket  = "10k-terraform-state"
-    credentials = "../../secrets/serviceaccount-10k.json"
+    bucket  = "geo-ash-10k-terraform-state" # TODO: CHANGEME
+    prefix  = "primary"
+    credentials = "../../../secrets/group-geo-f9c951-b5620cc0bf35.json"
   }
 }

@@ -1,6 +1,8 @@
 module "redis_cache" {
-  source = "../modules/gitlab_gcp_instance"
+  source = "../../modules/gitlab_gcp_instance"
 
+  geo_role = "${var.geo_role}"
+  shared_prefix = "${var.shared_prefix}"
   prefix = "${var.prefix}"
   node_type = "redis-cache"
   node_count = 3
@@ -15,8 +17,10 @@ output "redis_cache" {
 }
 
 module "redis_sentinel_cache" {
-  source = "../modules/gitlab_gcp_instance"
+  source = "../../modules/gitlab_gcp_instance"
 
+  geo_role = "${var.geo_role}"
+  shared_prefix = "${var.shared_prefix}"
   prefix = "${var.prefix}"
   node_type = "redis-sentinel-cache"
   node_count = 3
@@ -31,8 +35,10 @@ output "redis_sentinel_cache" {
 }
 
 module "redis_persistent" {
-  source = "../modules/gitlab_gcp_instance"
+  source = "../../modules/gitlab_gcp_instance"
 
+  geo_role = "${var.geo_role}"
+  shared_prefix = "${var.shared_prefix}"
   prefix = "${var.prefix}"
   node_type = "redis-persistent"
   node_count = 3
@@ -47,8 +53,10 @@ output "redis_persistent" {
 }
 
 module "redis_sentinel_persistent" {
-  source = "../modules/gitlab_gcp_instance"
+  source = "../../modules/gitlab_gcp_instance"
 
+  geo_role = "${var.geo_role}"
+  shared_prefix = "${var.shared_prefix}"
   prefix = "${var.prefix}"
   node_type = "redis-sentinel-persistent"
   node_count = 3

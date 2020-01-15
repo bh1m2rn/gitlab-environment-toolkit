@@ -1,5 +1,5 @@
 resource "google_storage_bucket" "gitlab_secrets_storage" {
-  name = "${var.prefix}-secrets-storage"
+  name = "${var.shared_prefix}-secrets-storage"
   force_destroy = true
 }
 
@@ -31,4 +31,3 @@ resource "google_storage_bucket_iam_binding" "gitlab_object_storage_binding" {
     "projectEditor:${var.project}",
   ]
 }
-

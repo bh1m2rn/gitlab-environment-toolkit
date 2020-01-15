@@ -1,13 +1,16 @@
 module "haproxy_external" {
-  source = "../modules/gitlab_gcp_instance"
+  source = "../../modules/gitlab_gcp_instance"
 
+  geo_role = "${var.geo_role}"
+  shared_prefix = "${var.shared_prefix}"
   prefix = "${var.prefix}"
   node_type = "haproxy-external"
   node_count = 1
-  
+
   machine_type = "n1-highcpu-2"
   machine_image = "${var.machine_image}"
-  external_ips = ["34.73.165.75"]
+
+  external_ips = ["34.74.59.220"]  # TODO: CHANGEME
 
   tags = ["${var.prefix}-web", "${var.prefix}-haproxy"]
 }
@@ -17,12 +20,14 @@ output "haproxy_external" {
 }
 
 module "haproxy_internal" {
-  source = "../modules/gitlab_gcp_instance"
+  source = "../../modules/gitlab_gcp_instance"
 
+  geo_role = "${var.geo_role}"
+  shared_prefix = "${var.shared_prefix}"
   prefix = "${var.prefix}"
   node_type = "haproxy-internal"
   node_count = 1
-  
+
   machine_type = "n1-highcpu-2"
   machine_image = "${var.machine_image}"
 

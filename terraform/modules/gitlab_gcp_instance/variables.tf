@@ -1,5 +1,7 @@
+variable "shared_prefix" {}
 variable "prefix" {}
 variable "node_type" {}
+variable "geo_role" {}
 
 variable "node_count" {
   default = 1

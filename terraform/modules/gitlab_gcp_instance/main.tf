@@ -23,8 +23,10 @@ resource "google_compute_instance" "gitlab" {
   }
 
   labels = {
+    gitlab_cluster_name = var.shared_prefix
     gitlab_node_type = var.node_type
-    gitlab_node_level = var.label_secondaries == true ? (count.index == 0 ? "${var.node_type}-primary" : "${var.node_type}-secondary") : ""
+    gitlab_geo_role = var.geo_role
+    gitlab_node_level = var.label_secondaries == true ? (count.index == 0 ? "${var.node_type}-main" : "${var.node_type}-other") : ""
   }
 
   network_interface {

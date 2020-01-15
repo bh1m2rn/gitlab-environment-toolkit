@@ -1,6 +1,8 @@
 module "postgres" {
-  source = "../modules/gitlab_gcp_instance"
+  source = "../../modules/gitlab_gcp_instance"
 
+  geo_role = "${var.geo_role}"
+  shared_prefix = "${var.shared_prefix}"
   prefix = "${var.prefix}"
   node_type = "postgres"
   node_count = 3
