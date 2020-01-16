@@ -19,11 +19,11 @@ variable "geo_role" {
 }
 
 variable "shared_prefix" {
-  default = "geo-ash-10k" # TODO: CHANGEME
+  default = "geo-ash2-10k" # TODO: CHANGEME
 }
 
 variable "prefix" {
-  default = "geo-ash-10k-pri" # TODO: CHANGEME
+  default = "geo-ash2-10k-pri" # TODO: CHANGEME
 }
 
 variable "machine_image" {
@@ -32,5 +32,5 @@ variable "machine_image" {
 
 # FIXME: Is this in use?
 # variable "secrets_storage_bucket" {
-#   default = "geo-ash-10k"-secrets" # TODO: CHANGEME
+#   default = "geo-ash2-10k"-secrets" # TODO: CHANGEME
 # }

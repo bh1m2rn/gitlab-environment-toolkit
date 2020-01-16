@@ -10,7 +10,7 @@ module "haproxy_external" {
   machine_type = "n1-highcpu-2"
   machine_image = "${var.machine_image}"
 
-  external_ips = ["34.74.59.220"]  # TODO: CHANGEME
+  external_ips = ["35.185.24.42"]  # TODO: CHANGEME
 
   tags = ["${var.prefix}-web", "${var.prefix}-haproxy"]
 }
