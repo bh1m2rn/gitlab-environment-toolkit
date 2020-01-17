@@ -49,7 +49,7 @@
   command: "{{ item }}"
   with_items:
     - apt-mark install gitlab-ee
-    - apt-get install {{ gitlab_package }} -y --allow-downgrades
+    - apt-get install {{ gitlab_package }}={{ gitlab_package_version }} -y --allow-downgrades
     - apt-mark hold gitlab-ee
   args:
     warn: false
