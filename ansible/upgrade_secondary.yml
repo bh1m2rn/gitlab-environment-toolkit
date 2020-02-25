@@ -1,0 +1,33 @@
+---
+- hosts:
+    - "*sec*"
+  gather_facts: true
+  become: true
+  tasks:
+    - name: Upgrade GitLab for all Primary nodes
+      command: "{{item}}"
+      with_items:
+        - apt-get update -qq
+        - apt-mark install gitlab-ee
+        - apt-mark unhold gitlab-ee
+        - apt-get install {{ gitlab_package }} -y --allow-downgrades
+        - apt-mark hold gitlab-ee
+      register: result
+      retries: 2
+      until: result is success
+
+    - name: Reconfigure & refresh foreign tables
+      command: "{{item}}"
+      with_items:
+        - gitlab-ctl reconfigure
+        - gitlab-rake geo:db:refresh_foreign_tables
+      register: result
+      retries: 2
+      until: result is success
+      when: "'gitlab_rails_main' in group_names and 'geo_role_secondary' in group_names"
+
+    - name: Restart all services
+      command: gitlab-ctl restart
+      register: result
+      retries: 2
+      until: result is success
