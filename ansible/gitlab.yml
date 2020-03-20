@@ -1,0 +1,7 @@
+# Single Node
+---
+- hosts: 
+    - gitlab
+  roles:
+    - gitlab
+  become: true

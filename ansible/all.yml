@@ -4,8 +4,14 @@
     - common
   become: true
 
+# Common
 - import_playbook: haproxy.yml
 - import_playbook: gitlab-nfs.yml
+
+# Single Node
+- import_playbook: gitlab.yml
+
+# Multi Node
 - import_playbook: consul.yml
 - import_playbook: postgres.yml
 - import_playbook: pgbouncer.yml
@@ -13,4 +19,6 @@
 - import_playbook: gitaly.yml
 - import_playbook: sidekiq.yml
 - import_playbook: gitlab-rails.yml
+
+# Common
 - import_playbook: monitor.yml
