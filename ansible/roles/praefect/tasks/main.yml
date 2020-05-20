@@ -8,6 +8,11 @@
   - name: Download secrets file
     shell: "gsutil cp gs://{{ gitlab_secrets_storage }}/gitlab-secrets.json /etc/gitlab/gitlab-secrets.json 2>/dev/null || true"
     tags: secrets
+
+  - name: Setup Database on Postgres
+    shell: |
+      /opt/gitlab/embedded/bin/psql -U gitlab -d gitlabhq_production -h {{ postgres_primary_int_ip }} -c 'CREATE ROLE praefect WITH LOGIN CREATEDB PASSWORD '{{ praefect_postgres_password }};'
+      /opt/gitlab/embedded/bin/psql -U praefect -d gitlabhq_production -h {{ postgres_primary_int_ip }} -c 'CREATE DATABASE praefect_production WITH ENCODING=UTF8;'
   
   - name: Reconfigure Praefect
     shell: gitlab-ctl reconfigure
