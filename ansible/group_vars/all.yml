@@ -31,6 +31,10 @@ gitaly_primary_int_ip: "{{ (groups['gitaly_primary'] | map('extract', hostvars, 
 gitaly_secondary_int_ips: "{{ (groups['gitaly_secondary'] | map('extract', hostvars, ['networkInterfaces']) | map('first') | map(attribute='networkIP') | list) if 'gitaly_secondary' in groups else [] }}"
 gitaly_token: 'abc123secret'
 
+# Praefect
+praefect_external_token: '0njLe4EOnVLmlcfOReTKqw6ELMkxKI'
+praefect_internal_token: 'xv9VNjHyOzVS7LEhjXgWnOxEbmBKyj'
+
 # GitLab NFS
 gitlab_nfs_int_ip: "{{ groups['gitlab_nfs'] | map('extract', hostvars, ['networkInterfaces']) | map('first') | map(attribute='networkIP') | join('') }}"
 gitlab_nfs_path: "/mnt/gitlab-nfs"
