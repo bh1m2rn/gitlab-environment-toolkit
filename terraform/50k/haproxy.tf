@@ -23,7 +23,7 @@ module "haproxy_internal" {
   node_type = "haproxy-internal"
   node_count = 1
   
-  machine_type = "n1-highcpu-8"
+  machine_type = "n1-highcpu-16"
   machine_image = "${var.machine_image}"
 
   tags = ["${var.prefix}-haproxy"]

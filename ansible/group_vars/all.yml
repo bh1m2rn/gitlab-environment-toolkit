@@ -34,6 +34,7 @@ gitaly_token: 'abc123secret'
 # Praefect
 praefect_primary_int_ip: "{{ (groups['praefect_primary'] | map('extract', hostvars, ['networkInterfaces']) | map('first') | map(attribute='networkIP') | join('')) if 'praefect_primary' in groups else '' }}"
 praefect_secondary_int_ips: "{{ (groups['praefect_secondary'] | map('extract', hostvars, ['networkInterfaces']) | map('first') | map(attribute='networkIP') | list) if 'praefect_secondary' in groups else [] }}"
+praefect_int_ips: "{{ (groups['praefect'] | map('extract', hostvars, ['networkInterfaces']) | map('first') | map(attribute='networkIP') | list) if 'praefect' in groups else [] }}"
 
 praefect_external_token: '0njLe4EOnVLmlcfOReTKqw6ELMkxKI'
 praefect_internal_token: 'xv9VNjHyOzVS7LEhjXgWnOxEbmBKyj'
