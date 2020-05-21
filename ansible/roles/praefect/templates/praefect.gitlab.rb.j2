@@ -1,4 +1,4 @@
-# Avoid running unnecessary services on the Gitaly server
+# Avoid running unnecessary services on the Praefect server
 postgresql['enable'] = false
 redis['enable'] = false
 nginx['enable'] = false
@@ -32,6 +32,7 @@ repmgrd['enable'] = false
 sentinel['enable'] = false
 sidekiq_cluster['enable'] = false
 storage_check['enable'] = false
+gitaly['enable'] = false
 
 # Praefect Configuration
 praefect['enable'] = true

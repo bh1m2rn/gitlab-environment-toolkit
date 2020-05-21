@@ -46,7 +46,19 @@ prometheus['scrape_configs'] = [
 {% endfor %}
       ],
     ],
-  }
+  },
+{% endif %}
+{% if 'praefect' in groups %}
+  {
+    'job_name': 'praefect',
+    'static_configs' => [
+      'targets' => [
+{% for ip in praefect_int_ips %}
+        "{{ ip }}:9652",
+{% endfor %}
+      ],
+    ],
+  },
 {% endif %}
 ]
 

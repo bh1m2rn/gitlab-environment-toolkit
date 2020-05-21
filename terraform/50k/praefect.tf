@@ -7,6 +7,7 @@ module "praefect" {
 
   machine_type = "n1-highcpu-2"
   machine_image = "${var.machine_image}"
+  label_secondaries = true
 }
 
 output "praefect" {

@@ -166,7 +166,25 @@ gitlab_rails['env'] = {
 }
 
 # Gitaly
+{% if 'praefect' in groups %}
+## Gitaly Cluster (External)
+git_data_dirs({
+  "default" => {
+    "gitaly_address" => "tcp://{{ ansible_default_ipv4.address }}:8075"
+  },
+  "storage-1" => {
+    "gitaly_address" => "tcp://{{ haproxy_internal_int_ip }}:2305",
+    "gitaly_token" => '{{ praefect_external_token }}'
+  }
+})
+
+gitaly['listen_addr'] = '0.0.0.0:8075'
+gitaly['prometheus_listen_addr'] = "0.0.0.0:9236"
+{% elif 'gitaly' in groups %}
+## Gitaly (External)
+gitaly['enable'] = false
 gitlab_rails['gitaly_token'] = '{{ gitaly_token }}'
+
 git_data_dirs({
   'default' => { 'gitaly_address' => 'tcp://{{ gitaly_primary_int_ip }}:8075' },
   'storage1' => { 'gitaly_address' => 'tcp://{{ gitaly_primary_int_ip }}:8075' },
@@ -174,3 +192,4 @@ git_data_dirs({
   "storage{{loop.index + 1}}" => { 'gitaly_address' => 'tcp://{{ gitaly_secondary_ip }}:8075' },
 {% endfor %}
 })
+{% endif %}

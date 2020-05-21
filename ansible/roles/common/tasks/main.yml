@@ -37,7 +37,9 @@
       pip:
         name: ['requests', 'google-auth', 'netaddr', 'openshift', 'PyYAML', 'docker']
         extra_args: --upgrade
-      tags: packages
+      tags:
+        - packages
+        - reconfigure
 
     - name: Configure TCP keepalive settings
       sysctl:

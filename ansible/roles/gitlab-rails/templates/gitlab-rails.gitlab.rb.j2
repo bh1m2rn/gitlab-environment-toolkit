@@ -231,6 +231,7 @@ git_data_dirs({
 })
 
 gitaly['listen_addr'] = '0.0.0.0:8075'
+gitaly['prometheus_listen_addr'] = "0.0.0.0:9236"
 {% elif 'gitaly' in groups %}
 ## Gitaly (External)
 gitaly['enable'] = false
