@@ -65,7 +65,12 @@
     - db_migrate
   when: "'gitlab_rails_primary' in group_names"
 
-- name: Setup all GitLab Rails config files without DB Migrations
+- name: Enable Feature Flags (GitLab Primary)
+  command: gitlab-rails runner "Feature.enable(:gitaly_distributed_reads)"
+  tags: reconfigure
+  when: "'gitlab_rails_primary' in group_names"
+
+- name: Setup any GitLab Secondaries config files
   template:
     src: templates/gitlab-rails.gitlab.rb.j2
     dest: /etc/gitlab/gitlab.rb

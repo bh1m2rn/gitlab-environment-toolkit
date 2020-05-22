@@ -23,14 +23,14 @@
       - "'praefect_primary' in group_names"
       - "'(0 rows)' in praefect_database_check_result.stdout"
     tags: database
-  
+
   - name: Reconfigure Praefect
     shell: gitlab-ctl reconfigure
     register: result
     retries: 2
     until: result is success
     tags: reconfigure
-  
+
   - name: Restart Praefect
     command: gitlab-ctl restart
     register: result
@@ -39,7 +39,7 @@
     tags:
       - reconfigure
       - restart
-  
+
   - name: Upload secrets file if missing
     shell: "gsutil cp -n /etc/gitlab/gitlab-secrets.json gs://{{ gitlab_secrets_storage }}"
     tags: secrets
