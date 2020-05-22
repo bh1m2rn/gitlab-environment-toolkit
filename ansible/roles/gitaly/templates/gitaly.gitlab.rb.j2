@@ -49,16 +49,11 @@ gitaly['listen_addr'] = "0.0.0.0:8075"
 gitaly['auth_token'] = "{{ praefect_internal_token }}"
 
 git_data_dirs({
-  "gitaly-1" => {
-    "path" => "/var/opt/gitlab/git-data"
-  },
-  "gitaly-2" => {
-    "path" => "/var/opt/gitlab/git-data"
-  },
-  "gitaly-3" => {
+  "gitaly-{{ gitaly_number }}" => {
     "path" => "/var/opt/gitlab/git-data"
   }
 })
+
 {% else %}
 gitaly['auth_token'] = "{{ gitaly_token }}"
 
