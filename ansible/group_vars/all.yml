@@ -40,6 +40,9 @@ praefect_external_token: '0njLe4EOnVLmlcfOReTKqw6ELMkxKI'
 praefect_internal_token: 'xv9VNjHyOzVS7LEhjXgWnOxEbmBKyj'
 praefect_postgres_password: 'qS4bvCjJZTl1sq2xcTowtLxow4m2nW'
 
+praefect_postgres_primary_int_ip: "{{ (groups['praefect_postgres_primary'] | map('extract', hostvars, ['networkInterfaces']) | map('first') | map(attribute='networkIP') | join('')) if 'praefect_postgres_primary' in groups else '' }}"
+praefect_postgres_int_ips:  "{{ (groups['praefect_postgres'] | map('extract', hostvars, ['networkInterfaces']) | map('first') | map(attribute='networkIP') | list) if 'praefect_postgres' in groups else [] }}"
+
 # GitLab NFS
 gitlab_nfs_int_ip: "{{ groups['gitlab_nfs'] | map('extract', hostvars, ['networkInterfaces']) | map('first') | map(attribute='networkIP') | join('') }}"
 gitlab_nfs_path: "/mnt/gitlab-nfs"

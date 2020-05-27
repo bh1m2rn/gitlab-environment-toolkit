@@ -1,0 +1,24 @@
+---
+- name: Remove old Postgres container
+  docker_container:
+    name: postgres
+    state: absent
+  tags:
+    - reconfigure
+    - restart
+
+- name: Start Postgres container(s)
+  docker_container:
+    name: postgres
+    image: "postgres:11-alpine"
+    pull: yes
+    restart_policy: always
+    state: started
+    env:
+      POSTGRES_PASSWORD: "{{ praefect_postgres_password }}"
+    volumes:
+      - praefect_postgres_data:/var/lib/postgresql/data
+    network_mode: host
+  tags:
+    - reconfigure
+    - restart

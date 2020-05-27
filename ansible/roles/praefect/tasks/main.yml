@@ -10,15 +10,19 @@
     tags: secrets
 
   - name: Check if Database is already set up for Praefect
-    shell: /opt/gitlab/embedded/bin/psql -U gitlab-psql -d gitlabhq_production -h {{ postgres_primary_int_ip }} -c "SELECT 1 FROM pg_roles WHERE rolname='praefect';"
+    shell: /opt/gitlab/embedded/bin/psql -U postgres -d template1 -h {{ praefect_postgres_primary_int_ip }} -c "SELECT 1 FROM pg_roles WHERE rolname='praefect';"
+    environment:
+      PGPASSWORD: "{{ praefect_postgres_password }}"
     register: praefect_database_check_result
     when: "'praefect_primary' in group_names"
     tags: database
 
   - name: Setup Database on Postgres
     shell: |
-      /opt/gitlab/embedded/bin/psql -U gitlab-psql -d gitlabhq_production -h {{ postgres_primary_int_ip }} -c "CREATE ROLE praefect WITH LOGIN CREATEDB PASSWORD '{{ praefect_postgres_password }}';"
-      /opt/gitlab/embedded/bin/psql -U praefect -d gitlabhq_production -h {{ postgres_primary_int_ip }} -c "CREATE DATABASE praefect_production WITH ENCODING=UTF8;"
+      /opt/gitlab/embedded/bin/psql -U postgres -d template1 -h {{ praefect_postgres_primary_int_ip }} -c "CREATE ROLE praefect WITH LOGIN CREATEDB PASSWORD '{{ praefect_postgres_password }}';"
+      /opt/gitlab/embedded/bin/psql -U praefect -d template1 -h {{ praefect_postgres_primary_int_ip }} -c "CREATE DATABASE praefect_production WITH ENCODING=UTF8;"
+    environment:
+      PGPASSWORD: "{{ praefect_postgres_password }}"
     when: 
       - "'praefect_primary' in group_names"
       - "'(0 rows)' in praefect_database_check_result.stdout"
