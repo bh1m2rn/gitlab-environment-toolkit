@@ -27,8 +27,6 @@
   template:
     src: templates/gitlab-rails.gitlab.rb.j2
     dest: /etc/gitlab/gitlab.rb
-  vars:
-    db_migrate: true
   register: result
   retries: 3
   until: result is success
@@ -43,6 +41,7 @@
     - reconfigure
     - db_migrate
   when: "'gitlab_rails_primary' in group_names"
+  notify: run db migration
 
 - name: Setup all GitLab Rails config files without DB Migrations
   template:

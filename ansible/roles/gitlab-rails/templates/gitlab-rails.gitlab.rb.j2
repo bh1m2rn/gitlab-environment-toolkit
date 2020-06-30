@@ -179,7 +179,7 @@ sidekiq['max_concurrency'] = 15
 postgresql['enable'] = false
 gitlab_rails['db_password'] = '{{ postgres_password }}'
 
-{% if 'pgbouncer' not in groups or (db_migrate is defined and db_migrate == true) %}
+{% if 'pgbouncer' not in groups %}
 gitlab_rails['db_host'] = '{{ postgres_primary_int_ip }}'
 gitlab_rails['db_port'] = 5432
 gitlab_rails['auto_migrate'] = {{ (true if 'gitlab_rails_primary' in group_names else false) | lower }}
