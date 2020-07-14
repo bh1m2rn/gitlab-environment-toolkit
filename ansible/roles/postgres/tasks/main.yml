@@ -28,7 +28,7 @@
   run_once: true
 
 - name: Run vacuumdb
-  shell: /opt/gitlab/embedded/postgresql/11/bin/vacuumdb --all --analyze-in-stages -h /var/opt/gitlab/postgresql
+  shell: /opt/gitlab/embedded/bin/vacuumdb --all --analyze-in-stages -h /var/opt/gitlab/postgresql
   become: true
   become_user: gitlab-psql
   when: "'postgres_primary' in group_names"
