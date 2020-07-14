@@ -29,6 +29,12 @@ postgresql['hot_standby'] = 'on'
 postgresql['wal_level'] = 'replica'
 postgresql['max_connections'] = 330
 
+postgresql['shared_buffers'] = "{{ postgres_shared_buffers_size }}MB"
+#postgresql['max_worker_processes'] = 4
+#postgresql['max_parallel_workers_per_gather'] = 2
+#postgresql['max_parallel_processes'] = 4
+#postgresql['max_parallel_maintenance_workers'] = 2
+
 gitlab_rails['auto_migrate'] = false
 
 postgresql['pgbouncer_user_password'] = "{{ (pgbouncer_password + 'pgbouncer') | md5 }}"

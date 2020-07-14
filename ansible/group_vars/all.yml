@@ -42,6 +42,7 @@ monitor_int_ip: "{{ (groups['monitor'] | map('extract', hostvars, ['networkInter
 # GitLab Postgres / PGBouncer
 postgres_primary_int_ip: "{{ (groups['postgres_primary'] | map('extract', hostvars, ['networkInterfaces']) | map('first') | map(attribute='networkIP') | join('')) if 'postgres_primary' in groups else '' }}"
 postgres_password: '37aca09f2f8ff04f27bdb2ed159ec81f'
+postgres_shared_buffers_size: "{{ (ansible_memtotal_mb / 4) | round | int }}"
 
 pgbouncer_password: '9fdf957895675ef0741f66811c8fa958'
 pgbouncer_int_ips: "{{ (groups['pgbouncer'] | map('extract', hostvars, ['networkInterfaces']) | map('first') | map(attribute='networkIP') | list) if 'pgbouncer' in groups else [] }}"

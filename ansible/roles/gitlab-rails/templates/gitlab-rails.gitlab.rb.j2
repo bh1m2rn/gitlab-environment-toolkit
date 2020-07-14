@@ -191,6 +191,7 @@ gitlab_rails['auto_migrate'] = false
 {% else %}
 ## Postgres \ Database (Internal)
 postgresql['enable'] = true
+postgresql['shared_buffers'] = "{{ postgres_shared_buffers_size }}MB"
 postgresql['trust_auth_cidr_addresses'] = %w(0.0.0.0/0)
 postgres_exporter['listen_address'] = '0.0.0.0:9187'
 {% endif %}

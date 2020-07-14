@@ -25,3 +25,4 @@
       raw_blob_request_limit: 0
     status_code: 200, 201
     body_format: json
+  ignore_errors: true
