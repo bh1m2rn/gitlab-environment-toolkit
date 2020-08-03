@@ -1,29 +1,31 @@
-roles ['{{ "redis_master_role" if (group_names | select("match", ".*_primary") | list | count > 0) else "redis_slave_role" }}']
+## Enable Redis
+redis['enable'] = true
+
+## Disable all other services
+sidekiq['enable'] = false
+gitlab_workhorse['enable'] = false
+unicorn['enable'] = false
+postgresql['enable'] = false
+nginx['enable'] = false
+prometheus['enable'] = false
+alertmanager['enable'] = false
+pgbouncer_exporter['enable'] = false
+gitlab_exporter['enable'] = false
+gitaly['enable'] = false
+gitlab_rails['enable'] = false
 
 redis['bind'] = '0.0.0.0'
 redis['port'] = {{ redis_port }}
 redis['password'] = '{{ redis_password }}'
 
-{% if (group_names | select("match", ".*_cache_.*") | list | count > 0) %}
-redis['master_ip'] = '{{ redis_cache_primary_int_ip }}'
-
-redis['maxmemory'] = '{{ ((ansible_memory_mb.real.total | int) * 0.9) | round | int }}mb'
-redis['maxmemory_policy'] = "allkeys-lru"
-redis['maxmemory_samples'] = 5
-{% elif (group_names | select("match", ".*_persistent_.*") | list | count > 0) %}
-redis['master_ip'] = '{{ redis_persistent_primary_int_ip }}'
-{% else %}
-redis['master_ip'] = '{{ redis_primary_int_ip }}'
-{% endif %}
-
 gitlab_rails['auto_migrate'] = false
 
-consul['enable'] = true
-consul['configuration'] = {
-  bind_addr: '{{ ansible_default_ipv4.address }}',
-  retry_join: %w({{ (consul_int_ips if 'consul' in groups else gitlab_rails_int_ips) | join(' ') }})
-}
-consul['monitoring_service_discovery'] =  true
+consul['enable'] = false
+#consul['configuration'] = {
+#  bind_addr: '{{ ansible_default_ipv4.address }}',
+#  retry_join: %w({{ (consul_int_ips if 'consul' in groups else gitlab_rails_int_ips) | join(' ') }})
+#}
+#consul['monitoring_service_discovery'] =  true
 
 node_exporter['listen_address'] = '0.0.0.0:9100'
 redis_exporter['listen_address'] = '0.0.0.0:9121'

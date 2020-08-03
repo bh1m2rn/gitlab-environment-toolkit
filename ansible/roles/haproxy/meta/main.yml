@@ -1,5 +1,6 @@
 ---
 dependencies:
   - role: common
+    when: running_all is not defined
   - role: geerlingguy.docker
-  - role: cloudalchemy.node-exporter
+  # - role: cloudalchemy.node-exporter

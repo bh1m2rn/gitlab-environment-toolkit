@@ -1,10 +1,10 @@
-frontend internal-pgbouncer-tcp-in
-    bind *:6432
+frontend internal-pg-tcp-in
+    bind *:5432
     mode tcp
     option tcplog
     option clitcpka
 
-    default_backend pgbouncer
+    default_backend pg
 
 {% if 'praefect' in groups %}
 frontend internal-praefect-tcp-in

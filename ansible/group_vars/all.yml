@@ -5,7 +5,10 @@ swap_swappiness: '10'
 gitlab_deb_package: "{{ lookup('env','GITLAB_DEB_PACKAGE')}}" # Optional if installing by direct deb
 gitlab_repo_package: "{{ lookup('env','GITLAB_REPO_PACKAGE') | default('gitlab-ee', true) }}"
 gitlab_repo_script_url: "{{ lookup('env','GITLAB_REPO_SCRIPT_URL') | default('https://packages.gitlab.com/install/repositories/gitlab/nightly-builds/script.deb.sh', true) }}"
-gitlab_secrets_storage: "{{ prefix }}-secrets-storage"
+ansible_hostname_underscorized: "{{ ansible_hostname | replace('-', '_') }}"
+
+gitlab_secrets_storage: "{{ shared_prefix }}-secrets-storage"
+
 gitlab_object_storage: "{{ prefix }}-object-storage"
 gitlab_admin_email: 'admin@example.com'
 gitlab_admin_password: '5iveL!fe'
@@ -27,13 +30,13 @@ haproxy_external_ext_ip: "{{ (groups['haproxy_external'] | map('extract', hostva
 gitlab_rails_int_ips: "{{ groups['gitlab_rails'] | map('extract', hostvars, ['networkInterfaces']) | map('first') | map(attribute='networkIP') | list }}"
 
 # Gitaly
-gitaly_primary_int_ip: "{{ (groups['gitaly_primary'] | map('extract', hostvars, ['networkInterfaces']) | map('first') | map(attribute='networkIP') | join('')) if 'gitaly_primary' in groups else '' }}"
-gitaly_secondary_int_ips: "{{ (groups['gitaly_secondary'] | map('extract', hostvars, ['networkInterfaces']) | map('first') | map(attribute='networkIP') | list) if 'gitaly_secondary' in groups else [] }}"
+gitaly_main_int_ip: "{{ (groups['gitaly_main'] | map('extract', hostvars, ['networkInterfaces']) | map('first') | map(attribute='networkIP') | join('')) if 'gitaly_main' in groups else '' }}"
+gitaly_other_int_ips: "{{ (groups['gitaly_other'] | map('extract', hostvars, ['networkInterfaces']) | map('first') | map(attribute='networkIP') | list) if 'gitaly_other' in groups else [] }}"
 gitaly_token: 'abc123secret'
 
 # Praefect
 praefect_primary_int_ip: "{{ (groups['praefect_primary'] | map('extract', hostvars, ['networkInterfaces']) | map('first') | map(attribute='networkIP') | join('')) if 'praefect_primary' in groups else '' }}"
-praefect_secondary_int_ips: "{{ (groups['praefect_secondary'] | map('extract', hostvars, ['networkInterfaces']) | map('first') | map(attribute='networkIP') | list) if 'praefect_secondary' in groups else [] }}"
+praefect_other_int_ips: "{{ (groups['praefect_other'] | map('extract', hostvars, ['networkInterfaces']) | map('first') | map(attribute='networkIP') | list) if 'praefect_secondary' in groups else [] }}"
 praefect_int_ips: "{{ (groups['praefect'] | map('extract', hostvars, ['networkInterfaces']) | map('first') | map(attribute='networkIP') | list) if 'praefect' in groups else [] }}"
 
 praefect_external_token: '0njLe4EOnVLmlcfOReTKqw6ELMkxKI'
@@ -48,30 +51,45 @@ gitlab_nfs_int_ip: "{{ groups['gitlab_nfs'] | map('extract', hostvars, ['network
 gitlab_nfs_path: "/mnt/gitlab-nfs"
 gitlab_nfs_export_cidr: "{{ (ansible_default_ipv4.address + '/16') | ipaddr('network/prefix') }}"
 
+# GitLab Rails
+gitlab_rails_int_ips_for_pg: "{{ gitlab_rails_int_ips | map('regex_replace', '^(.*)$', '\\1/32') | list }}"
+
 # GitLab Monitor
 monitor_int_ip: "{{ (groups['monitor'] | map('extract', hostvars, ['networkInterfaces']) | map('first') | map(attribute='networkIP') | join('')) if 'monitor' in groups else '' }}"
 
 # GitLab Postgres / PGBouncer
-postgres_primary_int_ip: "{{ (groups['postgres_primary'] | map('extract', hostvars, ['networkInterfaces']) | map('first') | map(attribute='networkIP') | join('')) if 'postgres_primary' in groups else '' }}"
-postgres_primary_int_port: "5432"
 postgres_user: 'gitlab'
+postgres_main_int_port: '5432'
+postgres_main_int_ip: "{{ (groups['postgres_main'] | map('extract', hostvars, ['networkInterfaces']) | map('first') | map(attribute='networkIP') | join('')) if 'postgres_main' in groups else '' }}"
 postgres_password: '37aca09f2f8ff04f27bdb2ed159ec81f'
+postgres_replication_password: 'e10adc3949ba59abbe56e057f20f883e'
+# # postgres_fdw_user: 'gitlab_geo_fdw' if use pgbouncer
+postgres_fdw_user: 'gitlab'
+# # postgres_fdw_password: '74429426019688d025ed1a7beb660019' if use pgbouncer
+postgres_fdw_password: '37aca09f2f8ff04f27bdb2ed159ec81f'
+postgres_int_ips: "{{ groups['postgres'] | map('extract', hostvars, ['networkInterfaces']) |  map('first') | map(attribute='networkIP') | list }}"
+postgres_int_ips_for_pg: "{{ postgres_int_ips | map('regex_replace', '^(.*)$', '\\1/32') | list }}"
+
+postgres_max_wal_senders: 4 # FIXME: to be sure
+postgres_max_replication_slots: 4 # FIXME: to be sure
+# # postgres_max_wal_senders: "{{ ((groups['postgres_main'] + groups['postgres_other']) | length) + 1 }}"
+# # postgres_max_replication_slots: "{{ ((groups['postgres_main'] + groups['postgres_other']) | length) + 1 }}"
 
 pgbouncer_password: '9fdf957895675ef0741f66811c8fa958'
 pgbouncer_int_ips: "{{ (groups['pgbouncer'] | map('extract', hostvars, ['networkInterfaces']) | map('first') | map(attribute='networkIP') | list) if 'pgbouncer' in groups else [] }}"
+pg_int_ips: "{{ groups['postgres'] | map('extract', hostvars, ['networkInterfaces']) |  map('first') | map(attribute='networkIP') | list }}"
 
-# GitLab Redis
+# # GitLab Redis
 redis_port: 6379
 redis_sentinel_port: 26379
 redis_password: 'rae5ceiH3sheeGohz2la'
-
-redis_primary_int_ip: "{{ (groups['redis_primary'] | map('extract', hostvars, ['networkInterfaces']) | map('first') | map(attribute='networkIP') | join('')) if 'redis' in groups else '' }}"
+redis_main_int_ip: "{{ (groups['redis_main'] | map('extract', hostvars, ['networkInterfaces']) | map('first') | map(attribute='networkIP') | join('')) if 'redis' in groups else '' }}"
 redis_sentinel_int_ips: "{{ (groups['redis_sentinel'] | map('extract', hostvars, ['networkInterfaces']) | map('first') | map(attribute='networkIP') | list) if 'redis_sentinel' in groups else [] }}"
 
-redis_cache_primary_int_ip: "{{ (groups['redis_cache_primary'] | map('extract', hostvars, ['networkInterfaces']) | map('first') | map(attribute='networkIP') | join('')) if 'redis_cache' in groups else '' }}"
+redis_cache_main_int_ip: "{{ (groups['redis_cache_main'] | map('extract', hostvars, ['networkInterfaces']) | map('first') | map(attribute='networkIP') | join('')) if 'redis_cache' in groups else '' }}"
 redis_sentinel_cache_int_ips: "{{ (groups['redis_sentinel_cache'] | map('extract', hostvars, ['networkInterfaces']) | map('first') | map(attribute='networkIP') | list) if 'redis_sentinel_cache' in groups else [] }}"
 
-redis_persistent_primary_int_ip: "{{ (groups['redis_persistent_primary'] | map('extract', hostvars, ['networkInterfaces']) | map('first') | map(attribute='networkIP') | join('')) if 'redis_persistent' in groups else '' }}"
+redis_persistent_main_int_ip: "{{ (groups['redis_persistent_main'] | map('extract', hostvars, ['networkInterfaces']) | map('first') | map(attribute='networkIP') | join('')) if 'redis_persistent' in groups else '' }}"
 redis_sentinel_persistent_int_ips: "{{ (groups['redis_sentinel_persistent'] | map('extract', hostvars, ['networkInterfaces']) | map('first') | map(attribute='networkIP') | list) if 'redis_sentinel_persistent' in groups else [] }}"
 
 # Sidekiq

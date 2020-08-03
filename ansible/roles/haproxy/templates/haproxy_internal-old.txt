@@ -1,0 +1,33 @@
+frontend internal-pgbouncer-tcp-in
+    bind *:6432
+    mode tcp
+    option tcplog
+    option clitcpka
+
+    default_backend pgbouncer
+
+frontend internal-pg-tcp-in
+    bind *:5432
+    mode tcp
+    option tcplog
+    option clitcpka
+
+    default_backend pg
+    
+backend pgbouncer
+    mode tcp
+    option tcp-check
+    option srvtcpka
+
+{% for ip in pgbouncer_int_ips %}
+    server pgbouncer{{loop.index}} {{ ip }}:6432 check
+{% endfor %}
+
+backend pg
+    mode tcp
+    option tcp-check
+    option srvtcpka
+
+{% for ip in pg_int_ips %}
+    server pg{{loop.index}} {{ ip }}:5432 check
+{% endfor %}

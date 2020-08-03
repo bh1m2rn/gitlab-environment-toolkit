@@ -1,0 +1,8 @@
+prefix: "{{ shared_prefix }}-sec"
+external_url: "http://{{ shared_prefix }}-secondary.gogitlab.ml"
+
+secondary_postgres_main_name: "{{ shared_prefix + '-sec-postgres-1' }}"
+secondary_postgres_main_ip: "{{ hostvars[secondary_postgres_main_name]['ansible_default_ipv4']['address'] }}"
+
+primary_postgres_main_name: "{{ shared_prefix + '-pri-postgres-1' }}"
+primary_postgres_main_ip: "{{ hostvars[primary_postgres_main_name]['ansible_default_ipv4']['address'] }}"

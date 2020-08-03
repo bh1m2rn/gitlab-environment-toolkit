@@ -1,0 +1,237 @@
+---
+################################################################################
+# PRIMARY TASKS
+################################################################################
+
+# Only run on the Primary Rails main instance
+- name: Add a GitLab license
+  command: |
+    gitlab-rails runner 'License.find_or_create_by!(data: "{{ gitlab_license }}")'
+  tags: [ 'never', 'primary', 'addlicense' ]
+  when: "'gitlab_rails_main' in group_names and 'geo_role_primary' in group_names"
+
+# Run on all Primary Rails instances
+- name: Update /etc/gitlab/gitlab.rb with Geo Primary config
+  blockinfile:
+    dest: /etc/gitlab/gitlab.rb
+    block: |
+      roles ['geo_primary_role', 'application_role']
+  # tags: [ 'never', 'primary']
+  when: "'gitlab_rails' in group_names and 'geo_role_primary' in group_names"
+
+# Only run on the Primary Rails main instance
+- name: Set node as primary
+  command: gitlab-ctl set-geo-primary-node
+  # tags: [ 'never', 'primary']
+  when: "'gitlab_rails_main' in group_names and 'geo_role_primary' in group_names"
+
+# Only run on the Primary Postgres instances
+- name: Update /etc/gitlab/gitlab.rb with Geo Primary config
+  blockinfile:
+    dest: /etc/gitlab/gitlab.rb
+    block: |
+      roles ['geo_primary_role', 'postgres_role']
+
+      postgresql['sql_replication_password'] = '{{ (postgres_replication_password + 'gitlab_replicator') | md5 }}'
+      postgresql['md5_auth_cidr_addresses'] = {{ pgbouncer_int_ips_for_pg }} + {{ postgres_int_ips_for_pg }}
+  # tags: [ 'never', 'primary' ]
+  # postgresql['md5_auth_cidr_addresses'] = {{ postgres_int_ips_for_pg }}
+  when: "'postgres' in group_names and 'geo_role_primary' in group_names"
+
+# COMMENT THIS OUT IF NOT USING PGBOUNCER
+# Only run on the Primary Postgres main instance
+- name: Create gitlab_geo_fdw DB user
+  command: /usr/bin/gitlab-psql -d template1 -c "CREATE USER {{ postgres_fdw_user }} WITH password '{{ postgres_fdw_password }}';"
+  # tags: [ 'never', 'primary' ]
+  ignore_errors: True
+  when: "'postgres_main' in group_names and 'geo_role_primary' in group_names"
+
+# Only run on the Primary Postgres main instance
+- name: Grant privileges to gitlab_geo_fdw DB user
+  command: /usr/bin/gitlab-psql -d template1 -c "GRANT CONNECT ON DATABASE gitlabhq_production to {{ postgres_fdw_user }}; GRANT USAGE ON SCHEMA public TO {{ postgres_fdw_user }}; GRANT SELECT ON ALL TABLES IN SCHEMA public TO {{ postgres_fdw_user }}; GRANT SELECT ON ALL SEQUENCES IN SCHEMA public TO {{ postgres_fdw_user }}; ALTER DEFAULT PRIVILEGES FOR USER gitlab IN SCHEMA public GRANT SELECT ON TABLES TO {{ postgres_fdw_user }}; ALTER DEFAULT PRIVILEGES FOR USER gitlab IN SCHEMA public GRANT SELECT ON SEQUENCES TO {{ postgres_fdw_user }};"
+  # tags: [ 'never', 'primary' ]
+  when: "'postgres_main' in group_names and 'geo_role_primary' in group_names"
+
+# Only run on the Primary Postgres main instance
+- name: Upload ~gitlab-psql/data/server.crt to secrets bucket
+  shell: |
+    gsutil cp ~gitlab-psql/data/server.crt gs://{{ gitlab_secrets_storage }}/postgres_server.crt
+  # tags: [ 'never', 'primary' ]
+  when: "'postgres_main' in group_names and 'geo_role_primary' in group_names"
+
+# Run on all Primary instances
+- name: Reconfigure GitLab on all Primary instances
+  shell: gitlab-ctl reconfigure
+  # tags: [ 'never', 'primary']
+  when: "'geo_role_primary' in group_names"
+
+- name: Restart all GitLab services
+  command: gitlab-ctl restart
+  register: result
+  retries: 2
+  until: result is success
+  # tags: [ 'never', 'primary']
+  when: "'geo_role_primary' in group_names"
+
+# Only run on the Primary Rails main instance
+- name: Add Geo Secondary node
+  command: |
+    gitlab-rails runner 'GeoNode.find_or_create_by(url: "{{ secondary_external_url }}", name: "{{ secondary_external_url }}", primary: false, sync_object_storage: true)'
+  # tags: [ 'never', 'primary']
+  when: "'gitlab_rails_main' in group_names and 'geo_role_primary' in group_names"
+
+################################################################################
+# SECONDARY TASKS
+################################################################################
+
+# Run on all Secondary Postgres instances
+- name: Download postgres_server.crt from secrets bucket
+  shell: |
+    mkdir -p /var/opt/gitlab/postgresql/.postgresql
+    chmod 700 /var/opt/gitlab/postgresql/.postgresql
+    chown gitlab-psql:gitlab-psql /var/opt/gitlab/postgresql/.postgresql
+    gsutil cp gs://{{ gitlab_secrets_storage }}/postgres_server.crt /var/opt/gitlab/postgresql/.postgresql/root.crt
+    chmod 640 /var/opt/gitlab/postgresql/.postgresql/root.crt
+    chown gitlab-psql:gitlab-psql /var/opt/gitlab/postgresql/.postgresql/root.crt
+  # tags: [ 'never', 'secondary' ]
+  when: "'postgres' in group_names and 'geo_role_secondary' in group_names"
+
+# Run on all Secondary Postgres instances
+- name: Update /etc/gitlab/gitlab.rb with Geo Secondary config
+  blockinfile:
+    dest: /etc/gitlab/gitlab.rb
+    block: |
+      roles ['geo_secondary_role', 'postgres_role']
+
+      geo_secondary['db_host'] = '{{ secondary_postgres_main_ip }}'
+      geo_secondary['db_password'] = '{{ postgres_password }}'
+
+      geo_postgresql['enable'] = false
+      geo_postgresql['md5_auth_cidr_addresses'] = ['{{ ansible_default_ipv4.address }}/32']
+  # tags: [ 'never', 'secondary' ]
+  when: "'postgres' in group_names and 'geo_role_secondary' in group_names"
+
+# Only run on the Secondary Postgres main instance
+- name: Update /etc/gitlab/gitlab.rb with Geo Secondary config
+  blockinfile:
+    dest: /etc/gitlab/gitlab.rb
+    block: |
+      roles ['geo_secondary_role', 'postgres_role']
+
+      postgresql['md5_auth_cidr_addresses'] = {{ pgbouncer_int_ips_for_pg }} + {{ gitlab_rails_int_ips_for_pg }} + {{ postgres_int_ips_for_pg }} + ['{{ ansible_default_ipv4.address }}/32']
+
+      geo_secondary['db_fdw'] = true
+      geo_secondary['db_password'] = '{{ postgres_password }}'
+
+      geo_postgresql['enable'] = true
+      geo_postgresql['listen_address'] = '{{ ansible_default_ipv4.address }}'
+      geo_postgresql['sql_user_password'] = '{{ (postgres_password + 'gitlab_geo') | md5 }}'
+      geo_postgresql['fdw_external_user'] = '{{ postgres_fdw_user }}'
+      geo_postgresql['fdw_external_password'] = '{{ postgres_fdw_password }}'
+      geo_postgresql['md5_auth_cidr_addresses'] = {{ pgbouncer_int_ips_for_pg }} + {{ gitlab_rails_int_ips_for_pg }} + {{ postgres_int_ips_for_pg }} + ['{{ ansible_default_ipv4.address }}/32']
+      gitlab_rails['db_host'] = '{{ ansible_default_ipv4.address }}'
+  # tags: [ 'never', 'secondary' ]
+  # postgresql['md5_auth_cidr_addresses'] = {{ gitlab_rails_int_ips_for_pg }} + {{ postgres_int_ips_for_pg }} + ['{{ ansible_default_ipv4.address }}/32']
+  # geo_postgresql['md5_auth_cidr_addresses'] = {{ gitlab_rails_int_ips_for_pg }} + {{ sidekiq_int_ips_for_pg }} + {{ postgres_int_ips_for_pg }} + ['{{ ansible_default_ipv4.address }}/32']
+  
+  when: "'postgres_main' in group_names and 'geo_role_secondary' in group_names"
+
+# Only run on the Secondary Postgres main instance
+# Ensure access perms are setup
+- name: Reconfigure GitLab on Secondary Postgres main instance
+  shell: gitlab-ctl reconfigure
+  # tags: [ 'never', 'secondary' ]
+  when: "'postgres_main' in group_names and 'geo_role_secondary' in group_names"
+
+# Run on all other Rails instances
+- name: Reconfigure GitLab on all other instances
+  shell: gitlab-ctl reconfigure
+  # tags: [ 'never', 'secondary' ]
+  when: "'gitlab_rails_main' not in group_names and 'geo_role_secondary' in group_names"
+
+# Run on all Secondary Postgres instances
+- name:  Install pexpect (needed for gitlab-ctl replicate-geo-database)
+  apt:
+    name: python-pexpect
+    state: present
+  # tags: [ 'never', 'secondary' ]
+  when: "'postgres' in group_names and 'geo_role_secondary' in group_names"
+
+# Run on all Secondary Postgres instances
+- name: Stop repmgrd
+  command: gitlab-ctl stop repmgrd
+  # tags: [ 'never', 'secondary' ]
+  ignore_errors: True
+  when: "'postgres' in group_names and 'geo_role_secondary' in group_names"
+
+# Run on all Secondary Postgres instances
+- name: Setup Postgres replication to the Primary Postgres main instance
+  expect:
+    command: gitlab-ctl replicate-geo-database --slot-name={{ ansible_hostname_underscorized }} --host={{ primary_postgres_main_ip }} --no-wait --skip-backup --force
+    responses:
+      (?i)password: "{{ postgres_replication_password }}"
+    timeout: 60
+  vars:
+    ansible_command_timeout: 120
+  ignore_errors: True
+  # tags: [ 'never', 'secondary', 'replicate' ]
+  when: "'postgres' in group_names and 'geo_role_secondary' in group_names"
+
+# Run on all Secondary Rails instances
+- name: Update /etc/gitlab/gitlab.rb with Geo Secondary config
+  blockinfile:
+    dest: /etc/gitlab/gitlab.rb
+    block: |
+      roles ['geo_secondary_role', 'application_role']
+
+      geo_secondary['db_fdw'] = true
+      geo_secondary['db_host'] = '{{ secondary_postgres_main_ip }}'
+      geo_secondary['db_password'] = '{{ postgres_password }}'
+
+      geo_postgresql['enable'] = false
+      geo_postgresql['fdw_external_user'] = '{{ postgres_fdw_user }}'
+      geo_postgresql['fdw_external_password'] = '{{ postgres_fdw_password }}'
+  # tags: [ 'never', 'secondary' ]
+  when: "'gitlab_rails' in group_names and 'geo_role_secondary' in group_names"
+
+# Run on all Secondary Sidekiq instances
+- name: Update /etc/gitlab/gitlab.rb with Geo Secondary config
+  blockinfile:
+    dest: /etc/gitlab/gitlab.rb
+    block: |
+      roles ['geo_secondary_role']
+
+      geo_secondary['db_fdw'] = true
+      geo_secondary['db_host'] = '{{ secondary_postgres_main_ip }}'
+      geo_secondary['db_password'] = '{{ postgres_password }}'
+
+      geo_postgresql['enable'] = false
+      geo_postgresql['fdw_external_user'] = '{{ postgres_fdw_user }}'
+      geo_postgresql['fdw_external_password'] = '{{ postgres_fdw_password }}'
+  # tags: [ 'never', 'secondary' ]
+  when: "'sidekiq' in group_names and 'geo_role_secondary' in group_names"
+
+# Run on all Secondary instances
+- name: Reconfigure GitLab on all Secondary instances
+  shell: gitlab-ctl reconfigure
+  # tags: [ 'never', 'secondary' ]
+  when: "'geo_role_secondary' in group_names"
+
+- name: Restart all GitLab services
+  command: gitlab-ctl restart
+  register: result
+  retries: 2
+  until: result is success
+  # tags: [ 'never', 'secondary' ]
+  when: "'geo_role_secondary' in group_names"
+
+################################################################################
+# PRIMARY TASKS
+################################################################################
+# DO NOT RUN IF NOT USING PGBOUNCER
+# TODO: Why do we need to run this *again* at the end?
+# Only run on the Primary Postgres main instance
+- name: Grant privileges to gitlab_geo_fdw DB user
+  command: /usr/bin/gitlab-psql -d template1 -c "GRANT CONNECT ON DATABASE gitlabhq_production to {{ postgres_fdw_user }}; GRANT USAGE ON SCHEMA public TO {{ postgres_fdw_user }}; GRANT SELECT ON ALL TABLES IN SCHEMA public TO {{ postgres_fdw_user }}; GRANT SELECT ON ALL SEQUENCES IN SCHEMA public TO {{ postgres_fdw_user }}; ALTER DEFAULT PRIVILEGES FOR USER gitlab IN SCHEMA public GRANT SELECT ON TABLES TO {{ postgres_fdw_user }}; ALTER DEFAULT PRIVILEGES FOR USER gitlab IN SCHEMA public GRANT SELECT ON SEQUENCES TO {{ postgres_fdw_user }};"
+  tags: [ 'never', 'primary', 'laststep' ]
+  when: "'postgres_main' in group_names and 'geo_role_primary' in group_names"

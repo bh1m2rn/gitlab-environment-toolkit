@@ -1,0 +1,11 @@
+frontend http-in
+    bind *:80
+
+    default_backend gitlab-rails
+
+backend gitlab-rails
+    option httpchk GET /-/readiness
+
+{% for ip in gitlab_rails_int_ips %}
+    server gitlab-rails{{loop.index}} {{ ip }}:80 check
+{% endfor %}

@@ -3,17 +3,22 @@
   roles:
     - common
   become: true
+  tasks:
+    - set_fact: running_all="true"
+
 
 - import_playbook: haproxy.yml
-- import_playbook: gitlab-nfs.yml
-- import_playbook: consul.yml
+#- import_playbook: gitlab-nfs.yml
+# - import_playbook: consul.yml
 - import_playbook: postgres.yml
-- import_playbook: pgbouncer.yml
+# - import_playbook: pgbouncer.yml
 - import_playbook: redis.yml
 - import_playbook: praefect.yml
 - import_playbook: gitaly.yml
 - import_playbook: gitlab-rails.yml
 - import_playbook: sidekiq.yml
-- import_playbook: monitor.yml
-- import_playbook: elastic.yml
-- import_playbook: post-configure.yml
+# - import_playbook: monitor.yml
+# - import_playbook: elastic.yml
+# - import_playbook: post-configure.yml
+# - import_playbook: gitlab-geo.yml  # FIXME: needs to run with both primary & secondary inventory
+# - Note:  after running this playbook for primary and secondary nodes, you must then run gitlab-geo.yml with both primary & secondary inventory (by commenting out both gitlab_geo_role filters in geo-minimal-HA.gcp.yml)
