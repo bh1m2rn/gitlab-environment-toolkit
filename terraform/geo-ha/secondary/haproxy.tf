@@ -9,7 +9,7 @@ module "haproxy_external" {
   
   # machine_type = "n1-highcpu-2" #TODO: change size
   machine_image = "${var.machine_image}"
-  external_ips = ["35.231.125.151"]
+  external_ips = ["34.71.130.155"] #TODO: CHANGEME
 
   tags = ["${var.prefix}-web", "${var.prefix}-ssh", "${var.prefix}-haproxy", "${var.prefix}-monitor"]
 }

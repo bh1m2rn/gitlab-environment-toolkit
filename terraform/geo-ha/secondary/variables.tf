@@ -15,7 +15,7 @@ variable "zone" {
 } # TODO: CHANGEME
 
 variable "prefix" {
-  default = "gjsl9-sec"
+  default = "jslgitaly-sec"
 } # TODO: CHANGEME, must start with "shared_prefix"
 
 variable "machine_image" {
@@ -23,11 +23,11 @@ variable "machine_image" {
 }
 
 variable "secrets_storage_bucket" {
-  default = "gjsl9-sec-secrets"
+  default = "jslgitaly-sec-secrets"
 } # TODO: CHANGEME
 
 variable "shared_prefix" {
-  default = "gjsl9"
+  default = "jslgitaly"
 } # TODO: CHANGEME, MUST MATCH ansible/inventories/geo-HA/vars.yml
 
 variable "geo_role" {

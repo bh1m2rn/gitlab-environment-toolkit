@@ -60,4 +60,4 @@ backend influxdb
 backend kibana
     option httpchk GET /api/status
 
-    server kibana {{ elastic_primary_int_ip }}:5601 check 
+    server kibana {{ elastic_main_int_ip }}:5601 check 

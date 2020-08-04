@@ -20,9 +20,8 @@ prometheus['scrape_configs'] = [
         "{{ ip }}:9100",
 {% endfor %}
 {% for ip in praefect_postgres_int_ips %}
-        "{{ ip }}:9100",
+        "{{ ip }}:9100"
 {% endfor %}
-        "{{ gitlab_nfs_int_ip }}:9100"
       ],
     ],
   },

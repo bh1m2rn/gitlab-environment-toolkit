@@ -28,14 +28,14 @@ registry['uid'] = 9003
 registry['gid'] = 9003
 
 # Monitoring
-#consul['enable'] = true
-#consul['configuration'] = {
-  #bind_addr: '{{ ansible_default_ipv4.address }}',
-  #retry_join: %w({{ (consul_int_ips if 'consul' in groups else gitlab_rails_int_ips) | join(' ') }})
-#}
-#consul['monitoring_service_discovery'] = true
+consul['enable'] = true
+consul['configuration'] = {
+  bind_addr: '{{ ansible_default_ipv4.address }}',
+  retry_join: %w({{ (consul_int_ips if 'consul' in groups else gitlab_rails_int_ips) | join(' ') }})
+}
+consul['monitoring_service_discovery'] = true
 
-#node_exporter['listen_address'] = '0.0.0.0:9100'
+node_exporter['listen_address'] = '0.0.0.0:9100'
 
 # Storage Config
 # Object Storage

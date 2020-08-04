@@ -1,4 +1,4 @@
-# How to create minimal-HA Geo setup
+# How to create a Geo setup
 
 ### Preparing the GCP Project
 
@@ -103,7 +103,7 @@ Note: if any step fails on a machine no other tasks will run on that machine.  S
 
 Other steps:
 1. SSHguard disable on app nodes (locked out load balancer after a few logins) (systemctl stop sshguard, systemctl disable sshguard)
-1. Add haproxy internal ip to app nodes monitoring whitelist `gitlab_rails['monitoring_whitelist'] = ['0.0.0.0/0', '10.164.15.215']`
+1. Add haproxy internal ip to app nodes monitoring whitelist `gitlab_rails['monitoring_whitelist'] = ['0.0.0.0/0', '10.164.15.215']` [MAY NOT NEED IF USING MONITORING NODE]
 1. [THIS MAY NO LONGER BE NEEDED] SSH on haproxy external machine
 Add Port 2222 to /etc/ssh/sshd_config and issue service sshd reload.
 Add a GCP firewall rule to allow access to port 2222 so users can SSH into the box if needed.
@@ -126,26 +126,26 @@ Run docker run command to forward port 22:
 (remove haproxy container first)
 `docker run -d --restart=always --name=haproxy -p 22:22 -p 80:80 -p 443:443 -p 1936:1936 -p 9090:9090 -v /opt/haproxy:/usr/local/etc/haproxy:ro haproxy:alpine`
 
-1. copy /etc/ssh (ssh host keys) from main to other app nodes.  Make sure not to remove or rename /etc/ssh and log out because you won't be able to ssh back in! 
+1. Copy /etc/ssh (ssh host keys) from main to other app nodes.  Make sure not to remove or rename /etc/ssh and log out because you won't be able to ssh back in! 
 sudo service ssh reload after copying keys
 https://docs.gitlab.com/ee/administration/geo/replication/configuration.html#step-2-manually-replicate-the-primary-nodes-ssh-host-keys
 To copy SSH keys from Primary rails 1 to Primary rails 2 and Secondary rails 1 and 2
 https://docs.gitlab.com/ee/administration/geo/replication/configuration.html#step-2-manually-replicate-the-primary-nodes-ssh-host-keys
 
-On primary make copy of keys:  `sudo tar --transform 's/.*\///g' -zcvf ~/geo-host-key.tar.gz /etc/ssh/ssh_host_*_key*`
+On primary (Rails 1) make copy of keys:  `sudo tar --transform 's/.*\///g' -zcvf ~/geo-host-key.tar.gz /etc/ssh/ssh_host_*_key*`
 On local save keys:  `scp jlouie@34.94.23.201:/home/jlouie/geo-host-key.tar.gz /Users/jenniferlouie/`
 
-on rails 2: OPEN TWO SSH windows 
+on Rails 2: OPEN TWO SSH windows 
 make backup of keys: `find /etc/ssh -iname ssh_host_* -exec cp {} {}.backup.`date +%F` \;`
 
 From local, copy keys to rails 2: `scp geo-host-key.tar.gz jlouie@34.91.46.144:/home/jlouie`
 
-On rails 2, 
+On Rails 2, 
 Delete keys (this is why keep second window open, in case something happens with this session)
 `sudo tar zxvf ~/geo-host-key.tar.gz -C /etc/ssh`
 Change permissions (sudo):
 `sudo chown root:root /etc/ssh/ssh_host_*_key*
 sudochmod 0600 /etc/ssh/ssh_host_*_key*`
 
-On local, delete rails 2 from known_hosts file so it will pick up the new host key when you ssh in.
+On local, delete Rails 2 from known_hosts file so it will pick up the new host key when you ssh in.
 

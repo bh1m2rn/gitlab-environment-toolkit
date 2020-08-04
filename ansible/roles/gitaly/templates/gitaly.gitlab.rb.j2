@@ -32,9 +32,14 @@ repmgrd['enable'] = false
 sentinel['enable'] = false
 storage_check['enable'] = false
 
+gitaly['enable'] = true
+
 # Prevent database connections during 'gitlab-ctl reconfigure'
 gitlab_rails['rake_cache_clear'] = false
 gitlab_rails['auto_migrate'] = false
+
+# Configure GitLab Shell secret token needed for git operations
+gitlab_shell['secret_token'] = 'AY7dbtM3TNKYQFTLURn'
 
 # Configure the gitlab-shell API callback URL. Without this, `git push` will
 # fail. This can be your 'front door' GitLab URL or an internal load
@@ -74,12 +79,11 @@ gitaly['env'] = {
 }
 {% endif %}
 
-#consul['enable'] = true
-#consul['configuration'] = {
-#  bind_addr: '{{ ansible_default_ipv4.address }}',
-#  retry_join: %w({{ (consul_int_ips if 'consul' in groups else gitlab_rails_int_ips) | join(' ') }})
-#}
-#consul['monitoring_service_discovery'] =  true
+consul['enable'] = true
+consul['configuration'] = {
+   retry_join: %w({{ (consul_int_ips if 'consul' in groups else gitlab_rails_int_ips) | join(' ') }})
+}
+consul['monitoring_service_discovery'] =  true
 
-#node_exporter['listen_address'] = '0.0.0.0:9100'
-#gitaly['prometheus_listen_addr'] = "0.0.0.0:9236"
+node_exporter['listen_address'] = '0.0.0.0:9100'
+gitaly['prometheus_listen_addr'] = "0.0.0.0:9236"

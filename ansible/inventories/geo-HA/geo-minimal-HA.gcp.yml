@@ -2,7 +2,7 @@ plugin: gcp_compute
 projects:
   - group-geo-f9c951
 filters:
-  - labels.gitlab_cluster_name = "gjsl9" # TODO: CHANGEME
+  - labels.gitlab_cluster_name = "jslgitaly" # TODO: CHANGEME
   # - labels.gitlab_geo_role = "primary" # TODO: CHANGEME
   # - labels.gitlab_geo_role = "secondary" # TODO: CHANGEME
 

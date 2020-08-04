@@ -4,7 +4,7 @@ frontend internal-pg-tcp-in
     option tcplog
     option clitcpka
 
-    default_backend pg
+    default_backend pgbouncer
 
 {% if 'praefect' in groups %}
 frontend internal-praefect-tcp-in

@@ -32,20 +32,20 @@
     - db_migrate
   when: 
     - install_patroni is defined and install_patroni
-    - "'gitlab_rails_primary' in group_names"
+    - "'gitlab_rails_main' in group_names"
 
-- name: Update Postgres Primary IP and Port when using Patroni
+- name: Update Postgres Main IP and Port when using Patroni
   set_fact:
-    postgres_primary_int_ip: "{{ postgres_leader_int_address.stdout.split(':')[0] }}"
-    postgres_primary_int_port: "{{ postgres_leader_int_address.stdout.split(':')[1] }}"
+    postgres_main_int_ip: "{{ postgres_leader_int_address.stdout.split(':')[0] }}"
+    postgres_main_int_port: "{{ postgres_leader_int_address.stdout.split(':')[1] }}"
   tags:
     - reconfigure
     - db_migrate
   when: 
     - install_patroni is defined and install_patroni
-    - "'gitlab_rails_primary' in group_names"
+    - "'gitlab_rails_main' in group_names"
 
-- name: Setup GitLab Primary config file with DB Migrations
+- name: Setup GitLab Main config file with DB Migrations
   template:
     src: templates/gitlab-rails.gitlab.rb.j2
     dest: /etc/gitlab/gitlab.rb
@@ -59,7 +59,7 @@
     - db_migrate
   when: "'gitlab_rails_main' in group_names"
 
-- name: Reconfigure GitLab Primary
+- name: Reconfigure GitLab Main
   shell: gitlab-ctl reconfigure
   tags:
     - reconfigure
@@ -69,9 +69,9 @@
 - name: Enable Feature Flags (GitLab Primary)
   command: gitlab-rails runner "Feature.enable(:gitaly_distributed_reads)"
   tags: reconfigure
-  when: "'gitlab_rails_primary' in group_names"
+  when: "'gitlab_rails_main' in group_names"
 
-- name: Setup any GitLab Secondaries config files
+- name: Setup any GitLab Secondaries/Others config files
   template:
     src: templates/gitlab-rails.gitlab.rb.j2
     dest: /etc/gitlab/gitlab.rb

@@ -6,16 +6,34 @@ module "haproxy_external" {
   prefix = "${var.prefix}"
   node_type = "haproxy-external"
   node_count = 1
-  
-  # machine_type = "n1-highcpu-2" #TODO: change size
+
+  machine_type = "n1-highcpu-2" #TODO: change size
   machine_image = "${var.machine_image}"
-  external_ips = ["35.231.125.151"]
+  external_ips = ["34.66.216.145"] #TODO: CHANGEME
 
   tags = ["${var.prefix}-web", "${var.prefix}-ssh", "${var.prefix}-haproxy", "${var.prefix}-monitor"]
 }
 
 output "haproxy_external" {
   value = module.haproxy_external
+}
+
+module "haproxy_internal" {
+  source = "../../modules/gitlab_gcp_instance"
+  geo_role = "${var.geo_role}"
+  shared_prefix = "${var.shared_prefix}"
+  prefix = "${var.prefix}"
+  node_type = "haproxy-internal"
+  node_count = 1
+  
+  machine_type = "n1-highcpu-2"
+  machine_image = "${var.machine_image}"
+
+  tags = ["${var.prefix}-haproxy"]
+}
+
+output "haproxy_internal" {
+  value = module.haproxy_internal
 }
 
 resource "google_compute_firewall" "haproxy_stats" {

@@ -35,15 +35,15 @@ gitaly_other_int_ips: "{{ (groups['gitaly_other'] | map('extract', hostvars, ['n
 gitaly_token: 'abc123secret'
 
 # Praefect
-praefect_primary_int_ip: "{{ (groups['praefect_primary'] | map('extract', hostvars, ['networkInterfaces']) | map('first') | map(attribute='networkIP') | join('')) if 'praefect_primary' in groups else '' }}"
-praefect_other_int_ips: "{{ (groups['praefect_other'] | map('extract', hostvars, ['networkInterfaces']) | map('first') | map(attribute='networkIP') | list) if 'praefect_secondary' in groups else [] }}"
+praefect_main_int_ip: "{{ (groups['praefect_main'] | map('extract', hostvars, ['networkInterfaces']) | map('first') | map(attribute='networkIP') | join('')) if 'praefect_main' in groups else '' }}"
+praefect_other_int_ips: "{{ (groups['praefect_other'] | map('extract', hostvars, ['networkInterfaces']) | map('first') | map(attribute='networkIP') | list) if 'praefect_other' in groups else [] }}"
 praefect_int_ips: "{{ (groups['praefect'] | map('extract', hostvars, ['networkInterfaces']) | map('first') | map(attribute='networkIP') | list) if 'praefect' in groups else [] }}"
 
 praefect_external_token: '0njLe4EOnVLmlcfOReTKqw6ELMkxKI'
 praefect_internal_token: 'xv9VNjHyOzVS7LEhjXgWnOxEbmBKyj'
 praefect_postgres_password: 'qS4bvCjJZTl1sq2xcTowtLxow4m2nW'
 
-praefect_postgres_primary_int_ip: "{{ (groups['praefect_postgres_primary'] | map('extract', hostvars, ['networkInterfaces']) | map('first') | map(attribute='networkIP') | join('')) if 'praefect_postgres_primary' in groups else '' }}"
+praefect_postgres_main_int_ip: "{{ (groups['praefect_postgres_main'] | map('extract', hostvars, ['networkInterfaces']) | map('first') | map(attribute='networkIP') | join('')) if 'praefect_postgres_main' in groups else '' }}"
 praefect_postgres_int_ips:  "{{ (groups['praefect_postgres'] | map('extract', hostvars, ['networkInterfaces']) | map('first') | map(attribute='networkIP') | list) if 'praefect_postgres' in groups else [] }}"
 
 # GitLab NFS
@@ -100,7 +100,7 @@ jaeger_int_ip: "{{ (groups['jaeger'] | map('extract', hostvars, ['networkInterfa
 
 # Elastic
 elasticsearch_clean_install: "{{ lookup('env','ELASTICSEARCH_CLEAN_INSTALL') | default('false', true) }}"
-elastic_primary_int_ip: "{{ (groups['elastic_primary'] | map('extract', hostvars, ['networkInterfaces']) | map('first') | map(attribute='networkIP') | join('')) if 'elastic_primary' in groups else '' }}"
+elastic_main_int_ip: "{{ (groups['elastic_main'] | map('extract', hostvars, ['networkInterfaces']) | map('first') | map(attribute='networkIP') | join('')) if 'elastic_main' in groups else '' }}"
 elastic_int_ips: "{{ (groups['elastic'] | map('extract', hostvars, ['networkInterfaces']) | map('first') | map(attribute='networkIP') | list) if 'elastic' in groups else [] }}"
 elasticsearch_urls: "{{ (elastic_int_ips | map('regex_replace', '^(.*)$', 'http://\\1:9200') | list) if elastic_int_ips | length > 0 else [] }}"
 elasticsearch_replicas: "{{ 1 if (groups['elastic'] | length > 1 ) else 0 }}"

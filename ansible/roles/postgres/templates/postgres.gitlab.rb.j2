@@ -45,16 +45,16 @@ postgresql['sql_user_password'] = "{{ (postgres_password + 'gitlab') | md5 }}"
 ##FROM old
 #postgresql['max_wal_senders'] = "{{ postgres_max_wal_senders }}"
 #postgresql['max_replication_slots'] = "{{ postgres_max_replication_slots }}"
-#postgresql['trust_auth_cidr_addresses'] = %w(0.0.0.0/0)
+postgresql['trust_auth_cidr_addresses'] = %w(0.0.0.0/0)
 
 # Consul
-#consul['services'] = %w(postgresql)
-#consul['enable'] = true
-#consul['configuration'] = {
-#  bind_addr: '{{ ansible_default_ipv4.address }}',
-#  retry_join: %w({{ (consul_int_ips if 'consul' in groups else gitlab_rails_int_ips) | join(' ') }})
-#}
-#consul['monitoring_service_discovery'] =  true
+consul['services'] = %w(postgresql)
+consul['enable'] = true
+consul['configuration'] = {
+  bind_addr: '{{ ansible_default_ipv4.address }}',
+  retry_join: %w({{ (consul_int_ips if 'consul' in groups else gitlab_rails_int_ips) | join(' ') }})
+}
+consul['monitoring_service_discovery'] =  true
 
 # Monitoring
 postgres_exporter['listen_address'] = '0.0.0.0:9187'

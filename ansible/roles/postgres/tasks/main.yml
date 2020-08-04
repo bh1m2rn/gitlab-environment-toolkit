@@ -31,7 +31,7 @@
   shell: /opt/gitlab/embedded/bin/vacuumdb --all --analyze-in-stages -h /var/opt/gitlab/postgresql
   become: true
   become_user: gitlab-psql
-  when: "'postgres_primary' in group_names"
+  when: "'postgres_main' in group_names"
   tags:
     - reconfigure
     - restart

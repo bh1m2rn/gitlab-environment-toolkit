@@ -19,7 +19,7 @@ resource "google_compute_instance" "gitlab" {
   }
 
   metadata = {
-    enable-oslogin = "FALSE"
+    enable-oslogin = "TRUE"
   }
 
   labels = {

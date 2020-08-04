@@ -39,25 +39,24 @@ praefect['enable'] = true
 praefect['listen_addr'] = '0.0.0.0:2305'
 praefect['auth_token'] = '{{ praefect_external_token }}'
 
-praefect['database_host'] = '{{ praefect_postgres_primary_int_ip }}'
+praefect['database_host'] = '{{ praefect_postgres_main_int_ip }}'
 praefect['database_port'] = 5432
 praefect['database_user'] = 'praefect'
 praefect['database_password'] = '{{ praefect_postgres_password }}'
 praefect['database_dbname'] = 'praefect_production'
 praefect['database_sslmode'] = 'disable'
-praefect['postgres_queue_enabled'] = true
 
 praefect['failover_enabled'] = true
 praefect['failover_election_strategy'] = 'sql'
 
 praefect['virtual_storages'] = {
-  'storage-1' => {
+  'default' => {
     'gitaly-1' => {
-      'address' => 'tcp://{{ gitaly_primary_int_ip }}:8075',
+      'address' => 'tcp://{{ gitaly_main_int_ip }}:8075',
       'token'   => '{{ praefect_internal_token }}',
       'primary' => true
     },
-{% for ip in gitaly_secondary_int_ips %}
+{% for ip in gitaly_other_int_ips %}
     'gitaly-{{ loop.index + 1 }}' => {
       'address' => 'tcp://{{ ip }}:8075',
       'token'   => '{{ praefect_internal_token }}'

@@ -1,6 +1,6 @@
 # Changes in files and setup
 
-## Differences in set up instructions for minimal ha Geo setup
+## Differences in set up instructions for Geo setup
 
 * Did not use git-crypt
 * Did not use Terraform scripts for jaeger, pgbouncer, sidekiq (separate node), consul+sentinel, gitlab_nfs, monitor
@@ -67,8 +67,7 @@ removed {% for gitaly_other_ip in gitaly_other_int_ip %}
   "storage{{loop.index + 1}}" => { 'gitaly_address' => 'tcp://{{ gitaly_other_ip }}:8075' },
 {% endfor %}
 
-1. Updates for Gitaly cluster with Geo:
-
+1. Updates for Gitaly cluster with Geo (jslgitaly):
 * Added praefect.tf to geo primary and secondary terraform directories.  Added geo-related prefixes and sized down the machines.
 * Geo-HA set to match 2,000 user architecture with the following changes: added praefect node, praefect postgresql node, and 2 Gitaly nodes (for a total of 3).  Also added internal load balancer (for Praefect) and monitoring node (relative to gjsl9 setup).  Sized the machines down to n1-standard-2 except for the Praefect and Praefect-postgres nodes
 

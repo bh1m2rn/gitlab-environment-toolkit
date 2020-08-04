@@ -5,7 +5,7 @@ module "gitaly" {
   shared_prefix = "${var.shared_prefix}"
   prefix = "${var.prefix}"
   node_type = "gitaly"
-  node_count = 1
+  node_count = 3
 
   disk_type = "pd-ssd"
 

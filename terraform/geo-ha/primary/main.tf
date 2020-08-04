@@ -10,7 +10,7 @@ provider "google" {
 terraform {
   required_version = "= 0.12.18"
   backend "gcs" {
-    bucket  = "gjsl9-tf-state" # TODO: CHANGEME
+    bucket  = "jslgitaly-tf-state" # TODO: CHANGEME
     prefix = "primary" #GEO
     credentials = "../../../secrets/serviceaccount-minimal-ha.json"
   }
