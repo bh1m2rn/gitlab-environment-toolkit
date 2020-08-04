@@ -67,6 +67,11 @@ removed {% for gitaly_other_ip in gitaly_other_int_ip %}
   "storage{{loop.index + 1}}" => { 'gitaly_address' => 'tcp://{{ gitaly_other_ip }}:8075' },
 {% endfor %}
 
-### Configuring SSH
+1. Updates for Gitaly cluster with Geo:
+
+* Added praefect.tf to geo primary and secondary terraform directories.  Added geo-related prefixes and sized down the machines.
+* Geo-HA set to match 2,000 user architecture with the following changes: added praefect node, praefect postgresql node, and 2 Gitaly nodes (for a total of 3).  Also added internal load balancer (for Praefect) and monitoring node (relative to gjsl9 setup).  Sized the machines down to n1-standard-2 except for the Praefect and Praefect-postgres nodes
+
+### Configuring SSH (this has since been added to master)
 
 Configure SSH after running all playbooks.  Ansible uses port 22 for SSH operations, and these steps will change that port's usage.  Port 2222 will be used for admins to SSH into the machine.
