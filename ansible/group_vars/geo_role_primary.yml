@@ -1,0 +1,3 @@
+prefix: "{{ shared_prefix }}-pri"
+external_url: "http://{{ shared_prefix }}-primary.gogitlab.ml"
+secondary_external_url: "http://{{ shared_prefix }}-secondary.gogitlab.ml"

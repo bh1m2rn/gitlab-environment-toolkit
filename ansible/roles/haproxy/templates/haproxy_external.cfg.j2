@@ -1,9 +1,6 @@
 frontend http-in
     bind *:80
 
-    acl grafana path_beg -i /-/grafana
-    use_backend grafana if grafana
-
     default_backend gitlab-rails
 
 frontend gitlab-ssh-in

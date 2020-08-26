@@ -24,7 +24,9 @@ defaults
     timeout server 30m
     errorfile 503 /usr/local/etc/haproxy/errorfiles/503.http
  
-{% include hostvars[inventory_hostname].group_names[0] + '.cfg.j2' %}
+{% for group_name in hostvars[inventory_hostname].group_names %}
+{% include group_name + '.cfg.j2' ignore missing %}
+{% endfor %}
 
 listen stats
     bind *:1936

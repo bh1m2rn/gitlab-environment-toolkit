@@ -1,0 +1,7 @@
+all:
+  vars:
+    shared_prefix: "gjsl9" # TODO: CHANGEME
+    project_name: "group-geo-f9c951"
+    ansible_user: "sa_104647698554200534527"
+    ansible_ssh_private_key_file: "../secrets/jlansible_gcp_ssh" 
+    external_url: "http://gjsl9-secondary.gogitlab.ml" # TODO: CHANGEME for primary/secondary

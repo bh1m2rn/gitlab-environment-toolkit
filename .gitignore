@@ -5,3 +5,5 @@
 secrets.auto.tfvars
 .terraform/
 ansible/test.yml
+secrets
+ansible/vars/gitlab-geo.yml

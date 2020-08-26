@@ -1,5 +1,13 @@
-# Disable all components except PostgreSQL and Repmgr and Consul
+# Disable all components except PostgreSQL
 roles ['postgres_role']
+repmgr['enable'] = false
+consul['enable'] = false
+prometheus['enable'] = false
+alertmanager['enable'] = false
+pgbouncer_exporter['enable'] = false
+redis_exporter['enable'] = false
+gitlab_exporter['enable'] = false
+postgres_exporter['enable'] = false
 
 {% if install_patroni is defined and install_patroni %}
 # Enable Patroni
@@ -24,6 +32,7 @@ repmgr['master_on_initialization'] = {{ postgres_repmgr_master }}
 {% endif %}
 
 # PostgreSQL configuration
+postgresql['version'] = 11
 postgresql['listen_address'] = '0.0.0.0'
 postgresql['hot_standby'] = 'on'
 postgresql['wal_level'] = 'replica'
@@ -31,24 +40,33 @@ postgresql['max_connections'] = 330
 
 gitlab_rails['auto_migrate'] = false
 
-postgresql['pgbouncer_user_password'] = "{{ (pgbouncer_password + 'pgbouncer') | md5 }}"
 postgresql['sql_user_password'] = "{{ (postgres_password + 'gitlab') | md5 }}"
 
+postgresql['max_wal_senders'] = "{{ postgres_max_wal_senders }}"
+postgresql['max_replication_slots'] = "{{ postgres_max_replication_slots }}"
+
+#{% if groups['postgres'] | length > 1 %}
+#postgresql['max_wal_senders'] = "{{ ((groups | select('match', 'postgres_*') | join()) | length) + 1 }}"
+#postgresql['max_replication_slots'] = "{{ ((groups | select('match', 'postgres_*') | join()) | length) + 1 }}"
+#repmgr['master_on_initialization'] = {{ postgres_repmgr_master }}
+#{% endif %}
+
 postgresql['trust_auth_cidr_addresses'] = %w(0.0.0.0/0)
+#repmgr['trust_auth_cidr_addresses'] = %w(0.0.0.0/0)
 
 # Consul
-consul['services'] = %w(postgresql)
-consul['enable'] = true
-consul['configuration'] = {
-  bind_addr: '{{ ansible_default_ipv4.address }}',
-  retry_join: %w({{ (consul_int_ips if 'consul' in groups else gitlab_rails_int_ips) | join(' ') }})
-}
-consul['monitoring_service_discovery'] =  true
+#consul['services'] = %w(postgresql)
+#consul['enable'] = true
+#consul['configuration'] = {
+#  bind_addr: '{{ ansible_default_ipv4.address }}',
+#  retry_join: %w({{ (consul_int_ips if 'consul' in groups else gitlab_rails_int_ips) | join(' ') }})
+#}
+#consul['monitoring_service_discovery'] =  true
 
 # Monitoring
-postgres_exporter['listen_address'] = '0.0.0.0:9187'
-postgres_exporter["env"] = {
-  "SSL_CERT_DIR" => "/opt/gitlab/embedded/ssl/certs/",
-  "DATA_SOURCE_NAME" => "user=gitlab-psql host=localhost database=postgres sslmode=disable"
-}
-node_exporter['listen_address'] = '0.0.0.0:9100'
+# postgres_exporter['listen_address'] = '0.0.0.0:9187'
+#postgres_exporter["env"] = {
+#  "SSL_CERT_DIR" => "/opt/gitlab/embedded/ssl/certs/",
+#  "DATA_SOURCE_NAME" => "user=gitlab-psql host=localhost database=postgres sslmode=disable"
+#}
+#node_exporter['listen_address'] = '0.0.0.0:9100'

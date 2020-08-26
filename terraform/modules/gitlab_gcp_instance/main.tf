@@ -23,10 +23,11 @@ resource "google_compute_instance" "gitlab" {
   }
 
   labels = {
-    gitlab_node_prefix = var.prefix
+    gitlab_cluster_name = var.shared_prefix
+    gitlab_geo_role = var.geo_role
     gitlab_node_type = var.node_type
-    gitlab_node_level = var.label_secondaries == true ? (count.index == 0 ? "${var.node_type}-primary" : "${var.node_type}-secondary") : ""
-  }
+    gitlab_node_level = var.label_non_main_nodes == true ? (count.index == 0 ? "${var.node_type}-main" : "${var.node_type}-other") : ""
+  } #GEO: Added cluster_name and geo_role; for node_level renamed -primary to -main and -secondary to -other.  May not be reflected in other environments
 
   network_interface {
     network = "default"

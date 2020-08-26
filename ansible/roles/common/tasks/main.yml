@@ -106,11 +106,11 @@
       when:
         - omnibus_node
 
-    - name: Update system packages to the latest version
-      command: apt-get upgrade -y
-      register: result
-      retries: 1
-      until: result is success
+    # - name: Update system packages to the latest version
+    #   command: apt-get upgrade -y
+    #   register: result
+    #   retries: 1
+    #   until: result is success
 
     - set_fact:
         common_performed: true

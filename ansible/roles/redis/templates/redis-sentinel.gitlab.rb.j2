@@ -11,7 +11,7 @@ redis['master_name'] = 'gitlab-redis-persistent'
 redis['master_ip'] = '{{ redis_persistent_primary_int_ip }}'
 {% else %}
 redis['master_name'] = 'gitlab-redis'
-redis['master_ip'] = '{{ redis_primary_int_ip }}'
+redis['master_ip'] = '{{ redis_main_int_ip }}'
 {% endif %}
 redis['master_password'] = '{{ redis_password }}'
 

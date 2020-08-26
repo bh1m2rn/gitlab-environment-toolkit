@@ -1,21 +1,22 @@
 ---
-- name: Mount GitLab NFS
-  mount:
-    fstype: nfs
-    opts: defaults,nofail,lookupcache=positive
-    state: mounted
-    src: "{{ gitlab_nfs_int_ip }}:{{ gitlab_nfs_path }}"
-    path: "{{ gitlab_nfs_path }}"
-  tags: nfs
+# - name: Mount GitLab NFS
+#   mount:
+#     fstype: nfs
+#     opts: defaults,nofail,lookupcache=positive
+#     state: mounted
+#     src: "{{ gitlab_nfs_int_ip }}:{{ gitlab_nfs_path }}"
+#     path: "{{ gitlab_nfs_path }}"
+#   tags: nfs
 
 - name: Configure SSH Fast Lookup
   lineinfile:
     path: /etc/ssh/sshd_config
     regexp: "^{{ item.setting }}="
-    line: "{{ item.setting }}={{ item.value }}"
-  with_items: 
+    line: "{{ item.setting }} {{ item.value }}"
+  with_items:
     - { setting: 'AuthorizedKeysCommand', value: '/opt/gitlab/embedded/service/gitlab-shell/bin/gitlab-shell-authorized-keys-check git %u %k'}
     - { setting: 'AuthorizedKeysCommandUser', value: 'git'}
+  tags: authkeys
 
 - name: Download secrets files
   shell: |
@@ -49,21 +50,21 @@
     src: templates/gitlab-rails.gitlab.rb.j2
     dest: /etc/gitlab/gitlab.rb
   vars:
-    db_migrate: true
+    db_migrate: True
   register: result
   retries: 3
   until: result is success
   tags: 
     - reconfigure
     - db_migrate
-  when: "'gitlab_rails_primary' in group_names"
+  when: "'gitlab_rails_main' in group_names"
 
 - name: Reconfigure GitLab Primary
   shell: gitlab-ctl reconfigure
   tags:
     - reconfigure
     - db_migrate
-  when: "'gitlab_rails_primary' in group_names"
+  when: "'gitlab_rails_main' in group_names"
 
 - name: Setup all GitLab Rails config files without DB Migrations
   template:
@@ -73,10 +74,12 @@
   retries: 3
   until: result is success
   tags: reconfigure
+  when: "'gitlab_rails_other' in group_names"
 
-- name: Reconfigure all GitLab Rails
+- name: Reconfigure any other GitLab instances
   shell: gitlab-ctl reconfigure
   tags: reconfigure
+  when: "'gitlab_rails_other' in group_names"
 
 - name: Restart GitLab
   command: gitlab-ctl stop && gitlab-ctl start

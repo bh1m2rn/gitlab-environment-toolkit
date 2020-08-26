@@ -1,5 +1,7 @@
+variable "shared_prefix" {} #GEO
 variable "prefix" {}
 variable "node_type" {}
+variable "geo_role" {} #GEO
 
 variable "node_count" {
   default = 1
@@ -31,7 +33,7 @@ variable "disk_type" {
   default = "pd-standard"
 }
 
-variable "label_secondaries" {
+variable "label_non_main_nodes" {
   default = false
 }
 

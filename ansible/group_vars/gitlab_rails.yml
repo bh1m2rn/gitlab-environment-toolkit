@@ -1,5 +1,4 @@
 gitlab_rails_webserver: 'puma'
-
 # If GitLab Rails is running other components like Sidekiq tune worker count to be lower to accomodate
 gitlab_rails_worker_multiplier: "{% if (groups | select('match', '^(gitlab_rails|postgres|gitaly|redis|sidekiq|consul|monitor)$') | list | length) == 7 %}1.0{% else %}0.5{% endif %}"
 

@@ -28,14 +28,14 @@ registry['uid'] = 9003
 registry['gid'] = 9003
 
 # Monitoring
-consul['enable'] = true
-consul['configuration'] = {
-  bind_addr: '{{ ansible_default_ipv4.address }}',
-  retry_join: %w({{ (consul_int_ips if 'consul' in groups else gitlab_rails_int_ips) | join(' ') }})
-}
-consul['monitoring_service_discovery'] = true
+#consul['enable'] = true
+#consul['configuration'] = {
+  #bind_addr: '{{ ansible_default_ipv4.address }}',
+  #retry_join: %w({{ (consul_int_ips if 'consul' in groups else gitlab_rails_int_ips) | join(' ') }})
+#}
+#consul['monitoring_service_discovery'] = true
 
-node_exporter['listen_address'] = '0.0.0.0:9100'
+#node_exporter['listen_address'] = '0.0.0.0:9100'
 
 # Storage Config
 # Object Storage
@@ -106,7 +106,7 @@ gitlab_ci['builds_directory'] = '{{ gitlab_nfs_path }}/builds'
 {% if groups['redis'] | length == 1 %}
 ### Redis Single Node
 gitlab_rails['redis_port'] = '{{ redis_port }}'
-gitlab_rails['redis_host'] = '{{ redis_primary_int_ip }}'
+gitlab_rails['redis_host'] = '{{ redis_main_int_ip }}'
 gitlab_rails['redis_password'] = '{{ redis_password }}'
 {% elif groups['redis'] | length > 1 %} 
 ### Redis Multi Node
@@ -150,8 +150,10 @@ gitlab_rails['redis_actioncable_sentinels'] = [
 {% endif %}
 
 # Postgres \ Database
-gitlab_rails['db_host'] = '{{ haproxy_internal_int_ip }}'
-gitlab_rails['db_port'] = 6432
+#gitlab_rails['db_host'] = '{{ haproxy_internal_int_ip }}'
+#gitlab_rails['db_port'] = 6432
+gitlab_rails['db_host'] = '{{ postgres_main_int_ip }}'
+gitlab_rails['db_port'] = 5432
 gitlab_rails['db_password'] = '{{ postgres_password }}'
 gitlab_rails['auto_migrate'] = false
 
@@ -168,9 +170,6 @@ gitlab_rails['env'] = {
 # Gitaly
 gitlab_rails['gitaly_token'] = '{{ gitaly_token }}'
 git_data_dirs({
-  'default' => { 'gitaly_address' => 'tcp://{{ gitaly_primary_int_ip }}:8075' },
-  'storage1' => { 'gitaly_address' => 'tcp://{{ gitaly_primary_int_ip }}:8075' },
-{% for gitaly_secondary_ip in gitaly_secondary_int_ips %}
-  "storage{{loop.index + 1}}" => { 'gitaly_address' => 'tcp://{{ gitaly_secondary_ip }}:8075' },
-{% endfor %}
+  'default' => { 'gitaly_address' => 'tcp://{{ gitaly_main_int_ip }}:8075' },
+  'storage1' => { 'gitaly_address' => 'tcp://{{ gitaly_main_int_ip }}:8075' }
 })

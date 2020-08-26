@@ -67,24 +67,24 @@
         - patroni_members.stdout is defined
       tags: debug
 
-- name: Check secondary standby status
+- name: Check other Postgres standby status
   shell: (gitlab-ctl repmgr cluster show 2>/dev/null | grep -E 'standby \| {{ ansible_hostname }}') || echo ""
-  register: postgres_secondary_standby_status
-  tags: postgres_secondary_standby
+  register: postgres_other_standby_status
+  tags: postgres_other_standby
   when: 
-    - "'postgres_secondary' in group_names"
+    - "'postgres_other' in group_names"
     - install_patroni is not defined or not install_patroni
 
-- name: Enable secondary standby
-  shell: "gitlab-ctl repmgr standby setup {{ postgres_primary_int_ip }} -w"
-  register: postgres_secondary_standby_result
-  tags: postgres_secondary_standby
+- name: Enable other Postgres standby
+  shell: "gitlab-ctl repmgr standby setup {{ postgres_main_int_ip }} -w"
+  register: postgres_other_standby_result
+  tags: postgres_other_standby
   when: 
-    - "'postgres_secondary' in group_names"
+    - "'postgres_other' in group_names"
     - install_patroni is not defined or not install_patroni
-    - postgres_secondary_standby_status.stdout == ''
+    - postgres_other_standby_status.stdout == ''
   failed_when:
-    - postgres_secondary_standby_result.rc != 0
+    - postgres_other_standby_result.rc != 0
     - '"exists already" not in postgres_secondary_standby_result.stderr'
 
 - name: Create skip-auto-reconfigure file
