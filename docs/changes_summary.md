@@ -67,6 +67,3 @@ removed {% for gitaly_other_ip in gitaly_other_int_ip %}
   "storage{{loop.index + 1}}" => { 'gitaly_address' => 'tcp://{{ gitaly_other_ip }}:8075' },
 {% endfor %}
 
-### Configuring SSH
-
-Configure SSH after running all playbooks.  Ansible uses port 22 for SSH operations, and these steps will change that port's usage.  Port 2222 will be used for admins to SSH into the machine.

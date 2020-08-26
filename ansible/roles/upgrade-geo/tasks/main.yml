@@ -1,0 +1,285 @@
+---
+#######################################################################################################################
+# NOTES:
+# Based on instructions for zero-downtime upgrades of mulit-node Geo
+# deployments: https://docs.gitlab.com/omnibus/update/README.html#multi-node--ha-deployment-with-geo-premium-only
+# Assumes multiple sidekiq nodes.  A sidekiq node is used as deploy node for both sites
+# if using a rails app node as deploy node, requires removing that node from load balancer
+# (no automation steps for that yet)
+# does not include praefect, consul, monitor omnibus nodes
+# geo log cursor running WHERE?
+# how set deploy_node label...use sidekiq_main label instead, or add via GCP UI?
+# become: true is set in ansible/upgrade-geo.yml
+#######################################################################################################################
+
+################################################################################
+# PRIMARY SITE TASKS
+################################################################################
+
+# Run on (sidekiq) deploy node
+- name: Stop deploy node (sidekiq) on both primary AND secondary Geo sites
+  command: gitlab-ctl stop sidekiq
+  # tags:
+  when: "'sidekiq' in group_names and 'deploy_node' in group_names"
+  # TODO: check if geo-log cursor running on deploy node; if so stop it too
+
+# Run on all primary site nodes including deploy node
+- name: Create empty file at /etc/gitlab/skip-auto-reconfigure
+  file:
+    path: /etc/gitlab/skip-auto-reconfigure
+    state: touch
+    mode: u=rw,g=r,o=r
+  # tags:
+  when: "'geo_role_primary' in group_names"
+
+# Run on all primary site nodes EXCEPT deploy node
+- name: Set gitlab_rails['auto_migrate'] to false in /etc/gitlab/gitlab.rb
+  lineinfile:
+    path: /etc/gitlab/gitlab.rb
+    regexp: 'gitlab_rails\[\'auto_migrate\'\]'
+    line: "gitlab_rails['auto_migrate'] = false"
+  # tags:
+  when: "'deploy_node' not in group_names and 'geo_role_primary' in group_names"
+
+################################################################################
+# TODO: upgrade praefect nodes
+################################################################################
+
+# Run on primary site Gitaly nodes
+- name: Update GitLab package on Gitaly nodes
+  command: apt-get update
+  # tags: 
+  when: "'gitaly' in group_names and 'geo_role_primary' in group_names"
+
+# Run on primary site Gitaly nodes
+- name: Install GitLab package on Gitaly nodes
+  command: apt-get install {{ gitlab_repo_package }}
+  retries: 2
+  delay: 10
+  until: result is success 
+  # tags:
+  when: "'gitaly' in group_names and 'geo_role_primary' in group_names"
+
+# Run on primary site Gitaly nodes
+- name: Reconfigure to ensure latest code running on Gitaly nodes
+  command: gitlab-ctl reconfigure
+  # tags:
+  when: "'gitaly' in group_names and 'geo_role_primary' in group_names"
+
+# Run on primary site deploy node
+- name: Update GitLab package on deploy node
+  command: apt-get update
+  # tags:
+  when: "'deploy_node' in group_names and 'geo_role_primary' in group_names"
+
+# Run on primary site deploy node
+- name: Install GitLab package on deploy node
+  command: apt-get install {{ gitlab_repo_package }}
+  # tags:
+  # check for complete
+  #retry?
+  when: "'deploy_node' in group_names and 'geo_role_primary' in group_names"
+
+# Run on primary site deploy node
+- name: Run regular database migrations and reconfigure deploy node
+  command: SKIP_POST_DEPLOYMENT_MIGRATIONS=true gitlab-ctl reconfigure
+  # tags:
+  when: "'deploy_node' in group_names and 'geo_role_primary' in group_names"
+
+# Run on primary site (sidekiq) deploy node
+- name: Restart sidekiq on deploy node
+  command: gitlab-ctl start sidekiq
+  register: result
+  retries: 2
+  until: result is success
+  # tags:
+  when: "'deploy_node' in group_names and geo_role_primary' in group_names"
+    #TODO restart geo log cursor
+
+#####################################################################################
+# NOTE: For zero-downtime, will look at order of updating sidekiq, rails, etc. nodes
+#####################################################################################
+
+# Run on primary site nodes EXCLUDING Gitaly and deploy nodes
+- name: Update GitLab package on the rest of the primary site nodes
+  command: apt-get update
+  # tags:
+  when: "'geo_role_primary' in group_names and 'gitaly' not in group_names and 'deploy_node' not in group_names"
+
+# Run on primary site nodes EXCLUDING Gitaly and deploy nodes
+- name: Install GitLab package on the rest of the primary site nodes
+  command: apt-get install {{ gitlab_repo_package }}
+  # check for complete
+  #retry?
+  # tags:
+  when: "'geo_role_primary' in group_names and 'gitaly' not in group_names and 'deploy_node' not in group_names"
+
+# Run on primary site nodes EXCLUDING Gitaly and deploy nodes
+- name: Reconfigure the rest of the primary site nodes
+  command: gitlab-ctl reconfigure
+  # tags:
+  when: "'geo_role_primary' in group_names and 'gitaly' not in group_names and 'deploy_node' not in group_names"
+
+# Only run on nodes that run Puma
+- name: Hot reload Puma
+  command: gitlab-ctl hup puma
+  # tags:
+  when: "'gitlab_rails_main' in group_names and 'geo_role_primary' in group_names"
+
+# Only run on nodes that run sidekiq
+- name: Hot reload Sidekiq
+  command: gitlab-ctl restart sidekiq
+  # tags:
+  when: "'sidekiq' in group_names and 'geo_role_primary' in group_names"
+
+################################################################################
+# SECONDARY SITE TASKS
+################################################################################
+
+# Run on all secondary site nodes including deploy node
+- name: Create empty file at /etc/gitlab/skip-auto-reconfigure
+  file:
+    path: /etc/gitlab/skip-auto-reconfigure
+    state: touch
+    mode: u=rw,g=r,o=r
+  # tags:
+  when: "'geo_role_secondary' in group_names"
+
+# Run on all secondary site nodes EXCEPT deploy node
+- name: Set gitlab_rails['auto_migrate'] to falsein /etc/gitlab/gitlab.rb
+  lineinfile:
+    path: /etc/gitlab/gitlab.rb
+    regexp: 'gitlab_rails\[\'auto_migrate\'\]'
+    line: "gitlab_rails['auto_migrate'] = false"
+  when: "'deploy_node' not in group_names and 'geo_role_secondary' in group_names"
+
+################################################################################
+# TODO: upgrade praefect and praefect postgres nodes
+################################################################################
+
+# Run on secondary site Gitaly nodes
+- name: Update GitLab package on Gitaly nodes
+  command: apt-get update
+  # tags:
+  when: "'gitaly' in group_names and 'geo_role_secondary' in group_names"
+
+# Run on secondary site Gitaly nodes
+- name: Install GitLab package on Gitaly nodes
+  command: apt-get install {{ gitlab_repo_package }}
+  # check for complete
+  #retry?
+  # tags:
+  when: "'gitaly' in group_names and 'geo_role_secondary' in group_names"
+
+# Run on secondary site Gitaly nodes
+- name: Reconfigure to ensure latest code running on Gitaly nodes
+  command: gitlab-ctl reconfigure
+  # tags:
+  when: "'gitaly' in group_names and 'geo_role_secondary' in group_names"
+
+# Run on secondary site deploy node
+- name: Update GitLab package on deploy node
+  command: apt-get update
+  # tags:
+  when: "'deploy_node' in group_names and 'geo_role_secondary' in group_names"
+
+# Run on secondary site deploy node
+- name: Install GitLab package on deploy node
+  command: apt-get install {{ gitlab_repo_package }}
+  # check for complete
+  #retry?
+  # tags:
+  when: "'deploy_node' in group_names and 'geo_role_secondary' in group_names"
+
+# Run on secondary site deploy node
+- name: Run regular database migrations and reconfigure deploy node
+  command: SKIP_POST_DEPLOYMENT_MIGRATIONS=true gitlab-ctl reconfigure
+  # tags:
+  when: "'deploy_node' in group_names and 'geo_role_secondary' in group_names"
+
+# Run on secondary site (sidekiq) deploy node
+- name: Restart sidekiq on deploy node
+  command: gitlab-ctl start sidekiq
+  register: result
+  retries: 2
+  until: result is success
+    # tags:
+  when: "'deploy_node' in group_names and geo_role_secondary' in group_names"
+  #TODO restart geo log cursor
+
+# Run on secondary site nodes EXCLUDING Gitaly and deploy nodes
+- name: Update GitLab package on the rest of the secondary site nodes
+  command: apt-get update
+  # tags:
+  when: "'geo_role_secondary' in group_names and 'gitaly' not in group_names and 'deploy_node' not in group_names"
+
+# Run on primary site nodes EXCLUDING Gitaly and deploy nodes
+- name: Install GitLab package on the rest of the secondary site nodes
+  command: apt-get install {{ gitlab_repo_package }}
+  # check for complete
+  #retry?
+  # tags:
+  when: "'geo_role_secondary' in group_names and 'gitaly' not in group_names and 'deploy_node' not in group_names"
+
+# Run on primary site nodes EXCLUDING Gitaly and deploy nodes
+- name: Reconfigure the rest of the secondary site nodes
+  command: gitlab-ctl reconfigure
+  # tags:
+  when: "'geo_role_secondary' in group_names and 'gitaly' not in group_names and 'deploy_node' not in group_names"
+
+# Only run on nodes that run Puma
+- name: Hot reload Puma
+  command: gitlab-ctl hup puma
+  # tags:
+  when: "'gitlab_rails_main' in group_names and 'geo_role_secondary' in group_names"
+
+# Only run on nodes that run sidekiq
+- name: Hot reload Sidekiq
+  command: gitlab-ctl restart sidekiq
+  register: result
+  retries: 2
+  until: result is success
+  # tags:
+  when: "'sidekiq' in group_names and 'geo_role_secondary' in group_names"
+  #TODO restart geo log cursor
+
+################################################################################
+# POST-DEPLOYMENT MIGRATIONS AND CHECKS
+################################################################################
+
+# Run on primary site deploy node
+- name: Run post-deployment migrations on the deploy node
+  command: gitlab-rake db:migrate
+  # tags:
+  when: "'deploy_node' in group_names and 'geo_role_primary' in group_names"
+
+# Run on primary site deploy node
+- name: Verify Geo configuration and dependencies
+  command: gitlab-rake gitlab:geo:check
+  # tags:
+  when: "'deploy_node' in group_names and 'geo_role_primary' in group_names"
+  #TODO confirm OK, check if exit code indicates fail
+
+# Run on secondary site deploy node
+- name: Run post-deployment migrations on the deploy node
+  command: gitlab-rake db:migrate
+  # tags: 
+  when: "'deploy_node' in group_names and 'geo_role_secondary' in group_names"
+
+########################################################################################
+# TODO: WAIT FOR PRIMARY MIGRATIONS TO FINISH AND REPLICATE (DATA REPLICATION LAG IN ADMIN UI)
+########################################################################################
+
+# Run on secondary site deploy nodes
+- name: Verify Geo configuration and dependencies
+  command: gitlab-rake gitlab:geo:check
+  # tags:
+  when: "'deploy_node' in group_names and 'geo_role_secondary' in group_names"
+  #TODO confirm OK, check if exit code indicates fail
+
+# Run on secondary site deploy nodes
+- name: Verify Geo status
+  command: gitlab-rake geo:status
+  # tags:
+  when: "'deploy_node' in group_names and 'geo_role_secondary' in group_names"
+  #TODO confirm OK, check if exit code indicates fail

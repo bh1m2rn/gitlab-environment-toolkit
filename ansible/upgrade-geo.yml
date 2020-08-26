@@ -1,0 +1,12 @@
+---
+- hosts:
+    - gitlab_rails*  # maps to gitlab_node_level: gitlab-rails-* label
+    - postgres*
+    - gitaly*
+    - redis*
+    - sidekiq*
+    # - praefect*
+
+  roles:
+    - upgrade-geo
+  become: true
