@@ -1,5 +1,5 @@
 resource "google_storage_bucket" "gitlab_object_storage" {
-  name = "${var.prefix}${var.geo_role}-object-storage"
+  name = "${var.prefix}-object-storage"
   force_destroy = true
 }
 
