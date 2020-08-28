@@ -15,7 +15,7 @@ variable "zone" {
 }
 
 variable "prefix" {
-  default = "geo-secondary"
+  default = "geo-"
 }
 
 variable "machine_image" {

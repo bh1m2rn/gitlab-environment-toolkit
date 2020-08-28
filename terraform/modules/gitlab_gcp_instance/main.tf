@@ -1,11 +1,11 @@
 resource "google_compute_address" "gitlab" {
   count = length(var.external_ips) == 0 ? var.node_count : 0
-  name = "${var.prefix}-${var.node_type}-ip-${count.index + 1}"
+  name = "${var.prefix}${var.geo_role}-${var.node_type}-ip-${count.index + 1}"
 }
 
 resource "google_compute_instance" "gitlab" {
   count = var.node_count
-  name = "${var.prefix}-${var.node_type}-${count.index + 1}"
+  name = "${var.prefix}${var.geo_role}-${var.node_type}-${count.index + 1}"
   machine_type = var.machine_type
   tags = var.tags
   allow_stopping_for_update = true

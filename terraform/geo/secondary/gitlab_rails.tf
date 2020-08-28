@@ -14,7 +14,7 @@ module "gitlab_rails" {
 }
 
 resource "google_compute_instance_group" "gitlab_rails" {
-  name = "${var.prefix}-gitlab-rails-group"
+  name = "${var.prefix}${var.geo_role}-gitlab-rails-group"
 
   instances = module.gitlab_rails.self_links
 
