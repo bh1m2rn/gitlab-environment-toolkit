@@ -39,3 +39,7 @@ variable "scopes" {
   type = list(string)
   default = []
 }
+
+variable "geo_role" {
+  default = ""
+}
