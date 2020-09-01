@@ -43,3 +43,7 @@ variable "scopes" {
 variable "geo_role" {
   default = ""
 }
+
+variable "geo_group" {
+  default = ""
+}

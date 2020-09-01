@@ -1,15 +1,18 @@
-module "sidekiq" {
+module "redis" {
   source = "../../modules/gitlab_gcp_instance"
 
   prefix = "${var.prefix}"
-  node_type = "sidekiq"
-  node_count = 2
+  node_type = "redis"
+  node_count = 3
+
   geo_role = "${var.geo_role}"
+  geo_group = "${var.geo_group}"
 
   machine_type = "n1-standard-2"
   machine_image = "${var.machine_image}"
+  label_secondaries = true
 }
 
-output "sidekiq" {
-  value = module.sidekiq
+output "redis" {
+  value = module.redis
 }

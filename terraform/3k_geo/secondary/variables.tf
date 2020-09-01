@@ -15,7 +15,7 @@ variable "zone" {
 }
 
 variable "prefix" {
-  default = "geo-secondary"
+  default = "geo-3k-secondary"
 }
 
 variable "machine_image" {
@@ -28,4 +28,8 @@ variable "external_ip" {
 
 variable "geo_role" {
   default = "secondary"
+}
+
+variable "geo_group" {
+  default = "geo-3k"
 }

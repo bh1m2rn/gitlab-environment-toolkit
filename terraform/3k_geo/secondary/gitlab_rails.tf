@@ -3,10 +3,12 @@ module "gitlab_rails" {
 
   prefix = "${var.prefix}"
   node_type = "gitlab-rails"
-  node_count = 2
+  node_count = 3
+
   geo_role = "${var.geo_role}"
-  
-  machine_type = "n1-standard-2"
+  geo_group = "${var.geo_group}"
+
+  machine_type = "n1-highcpu-8"
   machine_image = "${var.machine_image}"
   label_secondaries = true
 

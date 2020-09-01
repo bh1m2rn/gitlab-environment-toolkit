@@ -10,7 +10,7 @@ provider "google" {
 terraform {
   required_version = "= 0.12.18"
   backend "gcs" {
-    bucket  = "geo-primary-terraform-state"
+    bucket  = "geo-3k-primary-terraform-state"
     credentials = "../../../keys/distribution/gitlab-qa-distribution-sa.json"
   }
 }
