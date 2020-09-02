@@ -2,7 +2,7 @@ plugin: gcp_compute
 projects:
   - gitlab-qa-distribution-35632a
 filters:
-  - labels.gitlab_node_prefix = geo_secondary
+  - labels.gitlab_node_prefix = geo-3k-primary
 keyed_groups:
   - key: labels.gitlab_node_type
     separator: ''
