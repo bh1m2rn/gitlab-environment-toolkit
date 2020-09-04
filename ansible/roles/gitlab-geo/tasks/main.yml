@@ -1,0 +1,2 @@
+- name: Configure Geo
+  import_tasks: configure-geo.yml

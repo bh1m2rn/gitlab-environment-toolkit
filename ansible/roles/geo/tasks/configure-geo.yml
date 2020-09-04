@@ -1,5 +1,0 @@
-- name: Set up the database replication on primary # https://docs.gitlab.com/ee/administration/geo/replication/database.html
-
-- name: Configure fast lookup of authorized SSH keys in the database on primary and secondary # https://docs.gitlab.com/ee/administration/operations/fast_ssh_key_lookup.html
-
-- name: Configure GitLab to set the primary and secondary nodes # https://docs.gitlab.com/ee/administration/geo/replication/configuration.html
