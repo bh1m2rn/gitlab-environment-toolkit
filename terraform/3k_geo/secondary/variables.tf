@@ -27,7 +27,7 @@ variable "external_ip" {
 }
 
 variable "geo_role" {
-  default = "secondary"
+  default = "geo-secondary"
 }
 
 variable "geo_group" {
