@@ -1,0 +1,1 @@
+postgres_shared_buffers: '{{ [((ansible_memory_mb.real.total | int) * 0.25) | round | int, 14336] | min }}MB'
