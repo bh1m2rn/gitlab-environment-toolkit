@@ -1,0 +1,15 @@
+- name: Update gitlab.rb settings
+  lineinfile:
+    path: /etc/gitlab/gitlab.rb
+    regexp: "roles \\['application_role']"
+    line: roles ['geo_primary_role', 'application_role']    
+
+- name: Add new config
+  blockinfile:
+    path: /etc/gitlab/gitlab.rb
+    block: |
+      gitlab_rails['geo_node_name'] = '{{ inventory_hostname }}'
+    marker: "# primary-frontend ANSIBLE MANAGED BLOCK"
+      
+- name: Run gitlab-ctl reconfigure
+  shell: gitlab-ctl reconfigure

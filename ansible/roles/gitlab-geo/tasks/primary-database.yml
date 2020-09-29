@@ -1,0 +1,8 @@
+- name: Update roles
+  lineinfile:
+    path: /etc/gitlab/gitlab.rb
+    regexp: "roles \\['postgres_role']"
+    line: roles ['geo_primary_role', 'postgres_role']
+
+- name: Run gitlab-ctl reconfigure
+  shell: gitlab-ctl reconfigure

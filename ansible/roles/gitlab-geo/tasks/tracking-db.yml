@@ -1,0 +1,19 @@
+- name: Update geo_postgresql
+  lineinfile:
+    path: /etc/gitlab/gitlab.rb
+    regexp: "geo_postgresql\\['enable'] = false"
+    line: geo_postgresql['enable'] = true
+
+- name: Add new config
+  blockinfile:
+    path: /etc/gitlab/gitlab.rb
+    block: |
+      geo_postgresql['listen_address'] = '0.0.0.0'
+      geo_postgresql['sql_user_password'] = '{{ (postgres_password + 'gitlab_geo') | md5 }}'
+      geo_postgresql['md5_auth_cidr_addresses'] = ['0.0.0.0/32']
+
+      gitlab_rails['db_host'] = '0.0.0.0'
+    marker: "# tracking-db ANSIBLE MANAGED BLOCK"
+
+- name: Run gitlab-ctl reconfigure
+  shell: gitlab-ctl reconfigure
