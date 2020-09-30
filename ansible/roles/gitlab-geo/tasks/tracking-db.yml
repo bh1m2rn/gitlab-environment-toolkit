@@ -13,7 +13,7 @@
       geo_postgresql['md5_auth_cidr_addresses'] = ['0.0.0.0/32']
 
       gitlab_rails['db_host'] = '0.0.0.0'
-    marker: "# tracking-db ANSIBLE MANAGED BLOCK"
+    marker: "# {{ mark }} tracking-db ANSIBLE MANAGED BLOCK"
 
 - name: Run gitlab-ctl reconfigure
   shell: gitlab-ctl reconfigure

@@ -10,11 +10,11 @@
     block: |
       gitlab_rails['geo_node_name'] = '{{ inventory_hostname }}'
 
-      geo_secondary['db_host'] = '{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }}'
+      geo_secondary['db_host'] = '10.164.0.127'
       geo_secondary['db_password'] = '{{ postgres_password }}'
 
       geo_logcursor['enable'] = false
-    marker: "# secondary-app-servers ANSIBLE MANAGED BLOCK"
+    marker: "# {{ mark }} secondary-app-servers ANSIBLE MANAGED BLOCK"
 
 - name: Run gitlab-ctl reconfigure
   shell: gitlab-ctl reconfigure
