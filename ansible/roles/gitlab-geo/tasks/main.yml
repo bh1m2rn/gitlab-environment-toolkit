@@ -15,6 +15,12 @@
     - "'postgres_primary' in group_names"
     - "'geo_primary' in group_names" 
 
+- name: Configure Geo database replication
+  import_tasks: geo-database-replication.yml
+  tags: geo-database-replication
+  delegate_to: "{{ postgres_leader }}"
+  when: postgres_leader is defined
+
 - name: Configure the primary database
   import_tasks: primary-database.yml
   tags: primary-database

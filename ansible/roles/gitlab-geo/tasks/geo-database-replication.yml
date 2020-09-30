@@ -1,0 +1,2 @@
+- name: Set replication password
+  command: gitlab-psql -c "ALTER USER gitlab_replicator WITH REPLICATION ENCRYPTED PASSWORD '{{ postgres_password }}';"
