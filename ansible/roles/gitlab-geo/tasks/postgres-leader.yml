@@ -1,0 +1,8 @@
+- name: Get PostgreSQL Leader
+  shell: |
+    gitlab-ctl patroni members | grep Leader | cut -d '|' -f 3 | cut -d '.' -f 1 | awk '{$1=$1};1'
+  register: postgres_leader_command
+
+- name: Store postgres leader
+  set_fact: "postgres_leader={{ postgres_leader_command.stdout }}"
+  delegate_to: " {{ postgres_leader_command.stdout }}"

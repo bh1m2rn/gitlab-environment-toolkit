@@ -1,22 +1,29 @@
-- name: Copy Secrets from primary site to all secondaries
-  import_tasks: secrets.yml
-  tags: copy-secrets
-
 - name: Configure the primary frontend servers
   import_tasks: primary-frontend.yml
-  tags: set-primary-geo
+  tags: primary-frontend
   when:
     - "'gitlab_rails' in group_names or 'sidekiq' in group_names"
     - "'geo_primary' in group_names"
 
+- name: Get PostgreSQL leader
+  import_tasks: postgres-leader.yml
+  tags: 
+    - postgres-leader
+    - geo-database-replication
+    - primary-database
+  when:
+    - "'postgres_primary' in group_names"
+    - "'geo_primary' in group_names" 
+
 - name: Configure the primary database
   import_tasks: primary-database.yml
-  tags: set-primary-db
-  when: "'postgres_primary' in group_names"
+  tags: primary-database
+  delegate_to: "{{ postgres_leader }}"
+  when: postgres_leader is defined
   
 - name: Configure the main read-only replica PostgreSQL database on the secondary node
   import_tasks: read-only-replica.yml
-  tags: replica-db
+  tags: read-only-replica
   when: 
     - "'postgres_primary' in group_names"
     - "'geo_secondary' in group_names"
