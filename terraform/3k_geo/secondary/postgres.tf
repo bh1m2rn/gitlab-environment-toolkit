@@ -3,7 +3,7 @@ module "postgres" {
 
   prefix = "${var.prefix}"
   node_type = "postgres"
-  node_count = 3
+  node_count = 1
 
   geo_role = "${var.geo_role}"
   geo_group = "${var.geo_group}"
