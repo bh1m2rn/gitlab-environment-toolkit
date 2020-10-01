@@ -9,7 +9,7 @@
     path: /etc/gitlab/gitlab.rb
     block: |
       gitlab_rails['geo_node_name'] = '{{ inventory_hostname }}'
-    marker: "# {{ mark }} primary-frontend ANSIBLE MANAGED BLOCK"
+    marker: "# {mark} primary-frontend ANSIBLE MANAGED BLOCK"
       
 - name: Run gitlab-ctl reconfigure
   shell: gitlab-ctl reconfigure

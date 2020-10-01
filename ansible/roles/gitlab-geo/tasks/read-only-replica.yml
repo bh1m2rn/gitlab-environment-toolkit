@@ -29,7 +29,7 @@
       sidekiq_cluster['enable'] = false
       puma['enable'] = false
       unicorn['enable'] = false
-    marker: "# {{ mark }} read-only-replica ANSIBLE MANAGED BLOCK"
+    marker: "# {mark} read-only-replica ANSIBLE MANAGED BLOCK"
 
 - name: Run gitlab-ctl reconfigure
   shell: gitlab-ctl reconfigure
