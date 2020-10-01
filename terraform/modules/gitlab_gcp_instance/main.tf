@@ -28,6 +28,7 @@ resource "google_compute_instance" "gitlab" {
     gitlab_node_level = var.label_secondaries == true ? (count.index == 0 ? "${var.node_type}-primary" : "${var.node_type}-secondary") : ""
     gitlab_geo_role = var.geo_role
     gitlab_geo_group = var.geo_group
+    gitlab_geo_full_role = var.geo_role == null ? null : (count.index == 0 ? "${var.geo_role}-${var.node_type}-primary" : "${var.geo_role}-${var.node_type}-secondary")
   }
 
   network_interface {
