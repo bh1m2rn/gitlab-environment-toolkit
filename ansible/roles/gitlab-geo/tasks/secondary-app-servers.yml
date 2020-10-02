@@ -10,7 +10,7 @@
     block: |
       gitlab_rails['geo_node_name'] = '{{ inventory_hostname }}'
 
-      geo_secondary['db_host'] = '10.164.0.127'
+      geo_secondary['db_host'] = '{{ geo_secondary_db_int_ip }}'
       geo_secondary['db_password'] = '{{ postgres_password }}'
 
       geo_logcursor['enable'] = false
