@@ -5,4 +5,4 @@
 
 - name: Store postgres leader
   set_fact: "postgres_leader={{ postgres_leader_command.stdout }}"
-  delegate_to: " {{ postgres_leader_command.stdout }}"
+  delegate_to: "{{ postgres_leader_command.stdout }}"
