@@ -4,5 +4,18 @@
     regexp: "roles \\['postgres_role']"
     line: roles ['geo_primary_role', 'postgres_role']
 
+- name: Add new settings
+  blockinfile:
+    path: /etc/gitlab/gitlab.rb
+    block: |
+      "postgresql['md5_auth_cidr_addresses'] = ['{{ ansible_default_ipv4.address }}/32', '{{ geo_secondary_db_int_ip }}/32']"
+    marker: "# {mark} primary-database ANSIBLE MANAGED BLOCK"
+
 - name: Run gitlab-ctl reconfigure
   shell: gitlab-ctl reconfigure
+
+- name: Restart Postgres
+  command: gitlab-ctl restart postgres
+
+- name: Fetch psql certificate
+  fetch: src=~gitlab-psql/data/server.crt dest=tmp/ flat=yes
