@@ -12,6 +12,8 @@ keyed_groups:
     separator: ''
   - key: labels.gitlab_geo_role
     separator: ''
+  - key: labels.gitlab_geo_full_role
+    separator: ''
 scopes:
   - https://www.googleapis.com/auth/compute
 service_account_file: ../keys/distribution/gitlab-qa-distribution-sa.json
