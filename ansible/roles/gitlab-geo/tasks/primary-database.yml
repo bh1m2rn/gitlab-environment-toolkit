@@ -8,7 +8,7 @@
   blockinfile:
     path: /etc/gitlab/gitlab.rb
     block: |
-      "postgresql['md5_auth_cidr_addresses'] = ['{{ ansible_default_ipv4.address }}/32', '{{ geo_secondary_db_int_ip }}/32']"
+      postgresql['md5_auth_cidr_addresses'] = ['{{ ansible_default_ipv4.address }}/32', '{{ geo_secondary_postgres_int_ip }}/32']
     marker: "# {mark} primary-database ANSIBLE MANAGED BLOCK"
 
 - name: Run gitlab-ctl reconfigure

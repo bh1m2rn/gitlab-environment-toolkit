@@ -13,19 +13,24 @@
     - primary-database
   when:
     - "'postgres_primary' in group_names"
-    - "'geo_primary' in group_names" 
+    - "'geo_primary' in group_names"
 
 - name: Configure Geo database replication
   import_tasks: geo-database-replication.yml
   tags: geo-database-replication
-  delegate_to: "{{ postgres_leader }}"
-  when: postgres_leader is defined
+  when: postgres_leader_hostname == inventory_hostname
 
 - name: Configure the primary database
   import_tasks: primary-database.yml
   tags: primary-database
-  delegate_to: "{{ postgres_leader }}"
-  when: postgres_leader is defined
+  when: postgres_leader_hostname == inventory_hostname
+
+- name: Configure the secondary database
+  import_tasks: secondary-database.yml
+  tags: secondary-database
+  when: 
+    - "'postgres_primary' in group_names"
+    - "'geo_secondary' in group_names"
   
 - name: Configure the main read-only replica PostgreSQL database on the secondary node
   import_tasks: read-only-replica.yml
@@ -45,5 +50,6 @@
   import_tasks: secondary-app-servers.yml
   tags: secondary-app-servers
   when:
-    - "'gitlab_rails' in group_names"
+    - "'sidekiq' in group_names"
     - "'geo_secondary' in group_names"
+    

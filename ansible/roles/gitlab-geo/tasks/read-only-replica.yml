@@ -8,7 +8,7 @@
   blockinfile:
     path: /etc/gitlab/gitlab.rb
     block: |
-      postgresql['md5_auth_cidr_addresses'] = ['0.0.0.0/32', '0.0.0.0/32']
+      postgresql['md5_auth_cidr_addresses'] = ['{{ geo_secondary_postgres_int_ip }}/32', '{{ geo_secondary_postgres_int_ip }}/32']
       gitlab_rails['db_password'] = '{{ postgres_password }}'
 
       geo_postgresql['enable'] = false

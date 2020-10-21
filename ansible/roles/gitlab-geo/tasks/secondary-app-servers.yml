@@ -1,17 +1,13 @@
-- name: Update gitlab.rb settings
-  lineinfile:
-    path: /etc/gitlab/gitlab.rb
-    regexp: "roles \\['application_role']"
-    line: roles ['geo_secondary_role', 'application_role']    
-
 - name: Add new config
   blockinfile:
     path: /etc/gitlab/gitlab.rb
     block: |
+      roles ['geo_secondary_role']
       gitlab_rails['geo_node_name'] = '{{ inventory_hostname }}'
 
-      geo_secondary['db_host'] = '{{ geo_secondary_db_int_ip }}'
+      geo_secondary['db_host'] = '{{ geo_secondary_postgres_int_ip }}'
       geo_secondary['db_password'] = '{{ postgres_password }}'
+      geo_postgresql['enable'] = false
 
       geo_logcursor['enable'] = false
     marker: "# {mark} secondary-app-servers ANSIBLE MANAGED BLOCK"
