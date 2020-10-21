@@ -1,1 +1,2 @@
-geo_secondary_db_int_ip: "{{ (groups['geo_secondary_postgres_primary'] | map('extract', hostvars, ['networkInterfaces']) | map('first') | map(attribute='networkIP') | join('')) if 'postgres_primary' in groups else '' }}"
+geo_secondary_postgres_int_ip: "{{ (groups['geo_secondary_postgres_primary'] | map('extract', hostvars, ['networkInterfaces']) | map('first') | map(attribute='networkIP') | join('')) if 'postgres_primary' in groups else '' }}"
+geo_primary_postgres_int_ip: "{{ (groups['geo_primary_postgres_primary'] | map('extract', hostvars, ['networkInterfaces']) | map('first') | map(attribute='networkIP') | join('')) if 'postgres_primary' in groups else '' }}"
