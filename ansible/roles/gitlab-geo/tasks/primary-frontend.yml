@@ -15,7 +15,7 @@
   blockinfile:
     path: /etc/gitlab/gitlab.rb
     block: |
-      gitlab_rails['geo_node_name'] = '{{ inventory_hostname | regex_replace("-", "_") }}'
+      gitlab_rails['geo_node_name'] = 'Primary Site'
     marker: "# {mark} primary-frontend ANSIBLE MANAGED BLOCK"
       
 - name: Run gitlab-ctl reconfigure
