@@ -3,4 +3,6 @@
     command: gitlab-ctl set-replication-password
     responses:
       (.*)Enter password: "{{ postgres_password }}"
-    timeout: null
+      (.*)Confirm password: "{{ postgres_password }}"
+    creates: skip-set-replication-password
+    timeout: 60
