@@ -10,10 +10,14 @@
     block: |
       geo_postgresql['listen_address'] = '0.0.0.0'
       geo_postgresql['sql_user_password'] = '{{ (postgres_password + 'gitlab_geo') | md5 }}'
-      geo_postgresql['md5_auth_cidr_addresses'] = ['0.0.0.0/32']
+      geo_postgresql['md5_auth_cidr_addresses'] = {{ tracking_db_md5_auth }}
 
       gitlab_rails['db_host'] = '0.0.0.0'
     marker: "# {mark} tracking-db ANSIBLE MANAGED BLOCK"
 
 - name: Run gitlab-ctl reconfigure
   shell: gitlab-ctl reconfigure
+
+- name: Run gitlab-ctl restart for updates to take effect
+  shell: gitlab-ctl restart
+  
