@@ -13,7 +13,7 @@
       geo_secondary['db_password'] = '{{ postgres_password }}'
       geo_postgresql['enable'] = false
 
-      geo_logcursor['enable'] = false
+      geo_logcursor['enable'] = true
     marker: "# {mark} secondary-app-servers ANSIBLE MANAGED BLOCK"
 
 - name: Run gitlab-ctl reconfigure
@@ -21,3 +21,4 @@
 
 - name: Run gitlab-ctl restart
   shell: gitlab-ctl restart
+  
