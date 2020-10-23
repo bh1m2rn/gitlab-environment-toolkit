@@ -32,6 +32,10 @@
     - primary
   when: postgres_leader_hostname == inventory_hostname
 
+- name: copy secrets
+  import_tasks: copy-secrets.yml
+  tags: copy-secrets
+
 - name: Configure the secondary database
   import_tasks: secondary-database.yml
   tags: 
@@ -77,7 +81,7 @@
     - "'gitlab_rails_primary' in group_names"
     - "'geo_primary' in group_names"
 
-- name: Add secondary Geo site to tracking database
+- name: Configure backend application servers
   import_tasks: secondary-backend-servers.yml
   tags: 
     - secondary-backend-servers
@@ -85,4 +89,3 @@
   when:
     - "'sidekiq' in group_names"
     - "'geo_secondary' in group_names"
-    
