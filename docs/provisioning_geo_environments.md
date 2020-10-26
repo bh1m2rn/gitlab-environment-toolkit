@@ -1,7 +1,7 @@
 # Provisioning an environment with Geo
 
 When provisioning environments for Geo there are a few changes that need to be made through out the process to allow the Performance Environment Builder to properly manage the environment. However for the most part the steps are the same as when creating a single environment and as such the [GitLab Performance Environment Builder - Preparing the toolkit](https://gitlab.com/gitlab-org/quality/performance-environment-builder/-/blob/master/docs/prep_toolkit.md) steps will need to be followed before creating a Geo deployment. 
-> The only difference required for Geo is that the GitLab license is shared between the 2 sites and as such a License is only required for the primary site. Also the a single service account is required for both environments.
+> The only difference required for Geo is that the GitLab license is shared between the 2 sites and as such a License is only required for the primary site. Also a single service account is required for both environments.
 
 
 
@@ -72,7 +72,7 @@ The primary and secondary folders are treated as normal and as such the steps fo
 To remove the license from the secondary site you can just remove the `gitlab_license_file` setting from the secondary `vars.yml` file.
 
 Once the inventories for primary and secondary are complete you can use Ansible to build GitLab. Once complete you will have to independent instances of GitLab. The primary site should have a license installed and the secondary will not.
-As these sites are still separate from each other they can be build at the same time and are not reliant on each other.
+As these sites are still separate from each other they can be built at the same time and are not reliant on each other.
 
 The all inventory is very similar to the primary and secondary, we will just allow Ansible to find both sites instead of one. To create the all inventory files it is easiest to copy them from primary and modify some values. 
 
