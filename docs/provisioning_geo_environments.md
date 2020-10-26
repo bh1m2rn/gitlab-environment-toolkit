@@ -72,7 +72,7 @@ The primary and secondary folders are treated as normal and as such the steps fo
 To remove the license from the secondary site you can just remove the `gitlab_license_file` setting from the secondary `vars.yml` file.
 
 Once the inventories for primary and secondary are complete you can use Ansible to build GitLab. Once complete you will have to independent instances of GitLab. The primary site should have a license installed and the secondary will not.
-As these sites are still separate from each other they can be build at the same time and are not reliant on each other.
+As these sites are still separate from each other they can be built at the same time and are not reliant on each other.
 
 The all inventory is very similar to the primary and secondary, we will just allow Ansible to find both sites instead of one. To create the all inventory files it is easiest to copy them from primary and modify some values. 
 
