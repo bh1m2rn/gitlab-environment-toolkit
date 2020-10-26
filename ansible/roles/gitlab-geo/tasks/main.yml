@@ -13,7 +13,7 @@
     - postgres-leader
     - geo-database-replication
     - primary-database
-    - primary
+    - secondary-database
   when:
     - "'postgres_primary' in group_names"
     - "'geo_primary' in group_names"
