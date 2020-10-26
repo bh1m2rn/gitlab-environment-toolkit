@@ -1,7 +1,7 @@
 # Provisioning an environment with Geo
 
 When provisioning environments for Geo there are a few changes that need to be made through out the process to allow the Performance Environment Builder to properly manage the environment. However for the most part the steps are the same as when creating a single environment and as such the [GitLab Performance Environment Builder - Preparing the toolkit](https://gitlab.com/gitlab-org/quality/performance-environment-builder/-/blob/master/docs/prep_toolkit.md) steps will need to be followed before creating a Geo deployment. 
-> The only difference required for Geo is that the GitLab license is shared between the 2 sites and as such a License is only required for the primary site. Also the a single service account is required for both environments.
+> The only difference required for Geo is that the GitLab license is shared between the 2 sites and as such a License is only required for the primary site. Also a single service account is required for both environments.
 
 
 
