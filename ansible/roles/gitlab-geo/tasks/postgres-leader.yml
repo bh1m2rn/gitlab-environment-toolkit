@@ -1,20 +1,20 @@
 - name: Get Postgres leader info when using patroni
   block:
-    - name: Get PostgreSQL leader hostname
+    - name: Postgres Leader - Get PostgreSQL leader hostname when using patroni
       shell: |
         gitlab-ctl patroni members | grep Leader | cut -d '|' -f 3 | cut -d '.' -f 1 | awk '{$1=$1};1'
       register: postgres_leader_hostname
 
-    - name: Get PostgreSQ leader ip
+    - name: Postgres Leader - Get PostgreSQ leader ip when using patroni
       shell: |
         gitlab-ctl patroni members | grep Leader | cut -d '|' -f 4 | awk '{$1=$1};1'
       register: postgres_leader_ip
 
-    - name: Store postgres leader hostname when using patroni
+    - name: Postgres Leader - Store postgres leader hostname when using patroni
       set_fact: "postgres_leader_hostname={{ postgres_leader_hostname.stdout }}"
       delegate_to: "{{ postgres_leader_hostname.stdout }}"
 
-    - name: Store postgres leader ip when using patroni
+    - name: Postgres Leader - Store postgres leader ip when using patroni
       set_fact: "postgres_leader_ip={{ postgres_leader_ip.stdout }}"
       delegate_to: "{{ geo_secondary_postgres_int_ip }}"
   when:
@@ -22,10 +22,10 @@
 
 - name: Get Postgres leader info when using repmgr
   block:
-    - name: Store Postgres leader hostname when using repmgr
+    - name: Postgres Leader - Store Postgres leader hostname when using repmgr
       set_fact: postgres_leader_hostname={{ inventory_hostname }}
 
-    - name: Store Postgres leader ip when using repmgr
+    - name: Postgres Leader - Store Postgres leader ip when using repmgr
       set_fact: postgres_leader_ip={{ geo_primary_postgres_int_ip }}
   when:
     - install_patroni is not defined or install_patroni == false

@@ -1,4 +1,4 @@
-- name: Set replication password using gitlab-ctl
+- name: Geo Database Replication - Set replication password using gitlab-ctl
   expect: 
     command: gitlab-ctl set-replication-password
     responses:
@@ -8,7 +8,7 @@
     timeout: 60
   when: install_patroni is not defined or install_patroni == false
 
-- name: Set replication password manually
+- name: Geo Database Replication - Set replication password manually
   command: |
     gitlab-psql -c "ALTER USER gitlab_replicator WITH REPLICATION ENCRYPTED PASSWORD '{{ postgres_password }}';"
   when: 
