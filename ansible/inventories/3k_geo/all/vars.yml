@@ -6,5 +6,5 @@ all:
     ansible_ssh_private_key_file: "../keys/distribution/gitlab-qa-distribution-ssh"
     gitlab_license_file: "../keys/distribution/Gitlab.gitlab-license"
     external_url: "http://34.75.201.220"
-    install_patroni: true
+    install_patroni: false
     secondary_external_url: "http://34.91.88.231"
