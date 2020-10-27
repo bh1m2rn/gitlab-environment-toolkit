@@ -18,6 +18,7 @@
     marker: "# {mark} secondary-frontend-app-servers ANSIBLE MANAGED BLOCK"
 
 - name: Secondary Frontend App Servers - Run gitlab-ctl reconfigure
+  throttle: 1
   shell: gitlab-ctl reconfigure
 
 - name: Secondary Frontend App Servers - Run gitlab-ctl restart
