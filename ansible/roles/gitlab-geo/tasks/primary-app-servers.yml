@@ -1,27 +1,27 @@
-- name: Primary Frontend - Update gitlab.rb settings for rails servers
+- name: Primary App Servers - Update gitlab.rb settings for rails servers
   lineinfile:
     path: /etc/gitlab/gitlab.rb
     regexp: "roles \\['application_role']"
     line: roles ['geo_primary_role', 'application_role']    
   when: "'gitlab_rails' in group_names"
 
-- name: Primary Frontend - Update gitlab.rb settings for sidekiq nodes
+- name: Primary App Servers - Update gitlab.rb settings for sidekiq nodes
   lineinfile:
     path: /etc/gitlab/gitlab.rb
     line:  roles ['geo_primary_role']    
   when: "'sidekiq' in group_names"
 
-- name: Primary Frontend - Add new config
+- name: Primary App Servers - Add new config
   blockinfile:
     path: /etc/gitlab/gitlab.rb
     block: |
       gitlab_rails['geo_node_name'] = 'Primary Site'
-    marker: "# {mark} primary-frontend ANSIBLE MANAGED BLOCK"
+    marker: "# {mark} primary-app-servers ANSIBLE MANAGED BLOCK"
       
-- name: Primary Frontend - Run gitlab-ctl reconfigure
+- name: Primary App Servers - Run gitlab-ctl reconfigure
   shell: gitlab-ctl reconfigure
   
-- name: Primary Frontend - Set geo primary node
+- name: Primary App Servers - Set geo primary node
   shell: gitlab-ctl set-geo-primary-node
   when: "'gitlab_rails_primary' in group_names"
   

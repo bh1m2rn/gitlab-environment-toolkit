@@ -9,19 +9,19 @@
             -m 0400 \
             -T /tmp/server.crt ~gitlab-psql/.postgresql/root.crt
 
-- name: Update sql_user_password
+- name: Secondary Database - Update sql_user_password
   lineinfile:
     path: /etc/gitlab/gitlab.rb
     regex: "postgresql\\['sql_user_password']"
     line: "postgresql['sql_user_password'] = '{{ (postgres_password + 'gitlab') | md5 }}'"
 
-- name: Run gitlab-ctl reconfigure
+- name: Secondary Database - Run gitlab-ctl reconfigure
   shell: gitlab-ctl reconfigure
   
-- name: Restart Postgres
+- name: Secondary Database - Restart Postgres
   command: gitlab-ctl restart postgres
 
-- name: Replicate geo database
+- name: Secondary Database - Replicate geo database
   expect: 
     command: gitlab-ctl replicate-geo-database --slot-name={{ inventory_hostname | regex_replace("-", "_") }} --host={{ geo_primary_postgres_int_ip }} --force
     responses:

@@ -1,7 +1,7 @@
 - name: Configure the primary frontend servers
-  import_tasks: primary-frontend.yml
+  import_tasks: primary-app-servers.yml
   tags: 
-    - primary-frontend
+    - primary-app-servers
     - primary
   when:
     - "'gitlab_rails' in group_names or 'sidekiq' in group_names"
@@ -70,9 +70,9 @@
     - "'geo_secondary' in group_names"
 
 - name: Configure the frontend application servers on the secondary node
-  import_tasks: secondary-app-servers.yml
+  import_tasks: secondary-frontend-app-servers.yml
   tags: 
-    - secondary-app-servers
+    - secondary-frontend-app-servers
     - secondary
   when:
     - "'gitlab_rails' in group_names"
@@ -88,9 +88,9 @@
     - "'geo_primary' in group_names"
 
 - name: Configure backend application servers
-  import_tasks: secondary-backend-servers.yml
+  import_tasks: secondary-backend-app-servers.yml
   tags: 
-    - secondary-backend-servers
+    - secondary-backend-app-servers
     - secondary
   when:
     - "'sidekiq' in group_names"
