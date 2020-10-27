@@ -1,0 +1,5 @@
+- name: Start Postgres Secondaries
+  block:
+    - name: Start Postgres Secondaries - Gitlab-ctl start
+      command: |
+        gitlab-ctl start

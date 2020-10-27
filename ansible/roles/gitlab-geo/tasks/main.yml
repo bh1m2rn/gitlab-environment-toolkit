@@ -7,30 +7,36 @@
     - "'gitlab_rails' in group_names or 'sidekiq' in group_names"
     - "'geo_primary' in group_names"
 
-- name: Get PostgreSQL leader
-  import_tasks: postgres-leader.yml
+- name: Force PostgreSQL leaders by stopping secondaries
+  import_tasks: stop-postgres-secondaries.yml
   tags: 
+    - primary
+    - secondary
     - postgres-leader
     - geo-database-replication
     - primary-database
     - secondary-database
   when:
-    - "'postgres_primary' in group_names"
-    - "'geo_primary' in group_names"
+    - "'postgres_secondary' in group_names"
+    - install_patroni is defined and install_patroni
 
 - name: Configure Geo database replication
   import_tasks: geo-database-replication.yml
   tags: 
     - geo-database-replication
     - primary
-  when: postgres_leader_hostname == inventory_hostname
+  when: 
+    - "'postgres_primary' in group_names"
+    - "'geo_primary' in group_names"
 
 - name: Configure the primary database
   import_tasks: primary-database.yml
   tags: 
     - primary-database
     - primary
-  when: postgres_leader_hostname == inventory_hostname
+  when: 
+    - "'postgres_primary' in group_names"
+    - "'geo_primary' in group_names"
 
 - name: copy secrets
   import_tasks: copy-secrets.yml
@@ -89,3 +95,16 @@
   when:
     - "'sidekiq' in group_names"
     - "'geo_secondary' in group_names"
+
+- name: Start secondary Postgres nodes
+  import_tasks: start-postgres-secondaries.yml
+  tags: 
+    - primary
+    - secondary
+    - postgres-leader
+    - geo-database-replication
+    - primary-database
+    - secondary-database
+  when:
+    - "'postgres_secondary' in group_names"
+    - install_patroni is defined and install_patroni

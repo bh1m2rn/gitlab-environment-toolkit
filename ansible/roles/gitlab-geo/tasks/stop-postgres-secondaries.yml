@@ -1,0 +1,5 @@
+- name: Stop Postgres secondaries to force the a leader
+  block:
+    - name: Stop Postgres Secondaries - Gitlab-ctl Stop
+      command: |
+        gitlab-ctl stop
