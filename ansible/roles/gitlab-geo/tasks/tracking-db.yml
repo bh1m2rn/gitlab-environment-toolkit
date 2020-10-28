@@ -20,4 +20,3 @@
 
 - name: Tracking DB - Run gitlab-ctl restart for updates to take effect
   shell: gitlab-ctl restart
-  

@@ -21,4 +21,3 @@
 
 - name: Secondary Backend App Servers - Run gitlab-ctl restart
   shell: gitlab-ctl restart
-  

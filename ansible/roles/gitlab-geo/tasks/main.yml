@@ -38,7 +38,7 @@
     - "'postgres_primary' in group_names"
     - "'geo_primary' in group_names"
 
-- name: copy secrets
+- name: Copy gitlab-secrets from primary site to secondary
   import_tasks: copy-secrets.yml
   tags: copy-secrets
 
