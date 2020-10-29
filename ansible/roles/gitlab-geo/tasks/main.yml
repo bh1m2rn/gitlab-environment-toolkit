@@ -1,4 +1,4 @@
-- name: Configure the primary frontend servers
+- name: Configure the primary app servers
   import_tasks: primary-app-servers.yml
   tags: 
     - primary-app-servers
@@ -7,10 +7,10 @@
     - "'gitlab_rails' in group_names or 'sidekiq' in group_names"
     - "'geo_primary' in group_names"
 
-- name: Configure Geo database replication
-  import_tasks: geo-database-replication.yml
+- name: Set Geo database replication password
+  import_tasks: set-geo-replication-password.yml
   tags: 
-    - geo-database-replication
+    - set-geo-replication-password
     - primary
   when: 
     - "'postgres_primary' in group_names"
