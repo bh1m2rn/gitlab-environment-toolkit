@@ -3,7 +3,7 @@ module "elastic" {
 
   prefix = "${var.prefix}"
   node_type = "elastic"
-  node_count = 2
+  node_count = 3
   
   geo_role = "${var.geo_role}"
   geo_group = "${var.geo_group}"
@@ -11,7 +11,7 @@ module "elastic" {
   disk_type = "pd-ssd"
   disk_size = "500"
 
-  machine_type = "n1-highcpu-8"
+  machine_type = "n1-highcpu-16"
   machine_image = "${var.machine_image}"
   label_secondaries = true
 

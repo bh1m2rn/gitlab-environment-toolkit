@@ -15,7 +15,7 @@ variable "zone" {
 }
 
 variable "prefix" {
-  default = "geo-3k-secondary"
+  default = "geo-secondary-site"
 }
 
 variable "machine_image" {
@@ -31,5 +31,5 @@ variable "geo_role" {
 }
 
 variable "geo_group" {
-  default = "geo-3k"
+  default = "geo-test"
 }

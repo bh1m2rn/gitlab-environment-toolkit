@@ -2,7 +2,7 @@ plugin: gcp_compute
 projects:
   - gitlab-qa-distribution-35632a
 filters:
-  - labels.gitlab_geo_group = geo-3k
+  - labels.gitlab_geo_group = geo-test
 keyed_groups:
   - key: labels.gitlab_node_type
     separator: ''
