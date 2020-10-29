@@ -17,7 +17,7 @@ The high level steps that the builder will follow are:
 
 ## Terraform
 
-When creating a new Terraform site for geo it is recommended to create a new sub folder for your Geo deployment with 2 sub folders below that for the primary and secondary settings. Although not required this does help to keep all the config for a single geo project in one location. 
+When creating a new Terraform site for Geo it is recommended to create a new sub folder for your Geo deployment with 2 sub folders below that for the primary and secondary settings. Although not required this does help to keep all the config for a single Geo project in one location. 
 
 ```bash
 my-geo-site
