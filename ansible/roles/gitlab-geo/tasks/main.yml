@@ -48,9 +48,9 @@
     - "'geo_secondary' in group_names"
   
 - name: Configure the tracking database on the secondary node
-  import_tasks: tracking-db.yml
+  import_tasks: tracking-database.yml
   tags: 
-    - tracking-db
+    - tracking-database
     - secondary
   when:
     - "'postgres_primary' in group_names"
