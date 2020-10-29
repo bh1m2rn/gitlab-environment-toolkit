@@ -1,21 +1,14 @@
-- name: Secondary Frontend App Servers - Update gitlab.rb settings for rails servers
-  lineinfile:
+- name: Secondary App Servers - Add new config
+  blockinfile:
     path: /etc/gitlab/gitlab.rb
-    regexp: "roles \\['application_role']"
-    line: roles ['geo_secondary_role', 'application_role']    
+    block: "{{ lookup('template', '../templates/secondary-app-servers') }}"
+    marker: "# {mark} geo config block - secondary-app-servers"
 
 - name: Secondary Frontend App Servers - Add new config
   blockinfile:
     path: /etc/gitlab/gitlab.rb
-    block: |
-      gitlab_rails['geo_node_name'] = 'Secondary Site'
-
-      geo_secondary['db_host'] = '{{ geo_secondary_postgres_int_ip }}'
-      geo_secondary['db_password'] = '{{ postgres_password }}'
-      geo_postgresql['enable'] = false
-
-      geo_logcursor['enable'] = false
-    marker: "# {mark} secondary-frontend-app-servers ANSIBLE MANAGED BLOCK"
+    block: "{{ lookup('template', '../templates/secondary-frontend-app-servers') }}"
+    marker: "# {mark} geo config block - secondary-frontend-app-servers"
 
 - name: Secondary Frontend App Servers - Run gitlab-ctl reconfigure
   throttle: 1

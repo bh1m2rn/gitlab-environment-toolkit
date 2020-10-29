@@ -1,20 +1,14 @@
-- name: Secondary Backend App Servers - Update gitlab.rb settings for sidekiq nodes
-  lineinfile:
+- name: Secondary App Servers - Add new config
+  blockinfile:
     path: /etc/gitlab/gitlab.rb
-    line:  roles ['geo_secondary_role']    
+    block: "{{ lookup('template', '../templates/secondary-app-servers') }}"
+    marker: "# {mark} geo config block - secondary-app-servers"
 
 - name: Secondary Backend App Servers - Add new config
   blockinfile:
     path: /etc/gitlab/gitlab.rb
-    block: |
-      gitlab_rails['geo_node_name'] = 'Secondary Site'
-
-      geo_secondary['db_host'] = '{{ geo_secondary_postgres_int_ip }}'
-      geo_secondary['db_password'] = '{{ postgres_password }}'
-      geo_postgresql['enable'] = false
-
-      geo_logcursor['enable'] = true
-    marker: "# {mark} secondary-backend-app-servers ANSIBLE MANAGED BLOCK"
+    block: "{{ lookup('template', '../templates/secondary-backend-app-servers') }}"
+    marker: "# {mark} geo config block - secondary-backend-app-servers"
 
 - name: Secondary Backend App Servers - Run gitlab-ctl reconfigure
   shell: gitlab-ctl reconfigure

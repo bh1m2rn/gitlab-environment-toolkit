@@ -9,17 +9,17 @@
             -m 0400 \
             -T /tmp/server.crt ~gitlab-psql/.postgresql/root.crt
 
-- name: Secondary Database - Update sql_user_password
-  lineinfile:
+- name: Secondary database - Add new config
+  blockinfile:
     path: /etc/gitlab/gitlab.rb
-    regex: "postgresql\\['sql_user_password']"
-    line: "postgresql['sql_user_password'] = '{{ (postgres_password + 'gitlab') | md5 }}'"
+    block: "{{ lookup('template', '../templates/secondary-geo') }}"
+    marker: "# {mark} geo config block - secondary-geo"
 
 - name: Secondary Database - Run gitlab-ctl reconfigure
   shell: gitlab-ctl reconfigure
   
 - name: Secondary Database - Restart Postgres
-  command: gitlab-ctl restart postgres
+  command: gitlab-ctl restart
 
 - name: Secondary Database - Replicate geo database
   expect: 
@@ -27,4 +27,4 @@
     responses:
       (.*)Confirmation: "replicate"
       (.*)Enter the password for gitlab_replicator@(.*): "{{ postgres_password }}"
-    timeout: null
+    timeout: 60

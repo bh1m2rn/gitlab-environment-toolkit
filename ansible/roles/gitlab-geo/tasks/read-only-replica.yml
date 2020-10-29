@@ -1,35 +1,14 @@
-- name: Read-only Replica - Update roles
-  lineinfile:
+- name: Secondary Geo - Add new config
+  blockinfile:
     path: /etc/gitlab/gitlab.rb
-    regexp: "roles \\['postgres_role']"
-    line: roles ['geo_secondary_role', 'postgres_role']
+    block: "{{ lookup('template', '../templates/secondary-geo') }}"
+    marker: "# {mark} geo config block - secondary-geo"
 
 - name: Read-only Replica - Add new config
   blockinfile:
     path: /etc/gitlab/gitlab.rb
-    block: |
-      postgresql['md5_auth_cidr_addresses'] = ['{{ geo_secondary_postgres_int_ip }}/32', '{{ geo_secondary_postgres_int_ip }}/32']
-      gitlab_rails['db_password'] = '{{ postgres_password }}'
-
-      geo_postgresql['enable'] = false
-      alertmanager['enable'] = false
-      consul['enable'] = false
-      geo_logcursor['enable'] = false
-      gitaly['enable'] = false
-      gitlab_exporter['enable'] = false
-      gitlab_workhorse['enable'] = false
-      nginx['enable'] = false
-      node_exporter['enable'] = false
-      pgbouncer_exporter['enable'] = false
-      prometheus['enable'] = false
-      redis['enable'] = false
-      redis_exporter['enable'] = false
-      repmgr['enable'] = false
-      sidekiq['enable'] = false
-      sidekiq_cluster['enable'] = false
-      puma['enable'] = false
-      unicorn['enable'] = false
-    marker: "# {mark} read-only-replica ANSIBLE MANAGED BLOCK"
+    block: "{{ lookup('template', '../templates/read-only-replica') }}"
+    marker: "# {mark} geo config block - read-only-replica"
 
 - name: Read-only Replica - Run gitlab-ctl reconfigure
   shell: gitlab-ctl reconfigure
