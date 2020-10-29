@@ -17,7 +17,7 @@ The high level steps that the builder will follow are:
 
 ## Terraform
 
-When creating a new Terraform site for geo it is recommended to create a new sub folder for your Geo deployment with 2 sub folders below that for the primary and secondary settings. Although not required this does help to keep all the config for a single geo project in one location. 
+When creating a new Terraform site for Geo it is recommended to create a new sub folder for your Geo deployment with 2 sub folders below that for the primary and secondary settings. Although not required this does help to keep all the config for a single Geo project in one location. 
 
 ```bash
 my-geo-site
@@ -27,9 +27,9 @@ my-geo-site
 
 After this it is recommended to copy an existing reference architecture for the primary and secondary folders. You could copy the 25k reference architecture to use as your primary site and the 3k for your secondary, or use 1k for both your primary and secondary sites, the Geo process should work for any combination with the same steps.
 
-The main steps for [Provisioning Environment(s) Infrastructure with Terraform](https://gitlab.com/gitlab-org/quality/performance-environment-builder/-/blob/master/docs/building_environments.md#provisioning-environments-infrastructure-with-terraform) should be followed when creating a new terraform project.
+The main steps for [Provisioning Environment(s) Infrastructure with Terraform](https://gitlab.com/gitlab-org/quality/performance-environment-builder/-/blob/master/docs/building_environments.md#provisioning-environments-infrastructure-with-terraform) should be followed when creating a new Terraform project.
 
-Once you have copied the desired architecture sizes we will need to modify all the .tf files to allow for Geo. The first step is to add 2 new labels to each of our machines to help identify it as belonging to our geo site and if it is part of the primary site or secondary.
+Once you have copied the desired architecture sizes we will need to modify all the .tf files to allow for Geo. The first step is to add 2 new labels to each of our machines to help identify it as belonging to our Geo site and if it is part of the primary site or secondary.
 
 > You do not need to modify the files firewall.tf, main.tf, storage.tf or variables.tf. These files do not create new machines as such do not require labels.
 
@@ -49,9 +49,9 @@ variable "geo_group" {
 }
 ```
 `geo_role` is used to identify if a machine belongs to the primary or secondary site.
-`geo_group` is used to identify that a primary and secondary site belong to the same geo configuration.
+`geo_group` is used to identify that a primary and secondary site belong to the same Geo configuration.
 
-It should also be noted that the existing `prefix` variable should still be unique to each terraform project and shouldn't be shared across a geo deployment.
+It should also be noted that the existing `prefix` variable should still be unique to each Terraform project and shouldn't be shared across a Geo deployment.
 
 Once each site is configured we can run the `terraform apply` command against each project. You can run this command against the primary and secondary sites at the same time.
 
