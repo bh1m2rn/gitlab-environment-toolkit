@@ -49,7 +49,7 @@ variable "geo_group" {
 }
 ```
 `geo_role` is used to identify if a machine belongs to the primary or secondary site.
-`geo_group` is used to identify that a primary and secondary site belong to the same geo configuration.
+`geo_group` is used to identify that a primary and secondary site belong to the same Geo configuration.
 
 It should also be noted that the existing `prefix` variable should still be unique to each terraform project and shouldn't be shared across a geo deployment.
 
