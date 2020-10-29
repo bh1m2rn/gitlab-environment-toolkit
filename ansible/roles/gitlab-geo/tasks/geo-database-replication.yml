@@ -6,11 +6,3 @@
       (.*)Confirm password: "{{ postgres_password }}"
     creates: skip-set-replication-password
     timeout: 60
-  when: install_patroni is not defined or install_patroni == false
-
-- name: Geo Database Replication - Set replication password manually
-  command: |
-    gitlab-psql -c "ALTER USER gitlab_replicator WITH REPLICATION ENCRYPTED PASSWORD '{{ postgres_password }}';"
-  when: 
-    - install_patroni is defined 
-    - install_patroni
