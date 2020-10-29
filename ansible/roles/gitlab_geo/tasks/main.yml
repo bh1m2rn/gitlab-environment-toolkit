@@ -1,6 +1,6 @@
 - name: Configure the primary app servers
   import_tasks: primary-app-servers.yml
-  tags: 
+  tags:
     - primary-app-servers
     - primary
   when:
@@ -9,19 +9,19 @@
 
 - name: Set Geo database replication password
   import_tasks: set-geo-replication-password.yml
-  tags: 
+  tags:
     - set-geo-replication-password
     - primary
-  when: 
+  when:
     - "'postgres_primary' in group_names"
     - "'geo_primary' in group_names"
 
 - name: Configure the primary database
   import_tasks: primary-database.yml
-  tags: 
+  tags:
     - primary-database
     - primary
-  when: 
+  when:
     - "'postgres_primary' in group_names"
     - "'geo_primary' in group_names"
 
@@ -31,25 +31,25 @@
 
 - name: Configure the secondary database
   import_tasks: secondary-database.yml
-  tags: 
+  tags:
     - secondary-database
     - secondary
-  when: 
+  when:
     - "'postgres_primary' in group_names"
     - "'geo_secondary' in group_names"
-  
+
 - name: Configure the main read-only replica PostgreSQL database on the secondary node
   import_tasks: read-only-replica.yml
-  tags: 
+  tags:
     - read-only-replica
     - secondary
-  when: 
+  when:
     - "'postgres_primary' in group_names"
     - "'geo_secondary' in group_names"
-  
+
 - name: Configure the tracking database on the secondary node
   import_tasks: tracking-database.yml
-  tags: 
+  tags:
     - tracking-database
     - secondary
   when:
@@ -58,7 +58,7 @@
 
 - name: Configure the frontend application servers on the secondary node
   import_tasks: secondary-frontend-app-servers.yml
-  tags: 
+  tags:
     - secondary-frontend-app-servers
     - secondary
   when:
@@ -67,7 +67,7 @@
 
 - name: Add secondary Geo site to tracking database
   import_tasks: add-site-name.yml
-  tags: 
+  tags:
     - add-site-name
     - secondary
   when:
@@ -76,7 +76,7 @@
 
 - name: Configure backend application servers
   import_tasks: secondary-backend-app-servers.yml
-  tags: 
+  tags:
     - secondary-backend-app-servers
     - secondary
   when:

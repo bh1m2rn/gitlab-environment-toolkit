@@ -17,12 +17,12 @@
 
 - name: Secondary Database - Run gitlab-ctl reconfigure
   shell: gitlab-ctl reconfigure
-  
+
 - name: Secondary Database - Restart Postgres
   command: gitlab-ctl restart
 
 - name: Secondary Database - Replicate geo database
-  expect: 
+  expect:
     command: gitlab-ctl replicate-geo-database --slot-name={{ inventory_hostname | regex_replace("-", "_") }} --host={{ geo_primary_postgres_int_ip }} --force
     responses:
       (.*)Confirmation: "replicate"
