@@ -27,7 +27,7 @@ my-geo-site
 
 After this it is recommended to copy an existing reference architecture for the primary and secondary folders. You could copy the 25k reference architecture to use as your primary site and the 3k for your secondary, or use 1k for both your primary and secondary sites, the Geo process should work for any combination with the same steps.
 
-The main steps for [Provisioning Environment(s) Infrastructure with Terraform](https://gitlab.com/gitlab-org/quality/performance-environment-builder/-/blob/master/docs/building_environments.md#provisioning-environments-infrastructure-with-terraform) should be followed when creating a new terraform project.
+The main steps for [Provisioning Environment(s) Infrastructure with Terraform](https://gitlab.com/gitlab-org/quality/performance-environment-builder/-/blob/master/docs/building_environments.md#provisioning-environments-infrastructure-with-terraform) should be followed when creating a new Terraform project.
 
 Once you have copied the desired architecture sizes we will need to modify all the .tf files to allow for Geo. The first step is to add 2 new labels to each of our machines to help identify it as belonging to our geo site and if it is part of the primary site or secondary.
 
