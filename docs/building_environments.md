@@ -2,6 +2,7 @@
 
 * [GitLab Performance Environment Builder - Preparing the toolkit](prep_toolkit.md)
 * [**GitLab Performance Environment Builder - Building environments**](building_environments.md)
+* [GitLab Performance Environment Builder - Building an environment with Geo](building_geo_environments.md)
 
 With the [toolkit prepared](prep_toolkit.md) you can proceed to building environment(s). Environments are built in two stages: [Provisioning infrastructure via Terraform](#provisioning-environments-infrastructure-with-terraform) and then [Configuring GitLab via Ansible](#configuring-gitlab-on-environments-with-ansible).
 

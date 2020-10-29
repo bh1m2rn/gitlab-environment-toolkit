@@ -2,6 +2,7 @@
 
 * [**GitLab Performance Environment Builder - Preparing the toolkit**](prep_toolkit.md)
 * [GitLab Performance Environment Builder - Building environments](building_environments.md)
+* [GitLab Performance Environment Builder - Building an environment with Geo](building_geo_environments.md)
 
 Before building environments you'll need to do some preparation for the toolkit both locally as well as on GCP.
 
