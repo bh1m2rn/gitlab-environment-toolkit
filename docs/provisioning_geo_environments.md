@@ -29,7 +29,7 @@ After this it is recommended to copy an existing reference architecture for the 
 
 The main steps for [Provisioning Environment(s) Infrastructure with Terraform](https://gitlab.com/gitlab-org/quality/performance-environment-builder/-/blob/master/docs/building_environments.md#provisioning-environments-infrastructure-with-terraform) should be followed when creating a new Terraform project.
 
-Once you have copied the desired architecture sizes we will need to modify all the .tf files to allow for Geo. The first step is to add 2 new labels to each of our machines to help identify it as belonging to our geo site and if it is part of the primary site or secondary.
+Once you have copied the desired architecture sizes we will need to modify all the .tf files to allow for Geo. The first step is to add 2 new labels to each of our machines to help identify it as belonging to our Geo site and if it is part of the primary site or secondary.
 
 > You do not need to modify the files firewall.tf, main.tf, storage.tf or variables.tf. These files do not create new machines as such do not require labels.
 
