@@ -5,7 +5,7 @@
     marker: "# {mark} geo config block - primary-database"
 
 - name: Primary Database - Run gitlab-ctl reconfigure
-  shell: gitlab-ctl reconfigure
+  command: gitlab-ctl reconfigure
 
 - name: Primary Database - Restart Postgres
   command: gitlab-ctl restart

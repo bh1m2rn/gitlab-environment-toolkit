@@ -11,8 +11,7 @@
     marker: "# {mark} geo config block - secondary-frontend-app-servers"
 
 - name: Secondary Frontend App Servers - Run gitlab-ctl reconfigure
-  throttle: 1
-  shell: gitlab-ctl reconfigure
+  command: gitlab-ctl reconfigure
 
 - name: Secondary Frontend App Servers - Run gitlab-ctl restart
-  shell: gitlab-ctl restart
+  command: gitlab-ctl restart

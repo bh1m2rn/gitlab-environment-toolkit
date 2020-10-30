@@ -11,7 +11,7 @@
     marker: "# {mark} geo config block - tracking-database"
 
 - name: Tracking DB - Run gitlab-ctl reconfigure
-  shell: gitlab-ctl reconfigure
+  command: gitlab-ctl reconfigure
 
 - name: Tracking DB - Run gitlab-ctl restart for updates to take effect
-  shell: gitlab-ctl restart
+  command: gitlab-ctl restart

@@ -11,7 +11,7 @@
     marker: "# {mark} geo config block - secondary-backend-app-servers"
 
 - name: Secondary Backend App Servers - Run gitlab-ctl reconfigure
-  shell: gitlab-ctl reconfigure
+  command: gitlab-ctl reconfigure
 
 - name: Secondary Backend App Servers - Run gitlab-ctl restart
-  shell: gitlab-ctl restart
+  command: gitlab-ctl restart

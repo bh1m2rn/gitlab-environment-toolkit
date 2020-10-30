@@ -2,7 +2,7 @@
   copy: src=tmp/server.crt dest=/tmp/
 
 - name: Install certificate
-  shell: |
+  command: |
     install -D \
             -o gitlab-psql \
             -g gitlab-psql \
@@ -16,7 +16,7 @@
     marker: "# {mark} geo config block - secondary-geo"
 
 - name: Secondary Database - Run gitlab-ctl reconfigure
-  shell: gitlab-ctl reconfigure
+  command: gitlab-ctl reconfigure
 
 - name: Secondary Database - Restart Postgres
   command: gitlab-ctl restart

@@ -11,4 +11,4 @@
     marker: "# {mark} geo config block - read-only-replica"
 
 - name: Read-only Replica - Run gitlab-ctl reconfigure
-  shell: gitlab-ctl reconfigure
+  command: gitlab-ctl reconfigure
