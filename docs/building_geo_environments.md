@@ -195,7 +195,7 @@ Add the line `secondary_external_url` which needs to match the `external_url` in
 
 ### `all.gcp.yml`
 
-Under the `keyed_groups` section add 2 new keys that will configure Ansible to look for the new labels you added with Terraform:
+Under the `keyed_groups` section add 2 new keys that allow Ansible to identify machines based on the Geo deployment and a machine role in that deployment:
 
 ```yaml
 - key: labels.gitlab_geo_role
@@ -203,6 +203,8 @@ Under the `keyed_groups` section add 2 new keys that will configure Ansible to l
 - key: labels.gitlab_geo_full_role
   separator: ''
 ```
+
+`gitlab_geo_full_role` is a label that is created for us by a Terraform module, this label is a combination of `geo_role`, `node_type` and `node_level`. Using this we can get the IP of a machine directly by its role in a Geo deployment from a single label.
 
 Under the `filters` section we want to remove the existing filter and replace it with:
 
