@@ -15,7 +15,7 @@ variable "zone" {
 }
 
 variable "prefix" {
-  default = "gitlab-qa-3k"
+  default = "jsl-3k-geo-primary"
 }
 
 variable "machine_image" {
@@ -28,5 +28,9 @@ variable "geo_role" {
 
 variable "geo_group" {
   default = "jsl-3k-geo"
+}
+
+variable "external_ip" {
+  default = "35.188.66.7"
 }
 

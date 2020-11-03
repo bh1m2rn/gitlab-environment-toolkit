@@ -7,15 +7,15 @@ variable "credentials_file" {
 }
 
 variable "region" {
-  default = "europe-west3"
+  default = "us-central1"
 }
 
 variable "zone" {
-  default = "europe-west3-c"
+  default = "us-central1-c"
 }
 
 variable "prefix" {
-  default = "gitlab-qa-3k"
+  default = "jsl-3k-geo-secondary"
 }
 
 variable "machine_image" {
@@ -28,4 +28,8 @@ variable "geo_role" {
 
 variable "geo_group" {
   default = "jsl-3k-geo"
+}
+
+variable "external_ip" {
+  default = "34.70.35.217"
 }
