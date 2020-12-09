@@ -1,4 +1,5 @@
 ---
 dependencies:
   - role: common
-  - role: geerlingguy.docker
+  - role: geerlingguy.docker_arm
+  - role: geerlingguy.pip

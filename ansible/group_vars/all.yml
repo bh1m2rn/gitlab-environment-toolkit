@@ -17,6 +17,7 @@ external_url_sanitised: '{{ external_url | regex_replace("\\/$", "") }}'
 internal_ip_lookup: { gcp: ['networkInterfaces', 0, 'networkIP'], azure: ['private_ipv4_addresses', 0], aws: ['private_ip_address']}
 external_ip_lookup: { gcp: ['networkInterfaces', 0, 'accessConfigs', 0, 'natIP'], azure: ['public_ipv4_addresses', 0], aws: ['public_ip_address']}
 internal_cidr_16: "{{ (ansible_default_ipv4.address + '/16') | ipaddr('network/prefix') }}"
+docker_version: "5:19.03.9~3-0~ubuntu-focal"
 
 # Consul
 consul_int_ips: "{{ (groups['consul'] | sort | map('extract', hostvars, internal_ip_lookup[cloud_provider]) | list) if 'consul' in groups else [] }}"

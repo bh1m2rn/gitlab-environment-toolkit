@@ -1,3 +1,5 @@
 - src: cloudalchemy.node-exporter
 - src: geerlingguy.docker
 - src: geerlingguy.swap
+- src: geerlingguy.docker_arm
+- src: geerlingguy.pip
