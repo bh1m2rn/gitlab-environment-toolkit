@@ -116,3 +116,8 @@ variable "sidekiq_node_count" { default = 0 }
 variable "sidekiq_size" { default = "" }
 variable "sidekiq_storage_account_type" { default = null }
 variable "sidekiq_disk_size" { default = null }
+
+# Advanced
+
+# Set CIDR list for external network access
+variable "external_ingress_cidr_ranges" { default = ["*"] }

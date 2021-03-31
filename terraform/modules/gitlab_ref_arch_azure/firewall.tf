@@ -10,10 +10,10 @@ resource "azurerm_network_security_group" "haproxy" {
     direction = "Inbound"
     access = "Allow"
     protocol = "Icmp"
+    source_address_prefixes = var.external_ingress_cidr_ranges
     source_port_range = "*"
+    destination_address_prefixes = ["*"]
     destination_port_range = "*"
-    source_address_prefix = "*"
-    destination_address_prefix = "*"
   }
 
   security_rule {
@@ -23,10 +23,10 @@ resource "azurerm_network_security_group" "haproxy" {
     direction = "Inbound"
     access = "Allow"
     protocol = "Tcp"
+    source_address_prefixes = var.external_ingress_cidr_ranges
     source_port_range = "*"
+    destination_address_prefixes = ["*"]
     destination_port_ranges = ["22", "1936", "80", "443", "2222", "8086", "9090", "5601"]
-    source_address_prefix = "*"
-    destination_address_prefix = "*"
   }
 
   tags = {

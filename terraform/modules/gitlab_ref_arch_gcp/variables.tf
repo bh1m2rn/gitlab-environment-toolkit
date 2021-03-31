@@ -123,3 +123,8 @@ variable "supporting_node_pool_count" { default = 0 }
 variable "supporting_node_pool_machine_type" { default = "" }
 variable "supporting_node_pool_disk_type" { default = null }
 variable "supporting_node_pool_disk_size" { default = null }
+
+# Advanced
+
+# Set CIDR list for external network access
+variable "external_ingress_cidr_ranges" { default = ["0.0.0.0/0"] }

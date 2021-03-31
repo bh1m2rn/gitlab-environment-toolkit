@@ -1,8 +1,7 @@
 resource "google_compute_firewall" "gitlab_http_https" {
   name    = "${var.prefix}-gitlab-rails-firewall-rule-http-https"
+  description = "Allow main HTTP / HTTPS access to GitLab"
   network = "default"
-
-  description = "Allow Google health checks and network load balancers access"
 
   allow {
     protocol = "icmp"
@@ -13,14 +12,14 @@ resource "google_compute_firewall" "gitlab_http_https" {
     ports    = ["80", "443"]
   }
 
+  source_ranges = var.external_ingress_cidr_ranges
   target_tags   = ["${var.prefix}-web"]
 }
 
 resource "google_compute_firewall" "gitlab_ssh" {
   name    = "${var.prefix}-gitlab-rails-firewall-rule-ssh"
-  network = "default"
-
   description = "Allow access to GitLab SSH"
+  network = "default"
 
   allow {
     protocol = "icmp"
@@ -31,14 +30,14 @@ resource "google_compute_firewall" "gitlab_ssh" {
     ports    = ["2222"]
   }
 
+  source_ranges = var.external_ingress_cidr_ranges
   target_tags   = ["${var.prefix}-ssh"]
 }
 
 resource "google_compute_firewall" "haproxy_stats" {
   name    = "${var.prefix}-haproxy-stats-firewall-rule"
-  network = "default"
-
   description = "Allow HAProxy Stats access"
+  network = "default"
 
   allow {
     protocol = "icmp"
@@ -49,14 +48,14 @@ resource "google_compute_firewall" "haproxy_stats" {
     ports    = ["1936"]
   }
 
+  source_ranges = var.external_ingress_cidr_ranges
   target_tags   = ["${var.prefix}-haproxy"]
 }
 
 resource "google_compute_firewall" "monitor" {
   name    = "${var.prefix}-monitor-firewall-rule"
-  network = "default"
-
   description = "Allow Prometheus and InfluxDB access"
+  network = "default"
 
   allow {
     protocol = "icmp"
@@ -67,5 +66,6 @@ resource "google_compute_firewall" "monitor" {
     ports    = ["8086", "9090", "5601"]
   }
 
+  source_ranges = var.external_ingress_cidr_ranges
   target_tags   = ["${var.prefix}-monitor"]
 }
