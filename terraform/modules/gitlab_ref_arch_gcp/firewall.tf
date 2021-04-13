@@ -54,7 +54,7 @@ resource "google_compute_firewall" "haproxy_stats" {
 
 resource "google_compute_firewall" "monitor" {
   name    = "${var.prefix}-monitor-firewall-rule"
-  description = "Allow Prometheus and InfluxDB access"
+  description = "Allow Prometheus and InfluxDB exporter access"
   network = "default"
 
   allow {
@@ -63,7 +63,7 @@ resource "google_compute_firewall" "monitor" {
 
   allow {
     protocol = "tcp"
-    ports    = ["8086", "9090", "5601"]
+    ports    = ["9122", "9090", "5601"]
   }
 
   source_ranges = var.external_ingress_cidr_ranges

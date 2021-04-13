@@ -77,8 +77,8 @@ resource "aws_security_group" "gitlab_external_monitor" {
   description = "Allow Prometheus and InfluxDB access"
 
   ingress {
-    from_port   = 8086
-    to_port     = 8086
+    from_port   = 9122
+    to_port     = 9122
     protocol    = "tcp"
     cidr_blocks = var.external_ingress_cidr_ranges
   }
