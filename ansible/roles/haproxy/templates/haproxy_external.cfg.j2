@@ -54,7 +54,7 @@ backend gitlab-rails-https
     option srvtcpka
 
 {% for ip in gitlab_rails_int_ips %}
-    server gitlab-rails{{loop.index}} {{ ip }}:443 check inter 3s fall 1
+    server gitlab-rails{{loop.index}} {{ ip }}:443 check port 80 inter 3s fall 1
 {% endfor %}
 
 backend gitlab-rails-ssh
