@@ -1,10 +1,21 @@
-frontend http-in
+frontend gitlab-http-in
     bind *:80
 
     acl grafana path_beg -i /-/grafana
     use_backend grafana if grafana
 
-    default_backend gitlab-rails
+    default_backend gitlab-rails-http
+
+frontend gitlab-https-in
+    bind *:443
+    mode tcp
+    option tcplog
+    option clitcpka
+
+    acl grafana path_beg -i /-/grafana
+    use_backend grafana if grafana
+
+    default_backend gitlab-rails-https
 
 frontend gitlab-ssh-in
     bind *:2222
@@ -29,11 +40,21 @@ frontend kibana
 
     default_backend kibana
 
-backend gitlab-rails
+backend gitlab-rails-http
     option httpchk GET /-/readiness
 
 {% for ip in gitlab_rails_int_ips %}
     server gitlab-rails{{loop.index}} {{ ip }}:80 check inter 3s fall 1
+{% endfor %}
+
+backend gitlab-rails-https
+    mode tcp
+    option tcp-check
+    option httpchk GET /-/readiness
+    option srvtcpka
+
+{% for ip in gitlab_rails_int_ips %}
+    server gitlab-rails{{loop.index}} {{ ip }}:443 check inter 3s fall 1
 {% endfor %}
 
 backend gitlab-rails-ssh
