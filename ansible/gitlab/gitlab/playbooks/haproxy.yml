@@ -1,0 +1,5 @@
+---
+- hosts: haproxy_*
+  roles:
+    - gitlab.gitlab.haproxy
+  become: true

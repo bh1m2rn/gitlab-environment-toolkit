@@ -1,0 +1,7 @@
+---
+- hosts:
+    - postgres_primary
+    - postgres_secondary
+  roles:
+    - gitlab.gitlab.postgres
+  become: true

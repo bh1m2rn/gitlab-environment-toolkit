@@ -1,0 +1,5 @@
+---
+- hosts: pgbouncer
+  roles:
+    - gitlab.gitlab.pgbouncer
+  become: true

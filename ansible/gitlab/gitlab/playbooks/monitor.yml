@@ -1,0 +1,5 @@
+---
+- hosts: monitor
+  roles:
+    - gitlab.gitlab.monitor
+  become: true
