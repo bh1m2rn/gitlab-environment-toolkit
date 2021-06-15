@@ -1,0 +1,164 @@
+alertmanager['enable'] = false
+gitaly['enable'] = false
+gitlab_exporter['enable'] = false
+gitlab_workhorse['enable'] = false
+nginx['enable'] = false
+postgres_exporter['enable'] = false
+postgresql['enable'] = false
+prometheus['enable'] = false
+grafana['enable'] = false
+registry['enable'] = false
+redis['enable'] = false
+redis_exporter['enable'] = false
+unicorn['enable'] = false
+puma['enable'] = false
+
+# Sidekiq Config
+sidekiq['enable'] = true
+sidekiq['listen_address'] = '0.0.0.0'
+sidekiq['max_concurrency'] = {{ sidekiq_max_concurrency }}
+sidekiq['queue_groups'] = [
+{% for cpu in range(ansible_processor_vcpus) %}
+  "*",
+{% endfor %}
+]
+
+# Ensure UIDs and GIDs match between servers for permissions via NFS
+user['uid'] = 9000
+user['gid'] = 9000
+web_server['uid'] = 9001
+web_server['gid'] = 9001
+
+# Monitoring
+consul['enable'] = true
+consul['configuration'] = {
+  bind_addr: '{{ ansible_default_ipv4.address }}',
+  retry_join: %w({{ (consul_int_ips if 'consul' in groups else gitlab_rails_int_ips) | join(' ') }})
+}
+consul['monitoring_service_discovery'] = true
+
+node_exporter['listen_address'] = '0.0.0.0:9100'
+
+# Storage Config
+## Object Storage - consolidated object storage configuration
+
+gitlab_rails['object_store']['enabled'] = true
+gitlab_rails['object_store']['proxy_download'] = true
+
+### Provider-specific connection settings
+gitlab_rails['object_store']['connection'] = {
+  {{ lookup('template', 'object_storage.' + cloud_provider + '.rb.j2') | indent(width=2) }}
+}
+
+gitlab_rails['object_store']['objects']['artifacts']['bucket'] = "{{ gitlab_object_storage_artifacts_bucket }}"
+gitlab_rails['object_store']['objects']['dependency_proxy']['bucket'] = "{{ gitlab_object_storage_dependency_proxy_bucket }}"
+gitlab_rails['object_store']['objects']['external_diffs']['bucket'] = "{{ gitlab_object_storage_external_diffs_bucket }}"
+gitlab_rails['object_store']['objects']['lfs']['bucket'] = "{{ gitlab_object_storage_lfs_bucket }}"
+gitlab_rails['object_store']['objects']['packages']['bucket'] = "{{ gitlab_object_storage_packages_bucket }}"
+gitlab_rails['object_store']['objects']['terraform_state']['bucket'] = "{{ gitlab_object_storage_terraform_state_bucket }}"
+gitlab_rails['object_store']['objects']['uploads']['bucket'] = "{{ gitlab_object_storage_uploads_bucket }}"
+
+## Object Storage - separated backups storage
+gitlab_rails['backup_upload_connection'] = {
+  {{ lookup('template', 'object_storage.' + cloud_provider + '.rb.j2') | indent(width=2) }}
+}
+gitlab_rails['backup_upload_remote_directory'] = "{{ gitlab_object_storage_backups_bucket }}"
+
+# NFS
+gitlab_rails['uploads_directory'] = '{{ gitlab_nfs_path }}/uploads'
+gitlab_rails['shared_path'] = '{{ gitlab_nfs_path }}/shared'
+gitlab_ci['builds_directory'] = '{{ gitlab_nfs_path }}/builds'
+
+# Components Config
+{% if 'redis' in groups %}
+## Redis - Combined Queues (External)
+{% if groups['redis'] | length == 1 %}
+### Redis Single Node
+gitlab_rails['redis_port'] = '{{ redis_port }}'
+gitlab_rails['redis_host'] = '{{ redis_primary_int_ip }}'
+gitlab_rails['redis_password'] = '{{ redis_password }}'
+{% elif groups['redis'] | length > 1 %}
+### Redis Multi Node
+redis['master_name'] = 'gitlab-redis'
+redis['master_password'] = '{{ redis_password }}'
+
+gitlab_rails['redis_sentinels'] = [
+{% for ip in (redis_sentinel_int_ips if redis_sentinel_int_ips | length > 0 else consul_int_ips) %}
+  {host: '{{ ip }}', port: {{ redis_sentinel_port }}},
+{% endfor %}
+]
+{% endif %}
+{% elif 'redis_cache' in groups and 'redis_persistent' in groups %}
+## Redis - Separate Queues (External)
+### Multi Node
+gitlab_rails['redis_cache_instance'] = 'redis://:{{ redis_password }}@gitlab-redis-cache'
+gitlab_rails['redis_queues_instance'] = 'redis://:{{ redis_password }}@gitlab-redis-persistent'
+gitlab_rails['redis_shared_state_instance'] = 'redis://:{{ redis_password }}@gitlab-redis-persistent'
+gitlab_rails['redis_actioncable_instance'] = 'redis://:{{ redis_password }}@gitlab-redis-persistent'
+
+gitlab_rails['redis_cache_sentinels'] = [
+{% for ip in redis_sentinel_cache_int_ips %}
+  {host: '{{ ip }}', port: {{ redis_sentinel_port }}},
+{% endfor %}
+]
+gitlab_rails['redis_queues_sentinels'] = [
+{% for ip in redis_sentinel_persistent_int_ips %}
+  {host: '{{ ip }}', port: {{ redis_sentinel_port }}},
+{% endfor %}
+]
+gitlab_rails['redis_shared_state_sentinels'] = [
+{% for ip in redis_sentinel_persistent_int_ips %}
+  {host: '{{ ip }}', port: {{ redis_sentinel_port }}},
+{% endfor %}
+]
+gitlab_rails['redis_actioncable_sentinels'] = [
+{% for ip in redis_sentinel_persistent_int_ips %}
+  {host: '{{ ip }}', port: {{ redis_sentinel_port }}},
+{% endfor %}
+]
+{% endif %}
+
+# Postgres \ Database
+gitlab_rails['db_host'] = '{{ haproxy_internal_int_ip }}'
+gitlab_rails['db_port'] = 6432
+gitlab_rails['db_password'] = '{{ postgres_password }}'
+gitlab_rails['auto_migrate'] = false
+
+gitlab_rails['env'] = {
+  # Sidekiq Memory Killer - Disabled by default due to https://gitlab.com/gitlab-org/gitlab/-/issues/225909
+  "SIDEKIQ_MEMORY_KILLER_MAX_RSS" => {{ sidekiq_memory_killer_max_rss }}
+
+{% if 'jaeger' in groups %}
+  # Jaeger
+  "GITLAB_TRACING" => "opentracing://jaeger?http_endpoint=http%3A%2F%2F{{ jaeger_int_ip }}%3A14268%2Fapi%2Ftraces&sampler=const&sampler_param=0.1"
+{% endif %}
+}
+
+# Gitaly
+{% if 'praefect' in groups %}
+## Gitaly Cluster (External)
+gitaly['enable'] = false
+git_data_dirs({
+  "default" => {
+    "gitaly_address" => "tcp://{{ haproxy_internal_int_ip }}:2305",
+    "gitaly_token" => '{{ praefect_external_token }}'
+  }
+})
+{% elif 'gitaly' in groups %}
+## Gitaly (External)
+gitaly['enable'] = false
+gitlab_rails['gitaly_token'] = '{{ gitaly_token }}'
+
+git_data_dirs({
+  'default' => { 'gitaly_address' => 'tcp://{{ gitaly_primary_int_ip }}:8075' },
+  'storage1' => { 'gitaly_address' => 'tcp://{{ gitaly_primary_int_ip }}:8075' },
+{% for gitaly_secondary_ip in gitaly_secondary_int_ips %}
+  "storage{{loop.index + 1}}" => { 'gitaly_address' => 'tcp://{{ gitaly_secondary_ip }}:8075' },
+{% endfor %}
+})
+{% endif %}
+
+confs = Dir.glob(File.join("/etc/gitlab/", "gitlab.*.rb"))
+confs.each { |conf|
+  from_file conf
+}

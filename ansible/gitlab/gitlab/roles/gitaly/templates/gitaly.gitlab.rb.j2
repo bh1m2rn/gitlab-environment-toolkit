@@ -1,0 +1,90 @@
+# Avoid running unnecessary services on the Gitaly server
+postgresql['enable'] = false
+redis['enable'] = false
+nginx['enable'] = false
+prometheus['enable'] = false
+unicorn['enable'] = false
+sidekiq['enable'] = false
+gitlab_workhorse['enable'] = false
+alertmanager['enable'] = false
+geo_postgresql['enable'] = false
+geo_primary_role['enable'] = false
+geo_secondary_role['enable'] = false
+gitlab_exporter['enable'] = false
+gitlab_pages['enable'] = false
+grafana['enable'] = false
+mattermost['enable'] = false
+mattermost_nginx['enable'] = false
+pages_nginx['enable'] = false
+pgbouncer['enable'] = false
+pgbouncer_exporter['enable'] = false
+postgres_exporter['enable'] = false
+prometheus['enable'] = false
+puma['enable'] = false
+redis_exporter['enable'] = false
+redis_master_role['enable'] = false
+redis_sentinel_role['enable'] = false
+redis_replica_role['enable'] = false
+registry['enable'] = false
+registry_nginx['enable'] = false
+repmgr['enable'] = false
+repmgrd['enable'] = false
+sentinel['enable'] = false
+storage_check['enable'] = false
+
+# Prevent database connections during 'gitlab-ctl reconfigure'
+gitlab_rails['rake_cache_clear'] = false
+gitlab_rails['auto_migrate'] = false
+
+# Configure the gitlab-shell API callback URL. Without this, `git push` will
+# fail. This can be your 'front door' GitLab URL or an internal load
+# balancer.
+gitlab_rails['internal_api_url'] = '{{ external_url_sanitised }}'
+
+# Make Gitaly accept connections on all network interfaces. You must use
+# firewalls to restrict access to this address/port.
+gitaly['listen_addr'] = "0.0.0.0:8075"
+
+gitaly['prometheus_grpc_latency_buckets'] = [0.001, 0.005, 0.025, 0.1, 0.5, 1.0, 10.0, 30.0, 60.0, 300.0, 1500.0]
+gitaly['ruby_num_workers'] = {{ gitaly_ruby_num_workers }}
+
+{% if 'jaeger' in groups %}
+gitaly['env'] = {
+  "GITLAB_TRACING" => "opentracing://jaeger?http_endpoint=http%3A%2F%2F{{ jaeger_int_ip }}%3A14268%2Fapi%2Ftraces&sampler=const&sampler_param=0.1"
+}
+{% endif %}
+
+consul['enable'] = true
+consul['configuration'] = {
+  bind_addr: '{{ ansible_default_ipv4.address }}',
+  retry_join: %w({{ (consul_int_ips if 'consul' in groups else gitlab_rails_int_ips) | join(' ') }})
+}
+consul['monitoring_service_discovery'] = true
+
+node_exporter['listen_address'] = '0.0.0.0:9100'
+gitaly['prometheus_listen_addr'] = "0.0.0.0:9236"
+
+{% if 'praefect' in groups %}
+gitaly['auth_token'] = "{{ praefect_internal_token }}"
+
+git_data_dirs({
+  "gitaly-{{ gitaly_number }}" => {
+    "path" => "{{ gitaly_cluster_storage_path }}"
+  }
+})
+
+{% else %}
+gitaly['auth_token'] = "{{ gitaly_token }}"
+
+git_data_dirs({
+{% if 'gitaly_primary' in group_names %}
+  "default" => { "path" => "{{ gitaly_sharded_storage_path }}/default" },
+{% endif %}
+  "storage{{ gitaly_number }}" => { 'path' => "{{ gitaly_sharded_storage_path }}/storage{{ gitaly_number }}" },
+})
+{% endif %}
+
+confs = Dir.glob(File.join("/etc/gitlab/", "gitlab.*.rb"))
+confs.each { |conf|
+  from_file conf
+}

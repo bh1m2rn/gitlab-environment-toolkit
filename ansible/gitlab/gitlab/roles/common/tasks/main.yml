@@ -1,0 +1,190 @@
+---
+- name: Perform Common Tasks
+  block:
+    - name: Populate service facts
+      service_facts:
+
+    - name: Set Hostname if not correct
+      hostname:
+        name: "{{ inventory_hostname }}"
+      when:
+        - cloud_provider == 'aws'
+        - ansible_hostname != inventory_hostname
+      tags: hostname
+
+    - name: Add GitLab repository GPG key
+      apt_key:
+        url: https://gitlab-org.gitlab.io/omnibus-gitlab/gitlab_new_gpg.key
+        state: present
+      when:
+        - omnibus_node
+
+    - name: Get GitLab json config file stats if it exists
+      stat:
+        path: "/opt/gitlab/embedded/nodes/{{ ansible_fqdn }}.json"
+      register: gitlab_json_config_file
+      tags: reconfigure
+
+    - name: Delete GitLab json config file if malformed
+      file:
+        path: "/opt/gitlab/embedded/nodes/{{ ansible_fqdn }}.json"
+        state: absent
+      when:
+        - gitlab_json_config_file.stat.exists
+        - gitlab_json_config_file.stat.size < 500
+      tags: reconfigure
+
+    - name: Update apt package information
+      command:
+        cmd: apt-get update
+        warn: false
+      tags: packages
+
+    - name: Install system packages
+      command: apt-get install -y {{ system_packages }}  # noqa command-instead-of-module
+      environment:
+        DEBIAN_FRONTEND: "noninteractive"
+      register: result
+      retries: 20
+      delay: 30
+      until: result is success
+      tags: packages
+
+    - name: Install python packages
+      pip:
+        name: ['requests', 'google-auth', 'netaddr', 'openshift', 'PyYAML', 'docker', 'pexpect']
+        extra_args: --upgrade
+      tags:
+        - packages
+        - reconfigure
+
+    # https://about.gitlab.com/blog/2019/11/15/tracking-down-missing-tcp-keepalives/
+    - name: Configure TCP keepalive settings
+      sysctl:
+        name: net.ipv4.tcp_keepalive_time
+        value: '300'
+        sysctl_set: true
+        state: present
+        reload: true
+      tags: sysctl
+
+    # Removes the official release repo if it's present as we typically want to stick with Nightly
+    # Prevents apt from switching to the release channel (when an official release is younger than nightly)
+    - name: Ensure only GitLab Nightly apt repo is installed unless specified otherwise
+      file:
+        path: /etc/apt/sources.list.d/gitlab_gitlab-ee.list
+        state: absent
+      when:
+        - omnibus_node
+        - gitlab_repo_script_url != "https://packages.gitlab.com/install/repositories/gitlab/gitlab-ee/script.deb.sh"
+
+    - name: Download GitLab repository installation script
+      get_url:
+        url: "{{ gitlab_repo_script_url }}"
+        dest: /tmp/gitlab_install_repository.sh
+        force: true
+      register: repo_file
+      when:
+        - omnibus_node
+
+    - name: Install GitLab repository
+      command: bash /tmp/gitlab_install_repository.sh
+      when:
+        - omnibus_node
+        - repo_file.changed
+
+    - name: Unlock GitLab package installs
+      command: apt-mark install gitlab-ee
+      register: result
+      retries: 2
+      delay: 3
+      until: result is success
+      when:
+        - omnibus_node
+
+    - name: Install GitLab repo package
+      command: apt-get install {{ gitlab_repo_package }} -y --allow-downgrades
+      register: result
+      retries: 2
+      delay: 3
+      until: result is success
+      when:
+        - omnibus_node
+        - gitlab_repo_package != ''
+        - gitlab_deb_host_path == ''
+
+    - name: Copy GitLab deb package
+      copy:
+        src: "{{ gitlab_deb_host_path }}"
+        dest: "{{ gitlab_deb_target_path }}"
+        mode: 0755
+        force: false
+      when:
+        - omnibus_node
+        - gitlab_deb_host_path != ''
+
+    - name: Install GitLab deb package
+      apt:
+        deb: "{{ gitlab_deb_target_path }}"
+      when:
+        - omnibus_node
+        - gitlab_deb_host_path != ''
+
+    # Allows GET to run on a node after running gitlab-ctl cleanse. The current behavior of cleanse is to
+    # delete the /etc/gitlab folder, this will cause an error when we try to copy files to the dir.
+    # GitLab Issue: https://gitlab.com/gitlab-org/omnibus-gitlab/-/issues/5814
+    - name: Ensures /etc/gitlab dir exists with correct permissions
+      file:
+        path: /etc/gitlab
+        owner: root
+        group: root
+        mode: 0775
+        state: directory
+      when:
+        - omnibus_node
+
+    - name: Lock GitLab package updates
+      command: apt-mark hold gitlab-ee
+      register: result
+      retries: 2
+      delay: 10
+      until: result is success
+      when:
+        - omnibus_node
+
+    - name: Update system packages to the latest version
+      command: apt-get upgrade -y  # noqa command-instead-of-module
+      register: result
+      retries: 1
+      until: result is success
+      tags: packages
+
+    - name: Autoremove any unneeded packages
+      command: apt-get autoremove -y  # noqa command-instead-of-module
+      register: result
+      retries: 1
+      until: result is success
+      tags:
+        - packages
+        - autoremove
+
+    - name: Configure sshguard whitelist if present
+      block:
+        - name: Add internal cidr to sshguard whitelist
+          lineinfile:
+            path: /etc/sshguard/whitelist
+            regexp: "^{{ internal_cidr_16 }}$"
+            line: "{{ internal_cidr_16 }}"
+          register: sshguard_whitelist
+
+        - name: Restart sshguard
+          service:
+            name: sshguard
+            state: restarted
+          when: sshguard_whitelist.changed
+      when: "'sshguard' in services"
+
+    - name: Mark common has run
+      set_fact:
+        common_performed: true
+  when: common_performed is not defined

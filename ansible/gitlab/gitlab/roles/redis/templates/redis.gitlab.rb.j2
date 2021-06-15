@@ -1,0 +1,44 @@
+{% if (group_names | select("match", ".*_primary") | list | count > 0) %}
+roles ['redis_master_role']
+{% else %}
+roles ['redis_replica_role']
+
+gitlab_rails['rake_cache_clear'] = false
+{% endif %}
+
+redis['bind'] = '0.0.0.0'
+redis['port'] = {{ redis_port }}
+redis['password'] = '{{ redis_password }}'
+
+{% if (group_names | select("match", ".*_cache_.*") | list | count > 0) %}
+redis['master_ip'] = '{{ redis_cache_primary_int_ip }}'
+
+redis['maxmemory'] = '{{ ((ansible_memory_mb.real.total | int) * 0.9) | round | int }}mb'
+redis['maxmemory_policy'] = "allkeys-lru"
+redis['maxmemory_samples'] = 5
+{% elif (group_names | select("match", ".*_persistent_.*") | list | count > 0) %}
+redis['master_ip'] = '{{ redis_persistent_primary_int_ip }}'
+{% else %}
+redis['master_ip'] = '{{ redis_primary_int_ip }}'
+{% endif %}
+
+gitlab_rails['auto_migrate'] = false
+
+consul['enable'] = true
+consul['configuration'] = {
+  bind_addr: '{{ ansible_default_ipv4.address }}',
+  retry_join: %w({{ (consul_int_ips if 'consul' in groups else gitlab_rails_int_ips) | join(' ') }})
+}
+consul['monitoring_service_discovery'] = true
+
+node_exporter['listen_address'] = '0.0.0.0:9100'
+redis_exporter['listen_address'] = '0.0.0.0:9121'
+redis_exporter['flags'] = {
+  'redis.addr' => "redis://localhost:{{ redis_port }}",
+  'redis.password' => '{{ redis_password }}'
+}
+
+confs = Dir.glob(File.join("/etc/gitlab/", "gitlab.*.rb"))
+confs.each { |conf|
+  from_file conf
+}

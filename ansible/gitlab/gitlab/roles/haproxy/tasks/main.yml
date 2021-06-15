@@ -1,0 +1,66 @@
+---
+- name: Create /opt/haproxy directory
+  file:
+    path: /opt/haproxy
+    state: directory
+  tags: reconfigure
+
+- name: Create /opt/haproxy/haproxy.cfg file
+  template:
+    src: templates/haproxy.cfg.j2
+    dest: /opt/haproxy/haproxy.cfg
+  tags: reconfigure
+
+- name: Copy HAProxy error files
+  copy:
+    src: "files/errorfiles"
+    dest: "/opt/haproxy"
+  tags: reconfigure
+
+- name: Remove old HAProxy container
+  docker_container:
+    name: haproxy
+    state: absent
+  tags:
+    - reconfigure
+    - restart
+
+- name: Start HAProxy Internal Docker
+  docker_container:
+    name: haproxy
+    image: haproxy:alpine
+    pull: true
+    restart_policy: always
+    state: started
+    ports: ['80:80', '6432:6432', '2305:2305', '1936:1936']
+    volumes:
+      - /opt/haproxy:/usr/local/etc/haproxy:ro
+  when: "'haproxy_internal' in group_names"
+  tags:
+    - reconfigure
+    - restart
+
+- name: Start HAProxy External Docker
+  docker_container:
+    name: haproxy
+    image: haproxy:alpine
+    pull: true
+    restart_policy: always
+    state: started
+    ports: ['80:80', '443:443', '1936:1936', '2222:2222', '9090:9090', '9122:9122', '5601:5601']
+    volumes:
+      - /opt/haproxy:/usr/local/etc/haproxy:ro
+  when: "'haproxy_external' in group_names"
+  tags:
+    - reconfigure
+    - restart
+
+- name: Wait for HAProxy Docker to be running
+  shell: docker inspect -f \{\{.State.Status\}\} haproxy
+  register: haproxy_docker_status
+  until: haproxy_docker_status.stdout == 'running'
+  retries: 10
+  delay: 2
+  tags:
+    - reconfigure
+    - restart
