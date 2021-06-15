@@ -3,5 +3,5 @@
     - postgres_primary
     - postgres_secondary
   roles:
-    - postgres
+    - gitlab.gitlab.postgres
   become: true

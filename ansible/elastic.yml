@@ -1,5 +1,5 @@
 ---
 - hosts: elastic
   roles:
-    - elastic
+    - gitlab.gitlab.elastic
   become: true

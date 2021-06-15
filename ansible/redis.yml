@@ -7,5 +7,5 @@
     - redis_sentinel_cache_*
     - redis_sentinel_persistent_*
   roles:
-    - redis
+    - gitlab.gitlab.redis
   become: true

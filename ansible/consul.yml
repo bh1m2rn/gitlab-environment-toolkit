@@ -1,5 +1,5 @@
 ---
 - hosts: consul
   roles:
-    - consul
+    - gitlab.gitlab.consul
   become: true

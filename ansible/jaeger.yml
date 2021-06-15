@@ -1,5 +1,5 @@
 ---
 - hosts: jaeger
   roles:
-    - jaeger
+    - gitlab.gitlab.jaeger
   become: true

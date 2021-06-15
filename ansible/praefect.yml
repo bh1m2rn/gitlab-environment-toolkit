@@ -1,5 +1,5 @@
 ---
 - hosts: praefect
   roles:
-    - praefect
+    - gitlab.gitlab.praefect
   become: true
