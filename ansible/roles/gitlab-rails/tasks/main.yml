@@ -84,7 +84,7 @@
         - reconfigure
         - db_migrate
         - ssl
-    
+
     - name: Reconfigure primary GitLab Rails node
       command: gitlab-ctl reconfigure
       register: result
@@ -97,11 +97,11 @@
 
     - name: Copy SSL Certificates from primary GitLab Rails to NFS if missing
       copy:
-        src:  "/etc/gitlab/ssl/"
+        src: "/etc/gitlab/ssl/"
         dest: "{{ gitlab_nfs_path }}/ssl"
         mode: preserve
-        remote_src: yes
-      tags: 
+        remote_src: true
+      tags:
         - reconfigure
         - ssl_copy
   when: "'gitlab_rails_primary' in group_names"
@@ -111,8 +111,8 @@
     src: "{{ gitlab_nfs_path }}/ssl/"
     dest: "/etc/gitlab/ssl"
     mode: preserve
-    remote_src: yes
-  tags: 
+    remote_src: true
+  tags:
     - reconfigure
     - ssl_copy
 
