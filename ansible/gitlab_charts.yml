@@ -1,4 +1,0 @@
----
-- hosts: localhost
-  roles:
-    - { role: gitlab.gitlab.gitlab_charts, when: "'gitlab_cluster' in groups" }

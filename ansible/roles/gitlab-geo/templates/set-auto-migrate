@@ -1,1 +1,0 @@
-gitlab_rails['auto_migrate'] = {{ db_migrate | lower }}

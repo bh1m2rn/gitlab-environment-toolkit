@@ -1,5 +1,0 @@
----
-- hosts: all
-  roles:
-    - gitlab.gitlab.gitlab_geo
-  become: true

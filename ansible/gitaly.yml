@@ -1,5 +1,0 @@
----
-- hosts: gitaly
-  roles:
-    - gitlab.gitlab.gitaly
-  become: true

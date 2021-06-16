@@ -1,5 +1,0 @@
----
-- hosts: sidekiq
-  roles:
-    - gitlab.gitlab.sidekiq
-  become: true

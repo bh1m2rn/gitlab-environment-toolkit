@@ -1,5 +1,0 @@
----
-- hosts: praefect_postgres
-  roles:
-    - gitlab.gitlab.praefect_postgres
-  become: true
