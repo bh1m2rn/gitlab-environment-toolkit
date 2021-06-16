@@ -54,7 +54,7 @@
   when:
     - cloud_provider == 'gcp'
 
-- name: External database related tasks
+- name: Configure primary GitLab Rails node
   block:
     - name: Gather facts for external omnibus postgres
       block:
@@ -69,31 +69,52 @@
           set_fact:
             postgres_primary_int_ip: "{{ postgres_leader_int_address.stdout.split(':')[0] }}"
             postgres_primary_int_port: "{{ postgres_leader_int_address.stdout.split(':')[1] }}"
-      when: postgres_replication_manager == 'patroni'
+      when: ('postgres' in groups and postgres_replication_manager == 'patroni')
       tags:
         - reconfigure
         - db_migrate
 
-    - name: Setup GitLab deploy node config file with DB Migrations
+    - name: Setup primary GitLab Rails config file
       template:
         src: templates/gitlab-rails.gitlab.rb.j2
         dest: /etc/gitlab/gitlab.rb
       vars:
-        db_migrate: true
+        db_migrate: "{{ (true if 'postgres' in groups else false) | lower }}"
       tags:
         - reconfigure
         - db_migrate
-
-    - name: Reconfigure GitLab deploy node
-      shell: gitlab-ctl reconfigure
+        - ssl
+    
+    - name: Reconfigure primary GitLab Rails node
+      command: gitlab-ctl reconfigure
       register: result
       retries: 3
       until: result is success
       tags:
         - reconfigure
         - db_migrate
-  when: "'postgres' in groups"
-  run_once: true
+        - ssl
+
+    - name: Copy SSL Certificates from primary GitLab Rails to NFS if missing
+      copy:
+        src:  "/etc/gitlab/ssl/"
+        dest: "{{ gitlab_nfs_path }}/ssl"
+        mode: preserve
+        remote_src: yes
+      tags: 
+        - reconfigure
+        - ssl_copy
+  when: "'gitlab_rails_primary' in group_names"
+
+- name: Copy any SSL Certificates from NFS
+  copy:
+    src: "{{ gitlab_nfs_path }}/ssl/"
+    dest: "/etc/gitlab/ssl"
+    mode: preserve
+    remote_src: yes
+  tags: 
+    - reconfigure
+    - ssl_copy
 
 - name: Setup all GitLab Rails config files
   template:
@@ -105,7 +126,7 @@
   tags: reconfigure
 
 - name: Reconfigure all GitLab Rails
-  shell: gitlab-ctl reconfigure
+  command: gitlab-ctl reconfigure
   tags: reconfigure
 
 - name: Restart GitLab
@@ -118,7 +139,7 @@
     - restart
 
 - name: Copy secrets file to NFS if missing
-  shell: "cp -n /etc/gitlab/gitlab-secrets.json {{ gitlab_nfs_path }}"
+  command: "cp -n /etc/gitlab/gitlab-secrets.json {{ gitlab_nfs_path }}"
   tags: secrets
   run_once: true
 

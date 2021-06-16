@@ -63,7 +63,8 @@ gitlab_object_storage_uploads_bucket: "{{ prefix }}-object-storage"
 consul_int_ips: "{{ (groups['consul'] | sort | map('extract', hostvars, internal_ip_lookup[cloud_provider]) | list) if 'consul' in groups else [] }}"
 
 # GitLab Rails (Application nodes)
-gitlab_rails_int_ips: "{{ (groups['gitlab_rails'] | sort | map('extract', hostvars, internal_ip_lookup[cloud_provider]) | list) if 'gitlab_rails_primary' in groups else [] }}"
+gitlab_rails_primary_int_ip: "{{ (groups['gitlab_rails_primary'] | sort | map('extract', hostvars, internal_ip_lookup[cloud_provider]) | join('')) if 'gitlab_rails_primary' in groups else '' }}"
+gitlab_rails_int_ips: "{{ (groups['gitlab_rails'] | sort | map('extract', hostvars, internal_ip_lookup[cloud_provider]) | list) if 'gitlab_rails' in groups else [] }}"
 
 # Gitaly
 gitaly_primary_int_ip: "{{ (groups['gitaly_primary'] | sort | map('extract', hostvars, internal_ip_lookup[cloud_provider]) | join('')) if 'gitaly_primary' in groups else '' }}"

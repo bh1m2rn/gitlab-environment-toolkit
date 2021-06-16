@@ -43,6 +43,9 @@ frontend kibana
 backend gitlab-rails-http
     option httpchk GET /-/readiness
 
+    acl letsencrypt-verify path_beg /.well-known/acme-challenge/
+    use-server gitlab-rails1 if letsencrypt-verify
+
 {% for ip in gitlab_rails_int_ips %}
     server gitlab-rails{{loop.index}} {{ ip }}:80 check inter 3s fall 1
 {% endfor %}

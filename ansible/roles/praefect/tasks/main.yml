@@ -19,7 +19,7 @@
         src: templates/praefect.gitlab.rb.j2
         dest: /etc/gitlab/gitlab.rb
       vars:
-        db_migrate: true
+        db_migrate: 'true'
       tags:
         - reconfigure
         - db_migrate
