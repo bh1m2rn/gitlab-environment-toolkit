@@ -40,8 +40,8 @@ nginx['status']['options'] = {
 # Let's Encrypt SSL
 {% if 'https' in external_url_sanitised %}
 letsencrypt['enable'] = {{ ('gitlab_rails_primary' in group_names) | lower }}
-nginx['redirect_http_to_https'] = {{ ('gitlab_rails_secondary' in group_names) | lower }}
-{% endif -%}
+nginx['redirect_http_to_https'] = true
+{% endif %}
 
 # Storage Config
 ## Object Storage - consolidated object storage configuration

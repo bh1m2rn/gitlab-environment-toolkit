@@ -2,7 +2,7 @@ frontend gitlab-http-in
     bind *:80
 
     acl grafana path_beg -i /-/grafana
-    use_backend grafana if grafana
+    use_backend grafana-http if grafana
 
     default_backend gitlab-rails-http
 
@@ -13,7 +13,7 @@ frontend gitlab-https-in
     option clitcpka
 
     acl grafana path_beg -i /-/grafana
-    use_backend grafana if grafana
+    use_backend grafana-https if grafana
 
     default_backend gitlab-rails-https
 
@@ -70,10 +70,18 @@ backend gitlab-rails-ssh
     server gitlab-rails{{loop.index}} {{ ip }}:22 check port 80 inter 3s fall 1
 {% endfor %}
 
-backend grafana
+backend grafana-http
     option httpchk GET /-/grafana/api/health
 
     server grafana {{ monitor_int_ip }}:80 check
+
+backend grafana-https
+    mode tcp
+    option tcp-check
+    option httpchk GET /-/grafana/api/health
+    option srvtcpka
+
+    server grafana {{ monitor_int_ip }}:443 check port 80
 
 backend prometheus
     option httpchk GET /-/healthy
