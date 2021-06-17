@@ -79,7 +79,7 @@
         src: templates/gitlab-rails.gitlab.rb.j2
         dest: /etc/gitlab/gitlab.rb
       vars:
-        db_migrate: "{{ (true if 'postgres' in groups else false) | lower }}"
+        db_migrate: "{{ ('postgres' in groups) | lower }}"
       tags:
         - reconfigure
         - db_migrate

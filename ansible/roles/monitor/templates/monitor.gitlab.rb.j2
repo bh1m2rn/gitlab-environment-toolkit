@@ -1,6 +1,7 @@
 roles ['monitoring_role']
 
 external_url '{{ external_url_sanitised }}'
+letsencrypt['enable'] = false
 
 # Prometheus
 prometheus['listen_address'] = '0.0.0.0:9090'

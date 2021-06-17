@@ -39,8 +39,8 @@ nginx['status']['options'] = {
 
 # Let's Encrypt SSL
 {% if 'https' in external_url_sanitised %}
-letsencrypt['enable'] = {{ (true if 'gitlab_rails_primary' in group_names else false) | lower }}
-nginx['redirect_http_to_https'] = {{ (true if 'gitlab_rails_secondary' in group_names else false) | lower }}
+letsencrypt['enable'] = {{ ('gitlab_rails_primary' in group_names) | lower }}
+nginx['redirect_http_to_https'] = {{ ('gitlab_rails_secondary' in group_names) | lower }}
 {% endif -%}
 
 # Storage Config
@@ -160,10 +160,10 @@ sidekiq['max_concurrency'] = 15
 postgresql['enable'] = false
 gitlab_rails['db_password'] = '{{ postgres_password }}'
 
-{% if 'pgbouncer' not in groups or (db_migrate is defined and db_migrate == 'true') %}
+{% if 'pgbouncer' not in groups or (db_migrate is defined and db_migrate | bool == true) %}
 gitlab_rails['db_host'] = '{{ postgres_primary_int_ip }}'
 gitlab_rails['db_port'] = '{{ postgres_primary_int_port }}'
-gitlab_rails['auto_migrate'] = {{ (true if 'gitlab_rails_primary' in group_names else false) | lower }}
+gitlab_rails['auto_migrate'] = {{ ('gitlab_rails_primary' in group_names) | lower }}
 {% else %}
 gitlab_rails['db_host'] = "{{ haproxy_internal_int_ip }}"
 gitlab_rails['db_port'] = 6432

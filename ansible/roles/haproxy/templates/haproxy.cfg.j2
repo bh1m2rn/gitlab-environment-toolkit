@@ -33,6 +33,7 @@ defaults
 listen stats
     bind *:1936
     http-request use-service prometheus-exporter if { path /metrics }
+    http-request redirect scheme http code 301 if { ssl_fc }
     mode http
     stats enable
     stats uri /

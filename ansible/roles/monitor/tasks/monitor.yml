@@ -18,6 +18,16 @@
   shell: "cp {{ gitlab_nfs_path }}/gitlab-secrets.json /etc/gitlab/gitlab-secrets.json 2>/dev/null || true"
   tags: secrets
 
+- name: Copy any SSL Certificates from NFS
+  copy:
+    src: "{{ gitlab_nfs_path }}/ssl/"
+    dest: "/etc/gitlab/ssl"
+    mode: preserve
+    remote_src: true
+  tags:
+    - reconfigure
+    - ssl_copy
+
 - name: Remove old GitLab Quality Grafana dashboards directory
   file:
     path: /opt/gitlab-quality/dashboards
