@@ -250,7 +250,7 @@ Cloud settings are specific config relating to the cloud provider is running on.
 
 - `cloud_provider` - Toolkit specific variable, used to dynamically configure cloud provider specific areas such as Object Storage. Should be set to `gcp`, `aws` or `azure`.
 - `gcp_project` **_GCP only_** - ID of the GCP project. Note this must be the Project's unique ID and not just the name
-- `gcp_service_account_host_file` **_GCP only_** - Local path to the Service Account file. This is the same one created in [Setup Provider Authentication - Service Account](environment_prep.md#3-setup-provider-authentication-gcp-service-account). The Toolkit uses this to configure GitLab's Object Storage access.
+- `gcp_service_account_file` **_GCP only_** - Local path to the Service Account file. This is the same one created in [Setup Provider Authentication - Service Account](environment_prep.md#3-setup-provider-authentication-gcp-service-account). The Toolkit uses this to configure GitLab's Object Storage access.
 - `aws_region`  **_AWS only_** - AWS region the environment will run in.
 
 General settings are config used across the playbooks to configure GitLab:
@@ -298,7 +298,7 @@ The Toolkit can install other GitLab versions from `13.2.0` onwards through two 
 
 ### Full config list and further examples
 
-All Ansible config can be viewed directly in the project under the [`group_vars`](../ansible/group_vars) folder. Most config will be found in the [`all.yml`](../ansible/group_vars/all.yml) file, where config applies to all machines. Additional config that only needs to apply to select machines can be found under specific group names under this folder. As mentioned earlier, we may also refer to additional variables in detail later in these docs under the [Advanced sections](environment_advanced.md) where they are applicable.
+All Ansible config can be viewed directly in the project under the [`group_vars`](../ansible/playbooks/group_vars) folder. Most config will be found in the [`all.yml`](../ansible/playbooks/group_vars/all.yml) file, where config applies to all machines. Additional config that only needs to apply to select machines can be found under specific group names under this folder. As mentioned earlier, we may also refer to additional variables in detail later in these docs under the [Advanced sections](environment_advanced.md) where they are applicable.
 
 The Quality team actively uses the Toolkit daily to build and test various environments, including at least one of each Reference Architecture size. These are stored on a different project and can be viewed [here](https://gitlab.com/gitlab-org/quality/gitlab-environment-toolkit-configs/quality) for further reference (although note some files are encrypted to protect secrets).
 
@@ -307,9 +307,9 @@ The Quality team actively uses the Toolkit daily to build and test various envir
 After the config has been setup you're now ready to configure the environment. This is done as follows:
 
 1. `cd` to the `ansible/` directory if not already there.
-1. Run `ansible-playbook` with the intended environment's inventory against the `all.yml` playbook - `ansible-playbook -i inventories/10k all.yml`
+1. Run `ansible-playbook` with the intended environment's inventory against the `all.yml` playbook - `ansible-playbook -i inventories/10k playbooks/all.yml`
     - Note that we pass the whole inventory folder - `inventories/10k`. This ensures Ansible reads all the files in the directory.
-    - If you only want to run a specific playbook & role against the respective VMs you can switch out `all.yml` and replace it with the intended playbook, e.g. `gitlab-rails.yml`
+    - If you only want to run a specific playbook & role against the respective VMs you can switch out `playbooks/all.yml` and replace it with the intended playbook, e.g. `playbooks/gitlab-rails.yml`
 
 ### Running with ansible-deployer (optional)
 
@@ -318,7 +318,7 @@ An alternative way to run the playbooks is with the `ansible-deployer` script. T
 The script can be run as follows:
 
 1. `cd` to the `ansible/` directory if not already there.
-1. Run `ansible-deployer` with the intended environment's just the same as `ansible-playbook` - `./bin/ansible-deployer -i inventories/10k all.yml`
+1. Run `ansible-deployer` with the intended environment's just the same as `ansible-playbook` - `../bin/ansible-deployer -i inventories/10k playbooks/all.yml`
 
 Due to running multiple commands in parallel the stdout of the ansible runner can get very messy, to alleviate this issue the stdout is suppressed and each playbook will create its own log file in `logs`.
 
