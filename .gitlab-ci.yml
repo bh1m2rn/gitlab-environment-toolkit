@@ -27,6 +27,7 @@ check:ansible-lint:
   script:
     - chmod 700 ansible
     - cd ansible
+    - ansible-galaxy role install -r requirements/ansible-galaxy-requirements.yml
     - ansible-lint
   only:
     - master
