@@ -315,9 +315,9 @@ The Quality team actively uses the Toolkit daily to build and test various envir
 After the config has been setup you're now ready to configure the environment. This is done as follows:
 
 1. `cd` to the `ansible/` directory if not already there.
-1. Run `ansible-playbook` with the intended environment's inventory against the `all.yml` playbook - `ansible-playbook -i environments/10k/inventory all.yml`
+1. Run `ansible-playbook` with the intended environment's inventory against the `playbooks/all.yml` playbook - `ansible-playbook -i environments/10k/inventory playbooks/all.yml`
     - Note that we pass the whole inventory folder - `environments/10k/inventory`. This ensures Ansible reads all the files in the directory.
-    - If you only want to run a specific playbook & role against the respective VMs you can switch out `all.yml` and replace it with the intended playbook, e.g. `gitlab-rails.yml`
+    - If you only want to run a specific playbook & role against the respective VMs you can switch out `playbooks/all.yml` and replace it with the intended playbook, e.g. `playbooks/gitlab_rails.yml`
 
 ### Running with ansible-deployer (optional)
 
@@ -326,9 +326,21 @@ An alternative way to run the playbooks is with the `ansible-deployer` script. T
 The script can be run as follows:
 
 1. `cd` to the `ansible/` directory if not already there.
-1. Run `ansible-deployer` with the intended environment's just the same as `ansible-playbook` - `./bin/ansible-deployer -i environments/10k/inventory all.yml`
+1. Run `ansible-deployer` with the intended environment's inventory just the same as `ansible-playbook` - `./bin/ansible-deployer -i environments/10k/inventory playbooks/all.yml`
 
 Due to running multiple commands in parallel the stdout of the ansible runner can get very messy, to alleviate this issue the stdout is suppressed and each playbook will create its own log file in `logs`.
+
+### Installing as a collection (optional, NOT SUPPORTED)
+
+For certain use cases, you may wish to wrap or extend the ansible playbooks; for this reason, they have been formatted using the [galaxy collection structure](https://docs.ansible.com/ansible/latest/dev_guide/developing_collections_structure.html) and can be installed with a [git URL](https://docs.ansible.com/ansible/latest/user_guide/collections_using.html#installing-a-collection-from-a-git-repository).  We use this internally at GitLab, but it is not intended to be used as a supported distribution format. Use at your own risk.
+
+The GitLab Environment Toolkit requires specific settings be set in `ansible.cfg` and relies on a controlled execution environment due primarily to the way ansible handles variable precedence. These settings cannot be included in a galaxy collection, are subject to change, and therefore the [default workflow](#3-configure) will remain as documented above for the foreseeable future.
+
+1. Run `ansible-galaxy collection install git+https://gitlab.com/gitlab-org/quality/gitlab-environment-toolkit.git#/ansible/`
+1. Playbooks can be run with `ansible-playbook -i environments/10k/inventory gitlab.gitlab.PLAYBOOK_NAME`
+1. Run `ansible-playbook` with the intended environment's inventory as normal - `./bin/ansible-playbook -i environments/10k/inventory gitlab.gitlab.all`
+    - Note that we reference the playbooks using the Fully Qualified Collection Name (FQCN). We can use the same notation to [reuse playbooks or roles](https://docs.ansible.com/ansible/latest/user_guide/playbooks_reuse.html#playbooks-reuse) within another playbook or role. While possible, this is not currently a supported workflow.
+    - If you only want to run a specific playbook & role against the respective VMs you can switch out `gitlab.gitlab.all` and replace it with the intended playbook, e.g. `gitlab.gitlab.gitlab_rails`
 
 ## Next Steps
 

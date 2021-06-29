@@ -194,7 +194,7 @@ Add the line `secondary_external_url` which needs to match the `external_url` in
 
 You can also remove the properties: `prefix`, `gitlab_license_file` and `gitlab_root_password`. These are not used when configuring Geo and as such should only be set in the `primary` and `secondary` inventories.
 
-Once done we can then run the command `ansible-playbook -i environments/my-geo-deployment/inventory/all gitlab-geo.yml`.
+Once done we can then run the command `ansible-playbook -i environments/my-geo-deployment/inventory/all playbooks/gitlab-geo.yml`.
 
 Once complete the 2 sites will now be part of the same Geo deployment.
 
@@ -247,13 +247,13 @@ For Zero Downtime Updates, the toolkit follows the [GitLab documented process](h
 Running the zero downtime update process with GET is done in the same way as building the initial environment but with a different playbook instead:
 
 1. `cd` to the `ansible/` directory if not already there.
-1. Run `ansible-playbook` with the intended environment's inventory against the `zero-downtime-update.yml` playbook
+1. Run `ansible-playbook` with the intended environment's inventory against the `playbooks/zero-downtime-update.yml` playbook
 
-    `ansible-playbook -i environments/10k/inventory zero-downtime-update.yml`
+    `ansible-playbook -i environments/10k/inventory playbooks/zero-downtime-update.yml`
 
 1. If GET is managing your Praefect Postgres instance you will need to run the following command to update this
 
-    `ansible-playbook -i environments/10k/inventory praefect-postgres.yml`
+    `ansible-playbook -i environments/10k/inventory playbooks/praefect-postgres.yml`
 
 > This will cause downtime due to GET only using a single Praefect Postgres node.
   If you want to have a highly available setup, Praefect requires a third-party PostgreSQL database and will need to be updated manually.
