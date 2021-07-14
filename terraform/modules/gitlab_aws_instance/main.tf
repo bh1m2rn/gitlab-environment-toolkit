@@ -6,6 +6,8 @@ resource "aws_instance" "gitlab" {
   vpc_security_group_ids = var.security_group_ids
   iam_instance_profile = var.iam_instance_profile
 
+  subnet_id     = tolist(data.aws_subnet_ids.all.ids)[0]
+
   root_block_device {
     volume_type = var.disk_type
     volume_size = var.disk_size
@@ -34,4 +36,13 @@ resource "aws_eip_association" "gitlab" {
 
   instance_id = aws_instance.gitlab[count.index].id
   allocation_id = var.elastic_ip_allocation_ids[count.index]
+}
+
+data "aws_vpc" "selected" {
+  id = var.vpc_id
+  default = var.vpc_default
+}
+
+data "aws_subnet_ids" "all" {
+  vpc_id = data.aws_vpc.selected.id
 }

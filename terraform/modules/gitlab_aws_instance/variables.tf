@@ -54,3 +54,7 @@ variable "geo_site" {
 variable "geo_deployment" {
   default = null
 }
+
+variable "vpc_id" { default = null }
+
+variable "vpc_default" { default = true }
