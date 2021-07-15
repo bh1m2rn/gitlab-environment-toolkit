@@ -1,6 +1,9 @@
 module "praefect" {
   source = "../gitlab_aws_instance"
 
+  vpc_id = var.vpc_id
+  vpc_default = var.vpc_default
+
   prefix = var.prefix
   node_type = "praefect"
   node_count = var.praefect_node_count
