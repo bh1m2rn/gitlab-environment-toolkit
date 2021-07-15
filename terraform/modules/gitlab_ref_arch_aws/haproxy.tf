@@ -1,6 +1,9 @@
 module "haproxy_external" {
   source = "../gitlab_aws_instance"
 
+  vpc_id = var.vpc_id
+  vpc_default = var.vpc_default
+
   prefix = var.prefix
   node_type = "haproxy-external"
   node_count = var.haproxy_external_node_count
@@ -30,6 +33,9 @@ output "haproxy_external" {
 
 module "haproxy_internal" {
   source = "../gitlab_aws_instance"
+
+  vpc_id = var.vpc_id
+  vpc_default = var.vpc_default
 
   prefix = var.prefix
   node_type = "haproxy-internal"
