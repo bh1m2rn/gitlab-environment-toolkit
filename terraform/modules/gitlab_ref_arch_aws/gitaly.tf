@@ -1,6 +1,9 @@
 module "gitaly" {
   source = "../gitlab_aws_instance"
 
+  vpc_id = var.vpc_id
+  vpc_default = var.vpc_default
+
   prefix = var.prefix
   node_type = "gitaly"
   node_count = var.gitaly_node_count
