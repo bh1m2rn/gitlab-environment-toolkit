@@ -1,6 +1,9 @@
 module "gitlab_nfs" {
   source = "../gitlab_aws_instance"
 
+  vpc_id = var.vpc_id
+  vpc_default = var.vpc_default
+
   prefix = var.prefix
   node_type = "gitlab-nfs"
   node_count = var.gitlab_nfs_node_count
