@@ -1,6 +1,9 @@
 module "monitor" {
   source = "../gitlab_aws_instance"
 
+  vpc_id = var.vpc_id
+  vpc_default = var.vpc_default
+
   prefix = var.prefix
   node_type = "monitor"
   node_count = var.monitor_node_count
