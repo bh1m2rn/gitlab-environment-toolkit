@@ -1,3 +1,12 @@
+data "aws_vpc" "selected" {
+  id = var.vpc_id
+  default = var.vpc_default
+}
+
+data "aws_subnet_ids" "all" {
+  vpc_id = data.aws_vpc.selected.id
+}
+
 resource "aws_instance" "gitlab" {
   count = var.node_count
   instance_type = var.instance_type
@@ -36,13 +45,4 @@ resource "aws_eip_association" "gitlab" {
 
   instance_id = aws_instance.gitlab[count.index].id
   allocation_id = var.elastic_ip_allocation_ids[count.index]
-}
-
-data "aws_vpc" "selected" {
-  id = var.vpc_id
-  default = var.vpc_default
-}
-
-data "aws_subnet_ids" "all" {
-  vpc_id = data.aws_vpc.selected.id
 }

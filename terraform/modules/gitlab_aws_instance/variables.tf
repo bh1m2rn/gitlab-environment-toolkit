@@ -57,4 +57,7 @@ variable "geo_deployment" {
 
 variable "vpc_id" { default = null }
 
-variable "vpc_default" { default = true }
+variable "vpc_default" {
+  default = true
+  type    = bool
+}
