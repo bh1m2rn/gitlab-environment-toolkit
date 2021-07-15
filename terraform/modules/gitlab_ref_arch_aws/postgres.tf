@@ -5,6 +5,9 @@ module "postgres" {
   node_type = "postgres"
   node_count = var.postgres_node_count
 
+  vpc_id = var.vpc_id
+  vpc_default = var.vpc_default
+
   instance_type = var.postgres_instance_type
   ami_id = coalesce(var.ami_id, data.aws_ami.ubuntu_18_04.id)
   disk_size = coalesce(var.postgres_disk_size, var.default_disk_size)
