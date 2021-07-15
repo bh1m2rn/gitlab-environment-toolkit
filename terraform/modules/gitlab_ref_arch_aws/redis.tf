@@ -5,6 +5,9 @@ module "redis" {
   node_type = "redis"
   node_count = var.redis_node_count
 
+  vpc_id = var.vpc_id
+  vpc_default = var.vpc_default
+
   instance_type = var.redis_instance_type
   ami_id = coalesce(var.ami_id, data.aws_ami.ubuntu_18_04.id)
   disk_size = coalesce(var.redis_disk_size, var.default_disk_size)
@@ -30,6 +33,9 @@ output "redis" {
 
 module "redis_cache" {
   source = "../gitlab_aws_instance"
+
+  vpc_id = var.vpc_id
+  vpc_default = var.vpc_default
 
   prefix = var.prefix
   node_type = "redis-cache"
@@ -59,6 +65,9 @@ output "redis_cache" {
 module "redis_sentinel_cache" {
   source = "../gitlab_aws_instance"
 
+  vpc_id = var.vpc_id
+  vpc_default = var.vpc_default
+
   prefix = var.prefix
   node_type = "redis-sentinel-cache"
   node_count = var.redis_sentinel_cache_node_count
@@ -87,6 +96,9 @@ output "redis_sentinel_cache" {
 module "redis_persistent" {
   source = "../gitlab_aws_instance"
 
+  vpc_id = var.vpc_id
+  vpc_default = var.vpc_default
+
   prefix = var.prefix
   node_type = "redis-persistent"
   node_count = var.redis_persistent_node_count
@@ -114,6 +126,9 @@ output "redis_persistent" {
 
 module "redis_sentinel_persistent" {
   source = "../gitlab_aws_instance"
+
+  vpc_id = var.vpc_id
+  vpc_default = var.vpc_default
 
   prefix = var.prefix
   node_type = "redis-sentinel-persistent"
