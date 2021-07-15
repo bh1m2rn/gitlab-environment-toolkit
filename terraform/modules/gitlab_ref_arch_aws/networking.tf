@@ -20,6 +20,7 @@ resource "aws_security_group" "gitlab_internal_networking" {
 
 resource "aws_security_group" "gitlab_external_ssh" {
   name = "${var.prefix}-external-ssh"
+  vpc_id = data.aws_vpc.selected.id
   ingress {
     from_port   = 22
     to_port     = 22
