@@ -13,6 +13,7 @@ resource "aws_security_group" "gitlab_internal_networking" {
     to_port = 0
     protocol = "-1"
     self = true
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   egress {
@@ -20,6 +21,10 @@ resource "aws_security_group" "gitlab_internal_networking" {
     to_port = 0
     protocol = "-1"
     cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "${var.prefix}-internal-networking"
   }
 }
 
@@ -32,6 +37,10 @@ resource "aws_security_group" "gitlab_external_ssh" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
+
+  tags = {
+    Name = "${var.prefix}-external-ssh"
+  }
 }
 
 resource "aws_security_group" "gitlab_external_git_ssh" {
@@ -42,6 +51,10 @@ resource "aws_security_group" "gitlab_external_git_ssh" {
     to_port     = 2222
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "${var.prefix}-external-git-ssh"
   }
 }
 
@@ -61,6 +74,10 @@ resource "aws_security_group" "gitlab_external_http_https" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
+
+  tags = {
+    Name = "${var.prefix}-external-http-https"
+  }
 }
 
 resource "aws_security_group" "gitlab_external_haproxy_stats" {
@@ -71,6 +88,10 @@ resource "aws_security_group" "gitlab_external_haproxy_stats" {
     to_port     = 1936
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "${var.prefix}-external-haproxy-stats"
   }
 }
 
@@ -96,5 +117,9 @@ resource "aws_security_group" "gitlab_external_monitor" {
     to_port     = 5601
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "${var.prefix}-external-monitor"
   }
 }

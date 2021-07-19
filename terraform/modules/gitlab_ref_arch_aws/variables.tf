@@ -113,3 +113,16 @@ variable "subpub2_cidr_block" { default = "172.31.16.0/20" }
 variable "subpub3_cidr_block" { default = "172.31.32.0/20" }
 variable "vpc_id" { default = null }
 variable "vpc_default" { default = true }
+
+# Kubernetes \ Helm
+variable "webservice_node_pool_count" { default = 0 }
+variable "webservice_node_pool_instance_type" { default = "" }
+variable "webservice_node_pool_disk_size" { default = "100" }
+
+variable "sidekiq_node_pool_count" { default = 0 }
+variable "sidekiq_node_pool_instance_type" { default = "" }
+variable "sidekiq_node_pool_disk_size" { default = "100" }
+
+variable "supporting_node_pool_count" { default = 0 }
+variable "supporting_node_pool_instance_type" { default = "" }
+variable "supporting_node_pool_disk_size" { default = null }
