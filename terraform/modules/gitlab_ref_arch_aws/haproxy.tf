@@ -1,7 +1,7 @@
 module "haproxy_external" {
   source = "../gitlab_aws_instance"
 
-  vpc_id = var.vpc_id
+  vpc_id = data.aws_vpc.selected.id
   vpc_default = var.vpc_default
 
   prefix = var.prefix
@@ -34,7 +34,7 @@ output "haproxy_external" {
 module "haproxy_internal" {
   source = "../gitlab_aws_instance"
 
-  vpc_id = var.vpc_id
+  vpc_id = data.aws_vpc.selected.id
   vpc_default = var.vpc_default
 
   prefix = var.prefix

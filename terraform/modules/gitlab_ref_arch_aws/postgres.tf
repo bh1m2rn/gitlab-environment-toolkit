@@ -5,7 +5,7 @@ module "postgres" {
   node_type = "postgres"
   node_count = var.postgres_node_count
 
-  vpc_id = var.vpc_id
+  vpc_id = data.aws_vpc.selected.id
   vpc_default = var.vpc_default
 
   instance_type = var.postgres_instance_type

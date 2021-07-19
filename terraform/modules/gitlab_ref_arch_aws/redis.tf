@@ -5,7 +5,7 @@ module "redis" {
   node_type = "redis"
   node_count = var.redis_node_count
 
-  vpc_id = var.vpc_id
+  vpc_id = data.aws_vpc.selected.id
   vpc_default = var.vpc_default
 
   instance_type = var.redis_instance_type
@@ -34,7 +34,7 @@ output "redis" {
 module "redis_cache" {
   source = "../gitlab_aws_instance"
 
-  vpc_id = var.vpc_id
+  vpc_id = data.aws_vpc.selected.id
   vpc_default = var.vpc_default
 
   prefix = var.prefix
@@ -65,7 +65,7 @@ output "redis_cache" {
 module "redis_sentinel_cache" {
   source = "../gitlab_aws_instance"
 
-  vpc_id = var.vpc_id
+  vpc_id = data.aws_vpc.selected.id
   vpc_default = var.vpc_default
 
   prefix = var.prefix
@@ -96,7 +96,7 @@ output "redis_sentinel_cache" {
 module "redis_persistent" {
   source = "../gitlab_aws_instance"
 
-  vpc_id = var.vpc_id
+  vpc_id = data.aws_vpc.selected.id
   vpc_default = var.vpc_default
 
   prefix = var.prefix
@@ -127,7 +127,7 @@ output "redis_persistent" {
 module "redis_sentinel_persistent" {
   source = "../gitlab_aws_instance"
 
-  vpc_id = var.vpc_id
+  vpc_id = data.aws_vpc.selected.id
   vpc_default = var.vpc_default
 
   prefix = var.prefix
