@@ -15,6 +15,7 @@ resource "aws_subnet" "pub1" {
 
   tags = {
     Name = "${var.prefix}-subnet1pub"
+    kubernetes.io/role/elb = "1"
   }
 }
 
@@ -25,6 +26,7 @@ resource "aws_subnet" "pub2" {
 
   tags = {
     Name = "${var.prefix}-subnet2pub"
+    kubernetes.io/role/elb = "1"
   }
 }
 
@@ -35,6 +37,7 @@ resource "aws_subnet" "pub3" {
 
   tags = {
     Name = "${var.prefix}-subnet3pub"
+    kubernetes.io/role/elb = "1"
   }
 }
 
