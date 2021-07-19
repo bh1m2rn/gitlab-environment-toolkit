@@ -17,24 +17,15 @@ resource "aws_vpc" "gitlab_vpc" {
   }
 }
 
-resource "aws_subnet" "pub1" {
+resource "aws_subnet" "pub" {
+
+  count = var.subnet_pub_count
   vpc_id                  = aws_vpc.gitlab_vpc.id
-  cidr_block              = var.subpub1_cidr_block
+  cidr_block              = var.subpub_cidr_block[count.index]
   map_public_ip_on_launch = true
 
   tags = {
-    Name = "${var.prefix}-subnet1pub"
-    "kubernetes.io/role/elb" = 1
-  }
-}
-
-resource "aws_subnet" "pub2" {
-  vpc_id                  = aws_vpc.gitlab_vpc.id
-  cidr_block              = var.subpub2_cidr_block
-  map_public_ip_on_launch = true
-
-  tags = {
-    Name = "${var.prefix}-subnet2pub"
+    Name = "${var.prefix}-subnet${count.index}pub"
     "kubernetes.io/role/elb" = 1
   }
 }
