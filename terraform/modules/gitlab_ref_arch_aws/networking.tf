@@ -24,6 +24,7 @@ resource "aws_subnet" "pub1" {
 
   tags = {
     Name = "${var.prefix}-subnet1pub"
+    "kubernetes.io/role/elb" = 1
   }
 }
 
@@ -34,16 +35,7 @@ resource "aws_subnet" "pub2" {
 
   tags = {
     Name = "${var.prefix}-subnet2pub"
-  }
-}
-
-resource "aws_subnet" "pub3" {
-  vpc_id                  = aws_vpc.gitlab_vpc.id
-  cidr_block              = var.subpub3_cidr_block
-  map_public_ip_on_launch = true
-
-  tags = {
-    Name = "${var.prefix}-subnet3pub"
+    "kubernetes.io/role/elb" = 1
   }
 }
 
