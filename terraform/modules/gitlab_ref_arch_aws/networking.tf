@@ -25,7 +25,6 @@ resource "aws_default_vpc" "default" {
 }
 
 resource "aws_subnet" "pub" {
-
   count = var.vpc_default == true ? 0 : var.subnet_pub_count
   vpc_id                  = data.aws_vpc.selected.id
   cidr_block              = var.subpub_cidr_block[count.index]
