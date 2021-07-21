@@ -1,14 +1,3 @@
-data "aws_vpc" "selected" {
-  count = var.node_count
-  id = var.vpc_id
-  default = var.vpc_default
-}
-
-data "aws_subnet_ids" "all" {
-  count = var.node_count
-  vpc_id = data.aws_vpc.selected[0].id
-}
-
 resource "aws_instance" "gitlab" {
   count = var.node_count
   instance_type = var.instance_type
@@ -17,7 +6,7 @@ resource "aws_instance" "gitlab" {
   vpc_security_group_ids = var.security_group_ids
   iam_instance_profile = var.iam_instance_profile
 
-  subnet_id = tolist(data.aws_subnet_ids.all[0].ids)[(count.index + 1) % length(data.aws_subnet_ids.all[0].ids)]
+  subnet_id = length(var.subnet_ids) == 0 ? null : tolist(var.subnet_ids)[(count.index + length(var.subnet_ids)) % length(var.subnet_ids)]
 
   root_block_device {
     volume_type = var.disk_type

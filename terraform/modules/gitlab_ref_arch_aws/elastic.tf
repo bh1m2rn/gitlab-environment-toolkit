@@ -1,9 +1,6 @@
 module "elastic" {
   source = "../gitlab_aws_instance"
 
-  vpc_id = data.aws_vpc.selected.id
-  vpc_default = var.vpc_default
-
   prefix = var.prefix
   node_type = "elastic"
   node_count = var.elastic_node_count
@@ -12,6 +9,7 @@ module "elastic" {
   ami_id = coalesce(var.ami_id, data.aws_ami.ubuntu_18_04.id)
   disk_size = coalesce(var.elastic_disk_size, var.default_disk_size)
   disk_type = coalesce(var.elastic_disk_type, var.default_disk_type)
+  subnet_ids = var.vpc_default ? [] : aws_subnet.gitlab_vpc_sn_pub[*].id
 
   ssh_key_name = aws_key_pair.ssh_key.key_name
   security_group_ids = [

@@ -1,9 +1,6 @@
 module "haproxy_external" {
   source = "../gitlab_aws_instance"
 
-  vpc_id = data.aws_vpc.selected.id
-  vpc_default = var.vpc_default
-
   prefix = var.prefix
   node_type = "haproxy-external"
   node_count = var.haproxy_external_node_count
@@ -12,6 +9,7 @@ module "haproxy_external" {
   ami_id = coalesce(var.ami_id, data.aws_ami.ubuntu_18_04.id)
   disk_size = coalesce(var.haproxy_external_disk_size, var.default_disk_size)
   disk_type = coalesce(var.haproxy_external_disk_type, var.default_disk_type)
+  subnet_ids = var.vpc_default ? [] : aws_subnet.gitlab_vpc_sn_pub[*].id
   elastic_ip_allocation_ids = var.haproxy_external_elastic_ip_allocation_ids
 
   ssh_key_name = aws_key_pair.ssh_key.key_name
@@ -34,9 +32,6 @@ output "haproxy_external" {
 module "haproxy_internal" {
   source = "../gitlab_aws_instance"
 
-  vpc_id = data.aws_vpc.selected.id
-  vpc_default = var.vpc_default
-
   prefix = var.prefix
   node_type = "haproxy-internal"
   node_count = var.haproxy_internal_node_count
@@ -45,6 +40,7 @@ module "haproxy_internal" {
   ami_id = coalesce(var.ami_id, data.aws_ami.ubuntu_18_04.id)
   disk_size = coalesce(var.haproxy_internal_disk_size, var.default_disk_size)
   disk_type = coalesce(var.haproxy_internal_disk_type, var.default_disk_type)
+  subnet_ids = var.vpc_default ? [] : aws_subnet.gitlab_vpc_sn_pub[*].id
 
   ssh_key_name = aws_key_pair.ssh_key.key_name
   security_group_ids = [
