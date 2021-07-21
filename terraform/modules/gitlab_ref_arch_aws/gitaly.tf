@@ -10,7 +10,7 @@ module "gitaly" {
   disk_size = coalesce(var.gitaly_disk_size, var.default_disk_size)
   disk_type = coalesce(var.gitaly_disk_type, var.default_disk_type)
   disk_iops = 8000
-  subnet_ids = var.vpc_default ? [] : aws_subnet.gitlab_vpc_sn_pub[*].id
+  subnet_ids = var.vpc_default || var.vpc_id != "" ? data.aws_subnet_ids.defaults.ids : aws_subnet.gitlab_vpc_sn_pub[*].id
 
   ssh_key_name = aws_key_pair.ssh_key.key_name
   security_group_ids = [
