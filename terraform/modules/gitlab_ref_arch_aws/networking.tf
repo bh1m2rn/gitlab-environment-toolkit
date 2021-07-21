@@ -8,7 +8,7 @@ data "aws_subnet_ids" "all" {
 }
 
 resource "aws_vpc" "gitlab_vpc" {
-  count = var.vpc_default == true ? 0 : 1
+  count = var.vpc_default || var.vpc_id == '' ? 0 : 1
   cidr_block           = var.vpc_cidr_block
   enable_dns_support   = true
   enable_dns_hostnames = true
