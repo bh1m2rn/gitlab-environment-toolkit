@@ -1,5 +1,5 @@
 data "aws_vpc" "selected" {
-  id = var.vpc_default == true ? "" : "aws_vpc.gitlab_vpc.id"
+  id = var.vpc_default == true ? "" : coalesce(var.vpc_id, aws_vpc.gitlab_vpc[0].id)
   default = var.vpc_default
 }
 
