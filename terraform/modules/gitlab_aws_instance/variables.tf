@@ -55,6 +55,7 @@ variable "geo_deployment" {
   default = null
 }
 
-variable "vpc_id" { default = null }
-
-variable "vpc_default" { default = true }
+variable "subnet_ids" {
+  type = list(string)
+  default = []
+}

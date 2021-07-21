@@ -1,9 +1,6 @@
 module "gitaly" {
   source = "../gitlab_aws_instance"
 
-  vpc_id = data.aws_vpc.selected.id
-  vpc_default = var.vpc_default
-
   prefix = var.prefix
   node_type = "gitaly"
   node_count = var.gitaly_node_count
@@ -13,7 +10,7 @@ module "gitaly" {
   disk_size = coalesce(var.gitaly_disk_size, var.default_disk_size)
   disk_type = coalesce(var.gitaly_disk_type, var.default_disk_type)
   disk_iops = 8000
-  iam_instance_profile = aws_iam_instance_profile.gitlab_s3_profile.name
+  subnet_ids = var.vpc_default ? [] : aws_subnet.gitlab_vpc_sn_pub[*].id
 
   ssh_key_name = aws_key_pair.ssh_key.key_name
   security_group_ids = [
