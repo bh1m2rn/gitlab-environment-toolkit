@@ -20,7 +20,7 @@ resource "google_compute_firewall" "gitlab_http_https" {
 resource "google_compute_firewall" "gitlab_ssh" {
   count = min(var.haproxy_external_node_count, 1)
   name    = "${var.prefix}-gitlab-rails-firewall-rule-ssh"
-  network = "support-resources"
+  network = "vlads-get-test"
 
   description = "Allow access to GitLab SSH via external load balancer"
 
@@ -39,7 +39,7 @@ resource "google_compute_firewall" "gitlab_ssh" {
 resource "google_compute_firewall" "haproxy_stats" {
   count = min(var.haproxy_external_node_count + var.haproxy_internal_node_count, 1)
   name    = "${var.prefix}-haproxy-stats-firewall-rule"
-  network = "support-resources"
+  network = "vlads-get-test"
 
   description = "Allow HAProxy Stats access"
 
@@ -58,7 +58,7 @@ resource "google_compute_firewall" "haproxy_stats" {
 resource "google_compute_firewall" "monitor" {
   count = min(var.monitor_node_count, 1)
   name    = "${var.prefix}-monitor-firewall-rule"
-  network = "support-resources"
+  network = "vlads-get-test"
 
   description = "Allow Prometheus and InfluxDB exporter access"
 
