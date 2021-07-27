@@ -32,9 +32,9 @@ resource "google_compute_instance" "gitlab" {
   }
 
   network_interface {
-    #network = "default"
-    network = "vlads-get-test"
-    #subnetwork = "support-resources-subnet"
+    network = "support-resources"
+    #network = "vlads-get-test"
+    subnetwork = "support-resources-subnet"
 
     access_config {
       nat_ip = length(var.external_ips) == 0 ? google_compute_address.gitlab[count.index].address : var.external_ips[count.index]
