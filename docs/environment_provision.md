@@ -5,7 +5,8 @@
 - [GitLab Environment Toolkit - Configuring the environment with Ansible](environment_configure.md)
 - [GitLab Environment Toolkit - Advanced - Cloud Native Hybrid](environment_advanced_hybrid.md)
 - [GitLab Environment Toolkit - Advanced - External SSL](environment_advanced_ssl.md)
-- [GitLab Environment Toolkit - Advanced - Geo, Advanced Search, Zero Downtime Updates and more](environment_advanced.md)
+- [GitLab Environment Toolkit - Advanced - Geo, Advanced Search and more](environment_advanced.md)
+- [GitLab Environment Toolkit - Upgrade Notes](environment_upgrades.md)
 - [GitLab Environment Toolkit - Considerations After Deployment - Backups, Security](environment_post_considerations.md)
 
 With [Terraform](https://www.terraform.io/) you can automatically provision machines and associated dependencies on a provider.
@@ -388,9 +389,11 @@ In this section you will find the config required to set up each depending on yo
 
 **Default**
 
-This is the default setup for the module. No additional configuration is required.
+This is the default setup for the module and is the recommended setup for most standard (Omnibus) environments where AWS will handle the networking by default.
 
-This is the recommended setup for most standard (Omnibus) environments where AWS will handle the networking by default.
+No additional configuration is needed to use this setup. However several parts of the provisioned architecture may require attaching to a number of Subnets in the network stack to function correctly. The actual number of subnets to be attached can be configured as follows:
+
+- `default_subnet_use_count` - Set to the number of subnets in the default network stack that should be attached to by parts that require it. Default is 2.
 
 **Created**
 
@@ -420,7 +423,7 @@ module "gitlab_ref_arch_aws" {
   prefix = var.prefix
   ssh_public_key_file = file(var.ssh_public_key_file)
 
-  create_network = "true"
+  create_network = true
 
   [...]
 ```
@@ -677,17 +680,7 @@ After the config has been setup you're now ready to provision the environment. T
 1. To apply any changes run `terraform apply` and select yes
     - **Warning - running this command will likely apply changes to shared infrastructure. Only run this command if you have permission to do so.**
 
-_Note: If you ever want to deprovision resources created, you can do so by running [terraform destroy](https://www.terraform.io/docs/cli/commands/destroy.html)._
-
-### Avoid Auto Approve
-
-Where possible we strongly recommend against using the `--auto-approve` behavior that is an option with various Terraform commands such as `terraform apply`, where Terraform is instructed to make all changes without confirmation. This is especially so with Production instances.
-
-Terraform will delete resources and data if it can't apply changes directly. As the Reference Architectures and the Toolkit continue to evolve and improve this may happen at some times, leading to complete data loss.
-
-We'll always endeavor to call out when breaking changes are introduced in new versions of the Toolkit and what steps to take to avoid them but using auto approve, such as in automation, may lead to total data loss and for this reason is strongly unrecommended.
-
-In addition to this generally we recommend you implement a good [backup strategy](environment_post_considerations.md#backups) as well to cover any disaster scenarios in general.
+NOTE: If you ever want to deprovision resources created, you can do so by running [terraform destroy](https://www.terraform.io/docs/cli/commands/destroy.html).
 
 ## Next Steps 
 

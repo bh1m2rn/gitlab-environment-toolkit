@@ -53,7 +53,8 @@ Note that the Toolkit currently has the following requirements (with related iss
 - [GitLab Environment Toolkit - Configuring the environment with Ansible](docs/environment_configure.md)
 - [GitLab Environment Toolkit - Advanced - Cloud Native Hybrid](docs/environment_advanced_hybrid.md)
 - [GitLab Environment Toolkit - Advanced - External SSL](docs/environment_advanced_ssl.md)
-- [GitLab Environment Toolkit - Advanced - Geo, Advanced Search, Zero Downtime Updates and more](docs/environment_advanced.md)
+- [GitLab Environment Toolkit - Advanced - Geo, Advanced Search and more](docs/environment_advanced.md)
+- [GitLab Environment Toolkit - Upgrade Notes](docs/environment_upgrades.md)
 - [GitLab Environment Toolkit - Considerations After Deployment - Backups, Security](docs/environment_post_considerations.md)
 
 ## Missing features to be aware of
@@ -61,11 +62,11 @@ Note that the Toolkit currently has the following requirements (with related iss
 There are a few key features which are not supported yet, which are important to keep in mind.
 
 - [Cloud-provider services](https://gitlab.com/gitlab-org/quality/gitlab-environment-toolkit/-/issues/74), like Postgres (RDS) or object storage (S3)
-- GitLab [Registry support](https://gitlab.com/gitlab-org/quality/gitlab-environment-toolkit/-/issues/25)
+- [GitLab Registry support](https://gitlab.com/gitlab-org/quality/gitlab-environment-toolkit/-/issues/25)
 - [OmniAuth](https://gitlab.com/gitlab-org/quality/gitlab-environment-toolkit/-/issues/123) (SAML, OAuth) configuration support
 - [Promotion](https://gitlab.com/gitlab-org/quality/gitlab-environment-toolkit/-/issues/133) of a Geo secondary
 
-Our next release will be [v1.1.0](https://gitlab.com/groups/gitlab-org/-/epics/5614) and you can view our upcoming work sorted by tentative milestone on [our development board](https://gitlab.com/gitlab-org/quality/gitlab-environment-toolkit/-/boards). Please note that the issues slated for any upcoming release or milestone are subject to change and may not meet the planned timeframes.
+Our upcoming work, sorted by tentative milestone, can be viewed on [our development board](https://gitlab.com/gitlab-org/quality/gitlab-environment-toolkit/-/boards). Please note that the issues slated for any upcoming release or milestone are subject to change and may not meet the planned timeframes.
 
 ## Issues or Feature Requests
 
