@@ -1,13 +1,4 @@
 ---
-- name: Mount GitLab NFS
-  mount:
-    fstype: nfs
-    opts: defaults,nofail,lookupcache=positive
-    state: mounted
-    src: "{{ gitlab_nfs_int_ip }}:{{ gitlab_nfs_path }}"
-    path: "{{ gitlab_nfs_path }}"
-  tags: nfs
-
 - name: Configure SSH Fast Lookup
   blockinfile:
     path: /etc/ssh/sshd_config
