@@ -1,0 +1,21 @@
+---
+- name: Get installed packages
+  package_facts:
+    manager: apt
+
+- name: Install NFS Server on a single server
+  include_tasks: install_nfs.yml
+  tags: nfs
+  when:
+    - ('gitlab_nfs' in group_names) or ('gitlab_nfs' not in groups)
+    - ('nfs-kernel-server' not in ansible_facts.packages)
+
+- name: Mount GitLab NFS
+  mount:
+    fstype: nfs
+    opts: defaults,nofail,lookupcache=positive
+    state: mounted
+    src: "{{ gitlab_nfs_int_ip }}:{{ gitlab_nfs_path }}"
+    path: "{{ gitlab_nfs_path }}"
+  tags: nfs
+  when: ansible_default_ipv4.address != gitlab_nfs_int_ip
