@@ -14,7 +14,7 @@
     gitlab_nfs_int_ip: "{{ ansible_default_ipv4.address }}"
   delegate_to: "{{ item }}"
   with_items: "{{ play_hosts }}"
-  run_once: yes
+  run_once: true
   when: ('nfs-kernel-server' in ansible_facts.packages)
 
 - name: Install NFS Server on a single server
