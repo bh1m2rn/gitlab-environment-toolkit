@@ -149,7 +149,6 @@ sidekiq_max_concurrency: 10
 ################################################################################
 
 # GitLab NFS
-gitlab_nfs_int_ip: "{{ groups['gitlab_nfs'] | sort | map('extract', hostvars, internal_ip_lookup[cloud_provider]) | join('') }}"
 gitlab_nfs_path: "/mnt/gitlab-nfs"
 
 # Elastic
