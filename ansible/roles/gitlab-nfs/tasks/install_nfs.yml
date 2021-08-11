@@ -34,5 +34,6 @@
         gitlab_nfs_int_ip: "{{ ansible_default_ipv4.address }}"
 
     - name: Install cloudalchemy.node_exporter if using a dedicated NFS server
-      include_role: cloudalchemy.node_exporter
+      include_role:
+        name: cloudalchemy.node_exporter
       when: ('gitlab_nfs' in group_names)
