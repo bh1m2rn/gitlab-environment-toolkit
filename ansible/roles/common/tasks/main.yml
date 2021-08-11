@@ -48,7 +48,6 @@
         warn: false
       tags:
         - packages
-        - nfs
 
     - name: Install system packages
       command:
@@ -62,7 +61,6 @@
       until: result is success
       tags:
         - packages
-        - nfs
 
     - name: Install python packages
       pip:
@@ -214,10 +212,6 @@
             state: restarted
           when: sshguard_whitelist.changed
       when: "'sshguard' in services"
-
-    - name: Configure NFS
-      import_tasks: nfs.yml
-      tags: nfs
 
     - name: Mark common has run
       set_fact:

@@ -1,14 +1,27 @@
 ---
+- name: Install nfs-common
+  apt:
+    name: ['nfs-common']
+    update_cache: true
+
 - name: Get installed packages
   package_facts:
     manager: apt
 
+- name: Check if nfs-kernel-server is installed
+  set_fact:
+    gitlab_nfs_hostname: "{{ inventory_hostname }}"
+    gitlab_nfs_int_ip: "{{ ansible_default_ipv4.address }}"
+  delegate_to: "{{ item }}"
+  with_items: "{{ play_hosts }}"
+  run_once: yes
+  when: ('nfs-kernel-server' in ansible_facts.packages)
+
 - name: Install NFS Server on a single server
   include_tasks: install_nfs.yml
-  tags: nfs
   when:
     - ('gitlab_nfs' in group_names) or ('gitlab_nfs' not in groups)
-    - ('nfs-kernel-server' not in ansible_facts.packages)
+    - gitlab_nfs_hostname is not defined
 
 - name: Mount GitLab NFS
   mount:
@@ -17,5 +30,4 @@
     state: mounted
     src: "{{ gitlab_nfs_int_ip }}:{{ gitlab_nfs_path }}"
     path: "{{ gitlab_nfs_path }}"
-  tags: nfs
   when: ansible_default_ipv4.address != gitlab_nfs_int_ip

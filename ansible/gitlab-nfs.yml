@@ -1,0 +1,5 @@
+---
+- hosts: all:!gitlab_cluster:!ungrouped
+  roles:
+    - gitlab-nfs
+  become: true
