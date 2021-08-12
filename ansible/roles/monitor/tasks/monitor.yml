@@ -1,16 +1,4 @@
 ---
-- name: Get installed packages
-  package_facts:
-    manager: apt
-
-- name: Check if nfs-kernel-server is installed
-  set_fact:
-    gitlab_nfs_int_ip: "{{ ansible_default_ipv4.address }}"
-  delegate_to: "{{ item }}"
-  with_items: "{{ play_hosts }}"
-  run_once: true
-  when: ('nfs-kernel-server' in ansible_facts.packages)
-
 - name: Copy secrets file from NFS
   shell: "cp {{ gitlab_nfs_path }}/gitlab-secrets.json /etc/gitlab/gitlab-secrets.json 2>/dev/null || true"
   tags: secrets

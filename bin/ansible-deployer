@@ -78,8 +78,9 @@ puts Rainbow("Starting playbook runs at #{run_start_time}").yellow
 
 if @opts[:playbooks].nil?
   run_playbooks %w[common]
-  run_playbooks %w[haproxy consul elastic gitlab-nfs praefect-postgres]
-  run_playbooks %w[postgres pgbouncer redis sidekiq praefect monitor]
+  run_playbooks %w[gitlab-nfs]
+  run_playbooks %w[haproxy consul elastic praefect-postgres monitor]
+  run_playbooks %w[postgres pgbouncer redis sidekiq praefect]
   run_playbooks %w[gitlab-rails gitaly]
   run_playbooks %w[post-configure]
 else
