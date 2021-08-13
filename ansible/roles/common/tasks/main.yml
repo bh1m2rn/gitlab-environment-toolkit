@@ -46,8 +46,7 @@
       command:
         cmd: apt-get update
         warn: false
-      tags:
-        - packages
+      tags: packages
 
     - name: Install system packages
       command:
@@ -59,8 +58,7 @@
       retries: 20
       delay: 30
       until: result is success
-      tags:
-        - packages
+      tags: packages
 
     - name: Install python packages
       pip:
