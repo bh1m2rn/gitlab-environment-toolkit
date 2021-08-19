@@ -216,7 +216,13 @@
           when: sshguard_whitelist.changed
       when: "'sshguard' in services"
 
+    - name: Set Locale to en_US.UTF-8
+      command:
+        cmd: update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
+        warn: false
+
     - name: Mark common has run
       set_fact:
         common_performed: true
+
   when: common_performed is not defined
