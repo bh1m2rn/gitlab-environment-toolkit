@@ -9,7 +9,6 @@ logs/
 ansible/test.yml
 ansible/error-search.yml
 ansible/tmp/
-.tool-versions
 terraform/environments/*
 !terraform/environments/README.md
 ansible/environments/*

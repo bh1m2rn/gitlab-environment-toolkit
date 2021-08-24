@@ -4,6 +4,7 @@ netaddr
 boto3
 botocore
 openshift
+wheel
 
 # Azure CLI requirements
 -r https://raw.githubusercontent.com/ansible-collections/azure/dev/requirements-azure.txt
