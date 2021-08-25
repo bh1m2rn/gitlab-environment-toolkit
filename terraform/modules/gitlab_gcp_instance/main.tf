@@ -23,7 +23,7 @@ resource "google_compute_disk" "gitlab" {
   name     = "${local.name_prefix}-${each.value.device_name}-${each.value.node_num}"
   type     = each.value.type
   size     = each.value.size
-  zone     = each.value.zone
+  zone     = length(var.zones) > 0 ? element(var.zones, each.value.item) : null
 }
 
 resource "google_compute_address" "gitlab" {
@@ -43,6 +43,7 @@ resource "google_compute_instance" "gitlab" {
   zone         = var.zones == null ? null : element(var.zones, count.index)
 
   allow_stopping_for_update = true
+  zone = length(var.zones) > 0 ? element(var.zones, count.index) : null
 
   boot_disk {
     initialize_params {
