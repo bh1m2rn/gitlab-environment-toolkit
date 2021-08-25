@@ -9,7 +9,8 @@ RUN adduser -s /bin/bash -h /get -D get && \
     chown -R get:get /gitlab-environment-toolkit && \
     chown -R get:get /environments
 
-ENV PATH="${PATH}:/get/.asdf/shims:/get/.asdf/bin:/get/.local/bin"
+ENV PATH="/get/.asdf/shims:/get/.asdf/bin:$PATH"
+ENV GCP_AUTH_KIND="application"
 
 COPY .tool-versions /gitlab-environment-toolkit/.tool-versions
 COPY ./scripts/setup-get-symlinks.sh /gitlab-environment-toolkit/scripts/setup-get-symlinks.sh
@@ -38,6 +39,7 @@ RUN pip install --no-cache-dir ansible --user && \
     /get/.local/bin/ansible-galaxy install -r /gitlab-environment-toolkit/ansible/requirements/ansible-galaxy-requirements.yml
 
 # Copy Environments on login
-RUN echo -e '\n. /gitlab-environment-toolkit/scripts/setup-get-symlinks.sh' >> ~/.bashrc
+RUN echo -e '\n. /gitlab-environment-toolkit/scripts/setup-get-symlinks.sh' >> ~/.bashrc && \
+    echo -e '\n export PATH="/get/.local/bin:$PATH"' >> ~/.bashrc
 
 CMD 'bash'
