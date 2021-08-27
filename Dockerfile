@@ -4,7 +4,7 @@ RUN apk add --virtual .asdf-deps --no-cache jq bash openssh curl git gnupg grep 
 SHELL ["/bin/bash", "-l", "-c"]
 
 RUN adduser -s /bin/bash -h /get -D get && \
-    git clone https://gitlab.com/gitlab-org/quality/gitlab-environment-toolkit.git /gitlab-environment-toolkit && \
+    mkdir /gitlab-environment-toolkit && \
     mkdir /environments && \
     chown -R get:get /gitlab-environment-toolkit && \
     chown -R get:get /environments
@@ -12,6 +12,8 @@ RUN adduser -s /bin/bash -h /get -D get && \
 ENV PATH="/get/.asdf/shims:/get/.asdf/bin:$PATH"
 ENV GCP_AUTH_KIND="application"
 
+COPY ansible /gitlab-environment-toolkit/ansible
+COPY terraform /gitlab-environment-toolkit/terraform
 COPY .tool-versions /gitlab-environment-toolkit/.tool-versions
 COPY ./scripts/setup-get-symlinks.sh /gitlab-environment-toolkit/scripts/setup-get-symlinks.sh
 
