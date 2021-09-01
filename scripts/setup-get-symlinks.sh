@@ -13,8 +13,8 @@ for d in $get_configs_path/*; do
   fi
 
   if [[ -d "$d/ansible_inventory" ]]; then
-    printf "Linking $d/ansible_inventory to $get_path/ansible/inventories/$env_dir\n"
-    ln -nsf $d/ansible_inventory $get_path/ansible/inventories/$env_dir
+    printf "Linking $d/ansible_inventory to $get_path/ansible/environments/$env_dir\n"
+    ln -nsf $d/ansible_inventory $get_path/ansible/environments/$env_dir
   fi
 
   if [[ -d "$d/terraform" ]]; then
