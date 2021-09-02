@@ -88,3 +88,11 @@
   tags:
     - reconfigure
     - restart
+
+- name: Register Prometheus Consul services with the local consul agent
+  include_role:
+    name: consul-agent
+  vars:
+    prometheus_exporters:
+      - service: node-exporter
+        port: 9100

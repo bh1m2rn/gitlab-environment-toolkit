@@ -1,0 +1,8 @@
+argument_specs:
+  main:
+    short_description: Consul agent service registration
+    options:
+      prometheus_exporters:
+        type: "list"
+        required: true
+        elements: "dict"

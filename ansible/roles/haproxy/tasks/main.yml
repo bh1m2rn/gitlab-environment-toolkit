@@ -80,3 +80,13 @@
   tags:
     - reconfigure
     - restart
+
+# TODO: enable HAProxy consul
+# Upstream issue: https://gitlab.com/gitlab-org/quality/gitlab-environment-toolkit/-/issues/224
+# - name: Register Prometheus Consul services with the local consul agent
+#   include_role:
+#     name: consul-agent
+#   vars:
+#     prometheus_exporters:
+#       - service: node-exporter
+#         port: 9100
