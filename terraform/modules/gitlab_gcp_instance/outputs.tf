@@ -17,3 +17,7 @@ output "self_links" {
 output "data_disk_device_names" {
   value = flatten(google_compute_instance.gitlab[*].attached_disk[*].device_name)
 }
+
+output "service_account_email" {
+  value = var.node_count > 0 ? google_service_account.service_account[0].email : ""
+}

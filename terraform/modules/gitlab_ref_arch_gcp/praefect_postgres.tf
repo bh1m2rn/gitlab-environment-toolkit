@@ -20,6 +20,12 @@ module "praefect_postgres" {
   geo_deployment = var.geo_deployment
 
   label_secondaries = true
+
+  disks = var.praefect_postgres_disks
+
+  service_account_roles = var.service_account_roles
+
+  setup_external_ip = var.setup_external_ips
 }
 
 output "praefect_postgres" {

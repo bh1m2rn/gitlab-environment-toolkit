@@ -100,3 +100,7 @@ variable "additional_labels" {
   type    = map(any)
   default = {}
 }
+
+variable "service_account_roles" {
+  default = ["roles/editor"]
+}

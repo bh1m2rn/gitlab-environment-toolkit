@@ -20,6 +20,11 @@ module "redis" {
   geo_deployment = var.geo_deployment
 
   label_secondaries = true
+  disks             = var.redis_disks
+
+  service_account_roles = var.service_account_roles
+
+  setup_external_ip = var.setup_external_ips
 }
 
 output "redis" {
@@ -50,6 +55,11 @@ module "redis_cache" {
   geo_deployment = var.geo_deployment
 
   label_secondaries = true
+  disks             = var.redis_cache_disks
+
+  service_account_roles = var.service_account_roles
+
+  setup_external_ip = var.setup_external_ips
 }
 
 output "redis_cache" {
@@ -78,6 +88,11 @@ module "redis_persistent" {
   geo_deployment = var.geo_deployment
 
   label_secondaries = true
+  disks             = var.redis_persistent_disks
+
+  service_account_roles = var.service_account_roles
+
+  setup_external_ip = var.setup_external_ips
 }
 
 output "redis_persistent" {

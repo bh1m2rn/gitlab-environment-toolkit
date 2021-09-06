@@ -19,7 +19,12 @@ module "monitor" {
   geo_site       = var.geo_site
   geo_deployment = var.geo_deployment
 
-  tags = ["${var.prefix}-web"]
+  tags  = ["${var.prefix}-web"]
+  disks = var.monitor_disks
+
+  service_account_roles = var.service_account_roles
+
+  setup_external_ip = var.setup_external_ips
 }
 
 output "monitor" {

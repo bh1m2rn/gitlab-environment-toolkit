@@ -20,6 +20,11 @@ module "gitlab_rails" {
   geo_deployment = var.geo_deployment
 
   label_secondaries = true
+  disks             = var.gitlab_rails_disks
+
+  service_account_roles = var.service_account_roles
+
+  setup_external_ip = var.setup_external_ips
 }
 
 output "gitlab_rails" {

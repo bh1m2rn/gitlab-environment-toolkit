@@ -18,6 +18,18 @@ locals {
   name_prefix = var.name_override == null ? "${var.prefix}-${var.node_type}" : var.name_override
 }
 
+resource "google_service_account" "service_account" {
+  count = var.node_count > 0 ? 1 : 0
+  account_id   = "${var.prefix}-${var.node_type}"
+  display_name = "${var.prefix}-${var.node_type}"
+}
+
+resource "google_project_iam_member" "service_account" {
+  count = var.node_count > 0 ? length(var.service_account_roles) : 0
+  role    = var.service_account_roles[count.index]
+  member  = "serviceAccount:${google_service_account.service_account[0].email}"
+}
+
 resource "google_compute_disk" "gitlab" {
   for_each = { for d in local.node_data_disks : "${d.device_name}-${d.node_num}" => d }
   name     = "${local.name_prefix}-${each.value.device_name}-${each.value.node_num}"
@@ -80,7 +92,8 @@ resource "google_compute_instance" "gitlab" {
   }
 
   service_account {
-    scopes = concat(["storage-rw"], var.scopes)
+    email = google_service_account.service_account[0].email
+    scopes = concat(["cloud-platform"], var.scopes)
   }
 
   lifecycle {

@@ -37,6 +37,9 @@ variable "object_storage_buckets" {
   default = ["artifacts", "backups", "dependency-proxy", "lfs", "mr-diffs", "packages", "terraform-state", "uploads"]
 }
 
+# IAM Roles to add to the service accounts associated with the VMs
+variable "service_account_roles" { default = ["roles/editor"] }
+
 # Machines
 variable "consul_node_count" {
   type    = number
