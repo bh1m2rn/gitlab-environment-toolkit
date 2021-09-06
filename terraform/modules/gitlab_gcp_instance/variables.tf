@@ -100,3 +100,8 @@ variable "allow_stopping_for_update" {
   type    = bool
   default = true
 }
+
+variable "service_account_roles" {
+  type    = list(string)
+  default = ["roles/storage.objectAdmin", "roles/storage.objectCreator"]
+}
