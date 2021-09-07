@@ -15,6 +15,7 @@ module "consul" {
   disks = var.consul_disks
 
   setup_external_ip = var.setup_external_ips
+  tags = [var.prefix, "consul"]
 }
 
 output "consul" {
