@@ -20,7 +20,7 @@ locals {
 
 resource "google_service_account" "service_account" {
   count        = var.node_count > 0 ? 1 : 0
-  account_id   = "${var.prefix}-${var.node_type}"
+  account_id   = substr("${var.prefix}-${var.node_type}", 0, 30)
   display_name = "${var.prefix}-${var.node_type}"
 }
 
