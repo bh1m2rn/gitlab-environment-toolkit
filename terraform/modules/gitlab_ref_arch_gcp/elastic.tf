@@ -14,6 +14,10 @@ module "elastic" {
   geo_deployment = var.geo_deployment
 
   label_secondaries = true
+
+  disks = var.elastic_disks
+
+  setup_external_ip = var.setup_external_ips
 }
 
 output "elastic" {

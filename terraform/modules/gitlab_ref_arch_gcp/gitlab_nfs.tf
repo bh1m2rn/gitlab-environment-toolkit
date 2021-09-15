@@ -12,6 +12,10 @@ module "gitlab_nfs" {
 
   geo_site = var.geo_site
   geo_deployment = var.geo_deployment
+
+  disks = var.gitlab_nfs_disks
+
+  setup_external_ip = var.setup_external_ips
 }
 
 output "gitlab_nfs" {

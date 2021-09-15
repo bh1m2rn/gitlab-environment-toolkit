@@ -12,7 +12,7 @@
     - reconfigure
     - charts
 
-- name: Gather facts for external omnibus postgres
+- name: Gather facts for Omnibus Postgres cluster
   block:
     - name: Get latest Postgres Leader
       command: gitlab-ctl get-postgresql-primary
@@ -21,16 +21,17 @@
       delegate_facts: true
       become: true
 
-    - name: Update Postgres Primary IP and Port
+    - name: Set Postgres Leader IP and Port
       set_fact:
-        postgres_primary_int_ip: "{{ postgres_leader_int_address.stdout.split(':')[0] }}"
-        postgres_primary_int_port: "{{ postgres_leader_int_address.stdout.split(':')[1] }}"
+        postgres_host: "{{ postgres_leader_int_address.stdout.split(':')[0] }}"
+        postgres_port: "{{ postgres_leader_int_address.stdout.split(':')[1] }}"
   when:
     - "'postgres' in groups"
     - postgres_replication_manager == 'patroni'
   tags:
     - reconfigure
     - charts
+    - charts_values
 
 - name: Gather facts for Node Pools
   block:
@@ -46,16 +47,24 @@
         sidekiq_cpus: "{{ node_info.resources | selectattr('metadata.labels.workload', 'equalto', 'sidekiq') | map(attribute='status.capacity.cpu') | map('int') | sum }}"
         sidekiq_memory: "{{ node_info.resources | selectattr('metadata.labels.workload', 'equalto', 'sidekiq') | map(attribute='status.capacity.memory') | map('regex_replace', '[a-zA-Z]') | map('int') | sum }}"
 
+    - name: Set Webservice CPU and memory resources
+      set_fact:
+        # Configure larger amount of workers for hybrid environments bigger than 2k based on available CPUs
+        webservice_requests_cpu: "{{ gitlab_charts_webservice_requests_cpu if (webservice_cpus | int) > 25 else 2 }}"
+        webservice_requests_memory_gb: "{{ gitlab_charts_webservice_requests_memory_gb if (webservice_cpus | int) > 25 else 2.5 }}"
+        webservice_limits_memory_gb: "{{ gitlab_charts_webservice_limits_memory_gb if (webservice_cpus | int) > 25 else 2.6 }}"
+
     - name: Set Pod Counts
       set_fact:
         # Calculate maximum pod count by either the max that can fit in 95% of available CPUs or Memory
         # Memory: K8s reports memory in KiB which needs to be converted to GB
         # CPU: Can be fractional, e.g. 0.5, so converted to whole numbers by multiplying by a 100 to allow correct division
-        webservice_pods: "{{ [((webservice_memory | int) * 1.024 / 1024 / 1024 / gitlab_charts_webservice_limits_memory_gb * 0.95), ((webservice_cpus | int * 100) / (gitlab_charts_webservice_requests_cpu * 100) * 0.95)] | map('int') | min }}"
+        webservice_pods: "{{ [((webservice_memory | int) * 1.024 / 1024 / 1024 / webservice_limits_memory_gb | int * 0.95), ((webservice_cpus | int * 100) / (webservice_requests_cpu | int  * 100) * 0.95)] | map('int') | min }}"
         sidekiq_pods: "{{ [((sidekiq_memory | int) * 1.024 / 1024 / 1024 / gitlab_charts_sidekiq_limits_memory_gb * 0.95), ((sidekiq_cpus | int * 100) / (gitlab_charts_sidekiq_requests_cpu * 100) * 0.95)] | map('int') | min }}"
   tags:
     - reconfigure
     - charts
+    - charts_values
 
 - name: Add GitLab Charts repo
   community.kubernetes.helm_repository:
@@ -85,6 +94,41 @@
     - charts
     - charts_version
 
+- name: Lookup GitLab Chart values
+  set_fact:
+    gitlab_charts_values: "{{ lookup('template', 'templates/gitlab.yml.j2') | from_yaml }}"
+  tags:
+    - reconfigure
+    - charts
+    - charts_values
+
+- name: Check if custom GitLab Chart values are provided
+  stat:
+    path: "{{ gitlab_charts_custom_config_file }}"
+  register: custom_config_file
+  tags:
+    - reconfigure
+    - charts
+    - charts_values
+
+- name: Merge in custom GitLab Chart values if provided
+  set_fact:
+    gitlab_charts_values: "{{ gitlab_charts_values | combine(lookup('file', gitlab_charts_custom_config_file) | from_yaml, recursive=True) }}"
+  when: custom_config_file.stat.exists
+  tags:
+    - reconfigure
+    - charts
+    - charts_values
+
+- name: Show charts values if configured
+  debug:
+    msg: "{{ gitlab_charts_values }}"
+  tags:
+    - reconfigure
+    - charts
+    - charts_values
+  when: gitlab_charts_show_values
+
 - name: Install GitLab Charts
   community.kubernetes.helm:
     name: gitlab
@@ -92,7 +136,7 @@
     chart_version: "{{ gitlab_charts_version | default(None) }}"
     update_repo_cache: true
     release_namespace: "{{ gitlab_charts_release_namespace }}"
-    values: "{{ lookup('template', 'templates/gitlab.yml.j2') | from_yaml }}"
+    values: "{{ gitlab_charts_values }}"
   tags:
     - reconfigure
     - charts

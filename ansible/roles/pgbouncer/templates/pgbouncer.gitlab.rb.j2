@@ -16,7 +16,7 @@ pgbouncer['users'] = {
 pgbouncer['admin_users'] = %w(pgbouncer gitlab-consul)
 pgbouncer['databases'] = {
   gitlabhq_production: {
-    host: "{{ postgres_primary_int_ip }}",
+    host: "{{ postgres_host }}",
     user: "pgbouncer",
     password: "{{ (pgbouncer_password + 'pgbouncer') | md5 }}"
   }
@@ -26,7 +26,6 @@ pgbouncer['databases'] = {
 pgbouncer['max_db_connections'] = 150
 
 # Configure Consul agent
-consul['enable'] = true
 {% if groups['postgres'] | length > 1 %}
 consul['watchers'] = %w(postgresql)
 {% endif %}
@@ -41,7 +40,7 @@ node_exporter['listen_address'] = '0.0.0.0:9100'
 pgbouncer_exporter['enable'] = true
 pgbouncer_exporter['listen_address'] = '0.0.0.0:9188'
 
-confs = Dir.glob(File.join("/etc/gitlab/", "gitlab.*.rb"))
-confs.each { |conf|
+custom_confs = Dir.glob(File.join("/etc/gitlab/", "gitlab.pgbouncer.*.rb"))
+custom_confs.each { |conf|
   from_file conf
 }

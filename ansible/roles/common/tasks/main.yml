@@ -13,8 +13,12 @@
       tags: hostname
 
     - name: Mount data disk if given
-      import_tasks: disks.yml
+      import_tasks: data_disk.yml
       when: data_disk is defined
+
+    - name: Mount disks if disks are given
+      import_tasks: disk_mounts.yml
+      when: disk_mounts|length > 0
 
     - name: Add GitLab repository GPG key
       apt_key:
@@ -42,18 +46,10 @@
         - gitlab_json_config_file.stat.size < 500
       tags: reconfigure
 
-    - name: Update apt package information
-      command:
-        cmd: apt-get update
-        warn: false
-      tags: packages
-
     - name: Install system packages
-      command:
-        cmd: apt-get install -y {{ system_packages }}  # noqa command-instead-of-module
-        warn: false
-      environment:
-        DEBIAN_FRONTEND: "noninteractive"
+      apt:
+        name: "{{ system_packages }}"
+        update_cache: true
       register: result
       retries: 20
       delay: 30
@@ -62,8 +58,7 @@
 
     - name: Install python packages
       pip:
-        name: ['requests', 'google-auth', 'netaddr', 'openshift', 'PyYAML', 'docker', 'pexpect']
-        extra_args: --upgrade
+        name: "{{ python_packages }}"
       tags:
         - packages
         - reconfigure
@@ -87,6 +82,25 @@
       when:
         - omnibus_node
         - gitlab_repo_script_url != "https://packages.gitlab.com/install/repositories/gitlab/gitlab-ee/script.deb.sh"
+
+    # Allows GET to run on a node after running gitlab-ctl cleanse. The current behavior of cleanse is to
+    # delete the /etc/gitlab folder, this will cause an error when we try to copy files to the dir.
+    # GitLab Issue: https://gitlab.com/gitlab-org/omnibus-gitlab/-/issues/5814
+    - name: Ensure /etc/gitlab dir exists with correct permissions
+      file:
+        path: /etc/gitlab
+        owner: root
+        group: root
+        mode: 0775
+        state: directory
+      when: omnibus_node
+
+    # Workaround for https://gitlab.com/gitlab-org/omnibus-gitlab/-/issues/6364
+    - name: Create skip-unmigrated-data-check file
+      file:
+        path: /etc/gitlab/skip-unmigrated-data-check
+        state: touch
+      when: omnibus_node
 
     - name: Download GitLab repository installation script
       get_url:
@@ -112,10 +126,12 @@
       when:
         - omnibus_node
 
+    # Install GitLab Package via repo. State of latest means always run apt install
+    # If gitlab_version is passed then this will always install that version
     - name: Install GitLab repo package
-      command:
-        cmd: apt-get install {{ gitlab_repo_package }} -y --allow-downgrades
-        warn: false
+      apt:
+        name: "{{ gitlab_repo_package }}"
+        state: "{{ 'present' if gitlab_version != '' else 'latest' }}"
       register: result
       retries: 2
       delay: 3
@@ -149,22 +165,10 @@
     - name: Install GitLab deb package
       apt:
         deb: "{{ gitlab_deb_target_path }}"
+        force: "{{ gitlab_deb_force_install }}"
       when:
         - omnibus_node
         - (gitlab_deb_host_path != '') or (gitlab_deb_download_url != '')
-
-    # Allows GET to run on a node after running gitlab-ctl cleanse. The current behavior of cleanse is to
-    # delete the /etc/gitlab folder, this will cause an error when we try to copy files to the dir.
-    # GitLab Issue: https://gitlab.com/gitlab-org/omnibus-gitlab/-/issues/5814
-    - name: Ensures /etc/gitlab dir exists with correct permissions
-      file:
-        path: /etc/gitlab
-        owner: root
-        group: root
-        mode: 0775
-        state: directory
-      when:
-        - omnibus_node
 
     - name: Lock GitLab package updates
       command: apt-mark hold gitlab-ee
@@ -174,26 +178,6 @@
       until: result is success
       when:
         - omnibus_node
-
-    - name: Update system packages to the latest version
-      command:
-        cmd: apt-get upgrade -y  # noqa command-instead-of-module
-        warn: false
-      register: result
-      retries: 1
-      until: result is success
-      tags: packages
-
-    - name: Autoremove any unneeded packages
-      command:
-        cmd: apt-get autoremove -y  # noqa command-instead-of-module
-        warn: false
-      register: result
-      retries: 1
-      until: result is success
-      tags:
-        - packages
-        - autoremove
 
     - name: Configure sshguard whitelist if present
       block:

@@ -14,7 +14,11 @@ module "haproxy_external" {
   geo_site = var.geo_site
   geo_deployment = var.geo_deployment
 
+  disks = var.haproxy_external_disks
+
   tags = ["${var.prefix}-web", "${var.prefix}-ssh", "${var.prefix}-haproxy", "${var.prefix}-monitor"]
+
+  setup_external_ip = var.setup_external_ips
 }
 
 output "haproxy_external" {
@@ -36,7 +40,11 @@ module "haproxy_internal" {
   geo_site = var.geo_site
   geo_deployment = var.geo_deployment
 
+  disks = var.haproxy_internal_disks
+
   tags = ["${var.prefix}-haproxy"]
+
+  setup_external_ip = var.setup_external_ips
 }
 
 output "haproxy_internal" {

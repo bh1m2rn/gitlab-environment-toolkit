@@ -47,3 +47,25 @@ variable "geo_site" {
 variable "geo_deployment" {
   default = null
 }
+
+variable "disks" {
+  default = []
+  # Array of disks to attach to the instance
+  # Example:
+  #   disks = [
+  #     {
+  #       size    = 50
+  #       type    = "pd-ssd"
+  #       device_name = "data"
+  #     },
+  #     {
+  #       size    = 20
+  #       type    = "pd-standard"
+  #       device_name = "log"
+  #     },
+  #   ]
+}
+
+variable "setup_external_ip" {
+  default = true
+}

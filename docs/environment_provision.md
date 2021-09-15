@@ -5,8 +5,10 @@
 - [GitLab Environment Toolkit - Configuring the environment with Ansible](environment_configure.md)
 - [GitLab Environment Toolkit - Advanced - Cloud Native Hybrid](environment_advanced_hybrid.md)
 - [GitLab Environment Toolkit - Advanced - External SSL](environment_advanced_ssl.md)
-- [GitLab Environment Toolkit - Advanced - Geo, Advanced Search and more](environment_advanced.md)
+- [GitLab Environment Toolkit - Advanced - Cloud Services](environment_advanced_services.md)
+- [GitLab Environment Toolkit - Advanced - Geo, Advanced Search, Custom Config and more](environment_advanced.md)
 - [GitLab Environment Toolkit - Upgrade Notes](environment_upgrades.md)
+- [GitLab Environment Toolkit - Legacy Setups](environment_legacy.md)
 - [GitLab Environment Toolkit - Considerations After Deployment - Backups, Security](environment_post_considerations.md)
 
 With [Terraform](https://www.terraform.io/) you can automatically provision machines and associated dependencies on a provider.
@@ -184,12 +186,8 @@ module "gitlab_ref_arch_gcp" {
 
   redis_cache_node_count = 3
   redis_cache_machine_type = "n1-standard-4"
-  redis_sentinel_cache_node_count = 3
-  redis_sentinel_cache_machine_type = "n1-standard-1"
   redis_persistent_node_count = 3
   redis_persistent_machine_type = "n1-standard-4"
-  redis_sentinel_persistent_node_count = 3
-  redis_sentinel_persistent_machine_type = "n1-standard-1"
 
   sidekiq_node_count = 4
   sidekiq_machine_type = "n1-standard-4"
@@ -348,12 +346,8 @@ module "gitlab_ref_arch_aws" {
 
   redis_cache_node_count = 3
   redis_cache_instance_type = "m5.xlarge"
-  redis_sentinel_cache_node_count = 3
-  redis_sentinel_cache_instance_type = "c5.large"
   redis_persistent_node_count = 3
   redis_persistent_instance_type = "m5.xlarge"
-  redis_sentinel_persistent_node_count = 3
-  redis_sentinel_persistent_instance_type = "c5.large"
 
   sidekiq_node_count = 4
   sidekiq_instance_type = "m5.xlarge"
@@ -624,12 +618,8 @@ module "gitlab_ref_arch_azure" {
 
   redis_cache_node_count = 3
   redis_cache_size = "Standard_D4s_v3"
-  redis_sentinel_cache_node_count = 3
-  redis_sentinel_cache_size = "Standard_A1_v2"
   redis_persistent_node_count = 3
   redis_persistent_size = "Standard_D4s_v3"
-  redis_sentinel_persistent_node_count = 3
-  redis_sentinel_persistent_size = "Standard_A1_v2"
 
   sidekiq_node_count = 4
   sidekiq_size = "Standard_D4s_v3"
@@ -662,12 +652,6 @@ Finally the last thing to configure is authentication. This is required so Terra
 Terraform provides multiple ways to authenticate with the [provider](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs#authenticating-to-azure) and [backend](https://www.terraform.io/docs/language/settings/backends/azurerm.html), you can select any method that is desired.
 
 If you are planning to run the toolkit locally it'll be easier to use [Azure CLI](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/guides/azure_cli) authentication method. Otherwise you can use either a Service Principal or Managed Service Identity when running Terraform non-interactively, please refer to [Authenticating to Azure](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs#authenticating-to-azure) documentation for details. Once you have selected the authentication method and obtained the credentials you may export them as Environment Variables following the Terraform instructions for the specific authentication type to fully authenticate for both the provider and backend.
-
-### Further Config Examples
-
-The Quality team actively use the Toolkit daily to build and test various environments, including at least one of each Reference Architecture size.
-
-These are stored on a different project and can be viewed [here](https://gitlab.com/gitlab-org/quality/gitlab-environment-toolkit-configs/quality) for further reference (although note some files are encrypted to protect secrets).
 
 ## 3. Provision
 

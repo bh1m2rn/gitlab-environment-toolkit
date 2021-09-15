@@ -6,11 +6,11 @@ gitlab:
       targetAverageValue: 1600
     resources:
       limits:
-        memory: "{{ gitlab_charts_webservice_limits_memory_gb }}G"
+        memory: "{{ webservice_limits_memory_gb }}G"
       requests:
-        cpu: "{{ gitlab_charts_webservice_requests_cpu }}"
-        memory: "{{ gitlab_charts_webservice_requests_memory_gb }}G"
-    workerProcesses: "{{ gitlab_charts_webservice_requests_cpu }}"
+        cpu: "{{ webservice_requests_cpu }}"
+        memory: "{{ webservice_requests_memory_gb }}G"
+    workerProcesses: "{{ webservice_requests_cpu }}"
     ingress:
       proxyBodySize: 0  # Bigger file uploads, e.g. imports
     nodeSelector:
@@ -34,15 +34,15 @@ gitlab:
       objectStorage:
         {{ lookup('template', 'task_runner_backups_object_storage.' + cloud_provider + '.yml.j2') | indent(width=8) }}
   migrations:
-{% if 'postgres' in groups %}
     psql:
-      host: "{{ postgres_primary_int_ip }}"
       password:
         secret: gitlab-postgres-password
         key: password
-      port: "{{ postgres_primary_int_port }}"
-{% else %}
-    enabled: false
+      host: "{{ postgres_host }}"
+      port: "{{ postgres_port }}"
+{% if 'postgres' not in groups %}
+      username: "{{ postgres_username }}"
+      database: "{{ postgres_database_name }}"
 {% endif %}
 
 global:
@@ -131,51 +131,99 @@ global:
   minio:
     enabled: false
   psql:
-    host: "{{ haproxy_internal_int_ip if 'haproxy_internal' in groups else postgres_primary_int_ip }}"
     password:
       secret: gitlab-postgres-password
       key: password
-    port: "{{ 6432 if 'haproxy_internal' in groups else postgres_primary_int_port }}"
+{% if postgres_external %}
+    host: "{{ postgres_host }}"
+    port: "{{ postgres_port }}"
+    username: "{{ postgres_username }}"
+    database: "{{ postgres_database_name }}"
+{% elif 'postgres' in groups %}
+    host: "{{ haproxy_internal_int_ip if 'haproxy_internal' in groups else postgres_host }}"
+    port: "{{ 6432 if 'haproxy_internal' in groups else postgres_port }}"
+{% endif %}
+# Redis
   redis:
-{% if 'redis' in groups %}
+{% if redis_external %}
+## Redis Non Omnibus (PaaS \ User Provided)
+### Combined Queues
+    host: "{{ redis_host }}"
+    port: "{{ redis_port }}"
+    password:
+      secret: gitlab-redis-password
+      key: password
+    scheme: "{{ 'rediss' if redis_external_ssl else 'redis' }}"
+{% elif redis_cache_external and redis_persistent_external %}
+### Separate Queues
+    cache:
+      host: "{{ redis_cache_host }}"
+      port: "{{ redis_cache_port }}"
+      password:
+        secret: gitlab-redis-cache-password
+        key: password
+    host: "{{ redis_persistent_host }}"
+    port: "{{ redis_persistent_port }}"
+    password:
+      secret: gitlab-redis-persistent-password
+      key: password
+    scheme: "{{ 'rediss' if redis_external_ssl else 'redis' }}"
+{% elif 'redis' in groups %}
+## Redis Omnibus - Separate Node(s)
+### Combined Queues
 {% if groups['redis'] | length == 1 %}
-### Redis Single Node
-    host: '{{ redis_primary_int_ip }}'
+#### Separate Single Node
+    host: '{{ redis_host }}'
     port: '{{ redis_port }}'
     password:
       secret: gitlab-redis-password
       key: password
 {% elif groups['redis'] | length > 1 %}
-### Redis Multi Node
+#### Separate Multi Node
     host: gitlab-redis
     serviceName: redis
     password:
       secret: gitlab-redis-password
       key: password
     sentinels:
-{% for ip in consul_int_ips %}
+{% for ip in redis_int_ips %}
       - host: '{{ ip }}'
         port: '{{ redis_sentinel_port }}'
 {% endfor %}
 {% endif %}
 {% elif 'redis_cache' in groups and 'redis_persistent' in groups %}
+### Separate Queues
+#### Separate Multi Node
     cache:
       host: gitlab-redis-cache
       password:
-        secret: gitlab-redis-password
+        secret: gitlab-redis-cache-password
         key: password
       sentinels:
-{% for ip in redis_sentinel_cache_int_ips %}
+{% for ip in redis_cache_int_ips %}
       - host: '{{ ip }}'
 {% endfor %}
     host: gitlab-redis-persistent
     password:
-      secret: gitlab-redis-password
+      secret: gitlab-redis-persistent-password
       key: password
     sentinels:
-{% for ip in redis_sentinel_persistent_int_ips %}
+{% for ip in redis_persistent_int_ips %}
       - host: '{{ ip }}'
 {% endfor %}
+
+{% endif %}
+{% if cloud_native_hybrid_geo %}
+  geo:
+    nodeName: "{{ geo_primary_site_name if cloud_native_hybrid_geo_role == 'primary' else geo_secondary_site_name }}"
+    enabled: true
+    role: "{{ cloud_native_hybrid_geo_role }}"
+    psql:
+      host: "{{ postgres_primary_int_ip }}"
+      port: 5431
+      password:
+        secret: gitlab-postgres-password
+        key: password
 {% endif %}
 
 {% if external_url_ssl and external_ssl_source == 'letsencrypt' %}
@@ -231,6 +279,12 @@ prometheus:
 redis:
   install: false
 registry:
+{% if cloud_provider == 'aws' and external_url_ssl and external_ssl_source != '' %}
+  storage:
+    secret: gitlab-container-registry-object-storage-key
+    key: config
+{% else %}
   enabled: false
+{% endif %}
 postgresql:
   install: false
