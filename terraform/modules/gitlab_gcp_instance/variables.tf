@@ -6,11 +6,6 @@ variable "node_type" {
   type = string
 }
 
-variable "zones" {
-  type    = list(string)
-  default = []
-}
-
 variable "node_count" {
   type    = number
   default = 1
