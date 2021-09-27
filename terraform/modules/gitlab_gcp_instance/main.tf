@@ -19,15 +19,15 @@ locals {
 }
 
 resource "google_service_account" "service_account" {
-  count = var.node_count > 0 ? 1 : 0
+  count        = var.node_count > 0 ? 1 : 0
   account_id   = substr("${var.prefix}-${var.node_type}", 0, 30)
   display_name = "${var.prefix}-${var.node_type}"
 }
 
 resource "google_project_iam_member" "service_account" {
-  count = var.node_count > 0 ? length(var.service_account_roles) : 0
-  role    = var.service_account_roles[count.index]
-  member  = "serviceAccount:${google_service_account.service_account[0].email}"
+  count  = var.node_count > 0 ? length(var.service_account_roles) : 0
+  role   = var.service_account_roles[count.index]
+  member = "serviceAccount:${google_service_account.service_account[0].email}"
 }
 
 resource "google_compute_disk" "gitlab" {
@@ -35,7 +35,6 @@ resource "google_compute_disk" "gitlab" {
   name     = "${local.name_prefix}-${each.value.device_name}-${each.value.node_num}"
   type     = each.value.type
   size     = each.value.size
-  zone     = length(var.zones) > 0 ? element(var.zones, each.value.item) : null
 }
 
 resource "google_compute_address" "gitlab" {
@@ -55,7 +54,6 @@ resource "google_compute_instance" "gitlab" {
   zone         = var.zones == null ? null : element(var.zones, count.index)
 
   allow_stopping_for_update = true
-  zone = length(var.zones) > 0 ? element(var.zones, count.index) : null
 
   boot_disk {
     initialize_params {
@@ -92,7 +90,7 @@ resource "google_compute_instance" "gitlab" {
   }
 
   service_account {
-    email = google_service_account.service_account[0].email
+    email  = google_service_account.service_account[0].email
     scopes = concat(["cloud-platform"], var.scopes)
   }
 
