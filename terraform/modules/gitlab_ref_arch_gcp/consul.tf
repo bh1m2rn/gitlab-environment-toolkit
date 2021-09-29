@@ -4,6 +4,7 @@ module "consul" {
   prefix     = var.prefix
   node_type  = "consul"
   node_count = var.consul_node_count
+  tags = var.tags
 
   machine_type  = var.consul_machine_type
   machine_image = var.machine_image

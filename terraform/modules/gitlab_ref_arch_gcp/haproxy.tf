@@ -19,7 +19,7 @@ module "haproxy_external" {
   geo_site       = var.geo_site
   geo_deployment = var.geo_deployment
 
-  tags = ["${var.prefix}-web", "${var.prefix}-ssh", "${var.prefix}-haproxy", "${var.prefix}-monitor"]
+  tags = ["${var.prefix}-web", "${var.prefix}-ssh", "${var.prefix}-haproxy", "${var.prefix}-monitor", var.tags]
 }
 
 output "haproxy_external" {
@@ -46,7 +46,7 @@ module "haproxy_internal" {
   geo_site       = var.geo_site
   geo_deployment = var.geo_deployment
 
-  tags = ["${var.prefix}-haproxy"]
+  tags = ["${var.prefix}-haproxy", var.tags]
 }
 
 output "haproxy_internal" {

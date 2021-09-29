@@ -4,6 +4,7 @@ module "redis" {
   prefix     = var.prefix
   node_type  = "redis"
   node_count = var.redis_node_count
+  tags = var.tags
 
   machine_type  = var.redis_machine_type
   machine_image = var.machine_image
@@ -33,6 +34,7 @@ module "redis_cache" {
   prefix     = var.prefix
   node_type  = "redis-cache"
   node_count = var.redis_cache_node_count
+  tags = var.tags
 
   machine_type  = var.redis_cache_machine_type
   machine_image = var.machine_image
@@ -60,6 +62,7 @@ module "redis_persistent" {
   prefix     = var.prefix
   node_type  = "redis-persistent"
   node_count = var.redis_persistent_node_count
+  tags = var.tags
 
   machine_type  = var.redis_persistent_machine_type
   machine_image = var.machine_image
