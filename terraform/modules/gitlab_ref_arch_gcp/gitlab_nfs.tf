@@ -4,6 +4,7 @@ module "gitlab_nfs" {
   prefix     = var.prefix
   node_type  = "gitlab-nfs"
   node_count = var.gitlab_nfs_node_count
+  additional_labels = var.additional_labels
 
   machine_type  = var.gitlab_nfs_machine_type
   machine_image = var.machine_image

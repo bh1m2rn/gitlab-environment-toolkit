@@ -4,6 +4,7 @@ module "elastic" {
   prefix     = var.prefix
   node_type  = "elastic"
   node_count = var.elastic_node_count
+  additional_labels = var.additional_labels
 
   machine_type  = var.elastic_machine_type
   machine_image = var.machine_image
