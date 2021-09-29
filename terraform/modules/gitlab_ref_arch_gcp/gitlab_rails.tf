@@ -2,6 +2,7 @@ module "gitlab_rails" {
   source = "../gitlab_gcp_instance"
 
   prefix     = var.prefix
+  additional_labels = var.additional_labels 
   node_type  = "gitlab-rails"
   node_count = var.gitlab_rails_node_count
 
