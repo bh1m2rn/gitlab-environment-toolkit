@@ -35,11 +35,10 @@ RUN asdf plugin add terraform && \
 RUN asdf plugin add python && \
     asdf install python && \
     pip install --upgrade pip && \
-    pip install --no-cache-dir -r /gitlab-environment-toolkit/ansible/requirements/ansible-python-packages.txt
+    pip install --no-cache-dir -r /gitlab-environment-toolkit/ansible/requirements/ansible-python-packages.txt --user
 
 # Install Ansible & Dependencies
-RUN pip install --no-cache-dir ansible --user && \
-    /get/.local/bin/ansible-galaxy install -r /gitlab-environment-toolkit/ansible/requirements/ansible-galaxy-requirements.yml
+RUN /get/.local/bin/ansible-galaxy install -r /gitlab-environment-toolkit/ansible/requirements/ansible-galaxy-requirements.yml
 
 # Copy Environments on login
 RUN echo -e '\n. /gitlab-environment-toolkit/scripts/setup-get-symlinks.sh' >> ~/.bashrc && \
