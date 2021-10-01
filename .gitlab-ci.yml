@@ -1,19 +1,55 @@
+include:
+  - template: Dependency-Scanning.gitlab-ci.yml
+
 stages:
-  - check
+  - test
 
 #########################
 ##     Lint Checks     ##
 #########################
 
+check:terraform-fmt:
+  stage: test
+  image:
+    name: "hashicorp/terraform"
+    entrypoint: [ "" ]
+  before_script:
+    - terraform version
+  script:
+    - terraform fmt -check -recursive -diff terraform/
+  only:
+    - master
+    - merge_requests
+  except:
+    - schedules
+    - tags
+
 check:tflint:
-  stage: check
+  stage: test
   image: alpine
   before_script:
     - apk add curl
     - curl -L "$(curl -Ls https://api.github.com/repos/terraform-linters/tflint/releases/latest | grep -o -E "https://.+?_linux_amd64.zip")" -o tflint.zip && unzip tflint.zip -d /usr/bin
   script:
-    - cd terraform
-    - tflint
+    - |
+      set +e
+      tflint --init
+      cd terraform/modules
+
+      RESULT=0
+
+      for dir in */; do
+        echo "************************************************************************"
+        echo "Executing tflint for module: $dir"
+        echo "************************************************************************"
+        tflint -c ${CI_PROJECT_DIR}/.tflint.hcl $dir
+        status=$?
+        if [ $status -gt 0 ]; then
+          RESULT=$status
+        fi
+      done
+
+      exit $RESULT
   only:
     - master
     - merge_requests
@@ -22,7 +58,7 @@ check:tflint:
     - tags
 
 check:ansible-lint:
-  stage: check
+  stage: test
   image: quay.io/ansible/toolset
   script:
     - chmod 700 ansible
@@ -34,3 +70,17 @@ check:ansible-lint:
   except:
     - schedules
     - tags
+
+# Does the requirements.txt install?
+check_requirements:
+  stage: test
+  image: python:3
+  script:
+    - python -m venv get-python-env
+    - source ./get-python-env/bin/activate
+    - pip install -r ansible/requirements/requirements.txt
+    - ansible-galaxy install -r ansible/requirements/ansible-galaxy-requirements.yml
+  rules:
+    - changes:
+        - ansible/requirements/requirements.txt
+        - ansible/requirements/ansible-galaxy-requirements.yml

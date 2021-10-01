@@ -134,55 +134,84 @@ global:
     password:
       secret: gitlab-postgres-password
       key: password
-{% if 'postgres' in groups %}
-    host: "{{ haproxy_internal_int_ip if 'haproxy_internal' in groups else postgres_host }}"
-    port: "{{ 6432 if 'haproxy_internal' in groups else postgres_port }}"
-{% elif postgres_external %}
+{% if postgres_external %}
     host: "{{ postgres_host }}"
     port: "{{ postgres_port }}"
     username: "{{ postgres_username }}"
     database: "{{ postgres_database_name }}"
+{% elif 'postgres' in groups %}
+    host: "{{ haproxy_internal_int_ip if 'haproxy_internal' in groups else postgres_host }}"
+    port: "{{ 6432 if 'haproxy_internal' in groups else postgres_port }}"
 {% endif %}
+# Redis
   redis:
-{% if 'redis' in groups %}
+{% if redis_external %}
+## Redis Non Omnibus (PaaS \ User Provided)
+### Combined Queues
+    host: "{{ redis_host }}"
+    port: "{{ redis_port }}"
+    password:
+      secret: gitlab-redis-password
+      key: password
+    scheme: "{{ 'rediss' if redis_external_ssl else 'redis' }}"
+{% elif redis_cache_external and redis_persistent_external %}
+### Separate Queues
+    cache:
+      host: "{{ redis_cache_host }}"
+      port: "{{ redis_cache_port }}"
+      password:
+        secret: gitlab-redis-cache-password
+        key: password
+    host: "{{ redis_persistent_host }}"
+    port: "{{ redis_persistent_port }}"
+    password:
+      secret: gitlab-redis-persistent-password
+      key: password
+    scheme: "{{ 'rediss' if redis_external_ssl else 'redis' }}"
+{% elif 'redis' in groups %}
+## Redis Omnibus - Separate Node(s)
+### Combined Queues
 {% if groups['redis'] | length == 1 %}
-### Redis Single Node
-    host: '{{ redis_primary_int_ip }}'
+#### Separate Single Node
+    host: '{{ redis_host }}'
     port: '{{ redis_port }}'
     password:
       secret: gitlab-redis-password
       key: password
 {% elif groups['redis'] | length > 1 %}
-### Redis Multi Node
+#### Separate Multi Node
     host: gitlab-redis
     serviceName: redis
     password:
       secret: gitlab-redis-password
       key: password
     sentinels:
-{% for ip in consul_int_ips %}
+{% for ip in redis_int_ips %}
       - host: '{{ ip }}'
         port: '{{ redis_sentinel_port }}'
 {% endfor %}
 {% endif %}
 {% elif 'redis_cache' in groups and 'redis_persistent' in groups %}
+### Separate Queues
+#### Separate Multi Node
     cache:
       host: gitlab-redis-cache
       password:
-        secret: gitlab-redis-password
+        secret: gitlab-redis-cache-password
         key: password
       sentinels:
-{% for ip in redis_sentinel_cache_int_ips %}
+{% for ip in redis_cache_int_ips %}
       - host: '{{ ip }}'
 {% endfor %}
     host: gitlab-redis-persistent
     password:
-      secret: gitlab-redis-password
+      secret: gitlab-redis-persistent-password
       key: password
     sentinels:
-{% for ip in redis_sentinel_persistent_int_ips %}
+{% for ip in redis_persistent_int_ips %}
       - host: '{{ ip }}'
 {% endfor %}
+
 {% endif %}
 {% if cloud_native_hybrid_geo %}
   geo:
@@ -190,10 +219,10 @@ global:
     enabled: true
     role: "{{ cloud_native_hybrid_geo_role }}"
     psql:
-      host: "{{ postgres_primary_int_ip }}"
-      port: 5431
+      host: "{{ geo_tracking_postgres_host }}"
+      port: "{{ geo_tracking_postgres_port }}"
       password:
-        secret: gitlab-postgres-password
+        secret: gitlab-geo-tracking-postgres-password
         key: password
 {% endif %}
 

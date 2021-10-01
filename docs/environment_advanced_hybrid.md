@@ -5,6 +5,7 @@
 - [GitLab Environment Toolkit - Configuring the environment with Ansible](environment_configure.md)
 - [**GitLab Environment Toolkit - Advanced - Cloud Native Hybrid**](environment_advanced_hybrid.md)
 - [GitLab Environment Toolkit - Advanced - External SSL](environment_advanced_ssl.md)
+- [GitLab Environment Toolkit - Advanced - Cloud Services](environment_advanced_services.md)
 - [GitLab Environment Toolkit - Advanced - Geo, Advanced Search, Custom Config and more](environment_advanced.md)
 - [GitLab Environment Toolkit - Upgrade Notes](environment_upgrades.md)
 - [GitLab Environment Toolkit - Legacy Setups](environment_legacy.md)
@@ -38,9 +39,7 @@ In addition to the above and as [stated earlier in the docs](docs/environment_pr
 
 ## 2. Provisioning the Kubernetes Cluster with Terraform
 
-Provisioning a Cloud Native Hybrid Reference Architecture has been designed to be very similar to a standard one, which native support added to the Toolkit's modules. As such, it only requires some different config in your Environment's config file (`environment.tf`).
-
-Like the main provisioning docs there are sections for each support host provider on how to achieve this. Follow the section for your selected provider and then move onto the next step.
+Provisioning a Cloud Native Hybrid Reference Architecture has been designed to be very similar to a standard one, with native support added to the Toolkit's modules. As such, it only requires some minor config changes in your Environment's config file (`environment.tf`).
 
 Provisioning the required Kubernetes cluster with a cloud provider only requires a few tweaks to your [Environment config file](environment_provision.md#configure-module-settings-environmenttf) (`environment.tf`) - Namely replacing the GitLab Rails and Sidekiq VMs with equivalent k8s Node Pools instead.
 
@@ -56,8 +55,6 @@ Each node pool setting configures the following. To avoid repetition we'll descr
 - `*_node_pool_count` - The number of machines to set up for that component's node pool
 - `*_node_pool_machine_type` - **GCP only** The [GCP Machine Type](https://cloud.google.com/compute/docs/machine-types) (size) for each machine in the node pool
 - `*_node_pool_instance_type` - **AWS only** The [AWS Instance Type](https://aws.amazon.com/ec2/instance-types/) (size) for each machine in the node pool
-
-Once the above is configured as desired you can proceed to [provision as standard](environment_provision.md#3-provision).
 
 Below are examples for an `environment.tf` file with all config for each cloud provider based on a [10k Cloud Native Hybrid Reference Architecture](https://docs.gitlab.com/ee/administration/reference_architectures/10k_users.html#cloud-native-hybrid-reference-architecture-with-helm-charts-alternative):
 
@@ -113,12 +110,8 @@ module "gitlab_ref_arch_gcp" {
 
   redis_cache_node_count = 3
   redis_cache_machine_type = "n1-standard-4"
-  redis_sentinel_cache_node_count = 3
-  redis_sentinel_cache_machine_type = "n1-standard-1"
   redis_persistent_node_count = 3
   redis_persistent_machine_type = "n1-standard-4"
-  redis_sentinel_persistent_node_count = 3
-  redis_sentinel_persistent_machine_type = "n1-standard-1"
 }
 
 output "gitlab_ref_arch_gcp" {
@@ -180,12 +173,17 @@ module "gitlab_ref_arch_aws" {
 
   redis_cache_node_count = 3
   redis_cache_instance_type = "m5.xlarge"
-  redis_sentinel_cache_node_count = 3
-  redis_sentinel_cache_instance_type = "c5.large"
   redis_persistent_node_count = 3
   redis_persistent_instance_type = "m5.xlarge"
-  redis_sentinel_persistent_node_count = 3
-  redis_sentinel_persistent_instance_type = "c5.large"
+
+  // Add any AWS Auth mappings to this array
+  // This defaults to an empty array
+  // See `aws_auth_roles` section in documentation for more details
+  // aws_auth_roles: [{
+  //   rolearn = 'arn:aws:iam::12345:AWS_ROLE_ARN'
+  //   kube_username = 'my_kube_username:{{SessionName}}'
+  //   kube_groups = ['system:masters']
+  // }]
 }
 
 output "gitlab_ref_arch_aws" {
@@ -205,6 +203,30 @@ With EKS the GitLab Environment Toolkit is able to configure the networking for 
 More information can be found in the docs for [Configuring network setup (AWS)](environment_provision.md#configure-network-setup-aws).
 
 NOTE: If you ever want to deprovision resources created, with a Cloud Native Hybrid on AWS **you must run [helm uninstall gitlab](https://helm.sh/docs/helm/helm_uninstall/)** before running [terraform destroy](https://www.terraform.io/docs/cli/commands/destroy.html). This ensure all resources are correctly removed.
+
+#### Defining AWS Auth Roles with `aws_auth_roles`
+
+By default EKS automatically grants the IAM entity user or role that creates the cluster `system:masters` permissions in the cluster's RBAC configuration in the control plane. All other IAM users or roles require explicit access. This is defined through the `kube-system/aws-auth` config map. More details are available in the EKS documentation on [Managing users or IAM roles for your cluster](https://docs.aws.amazon.com/eks/latest/userguide/add-user-role.html), while full details of the expected format of the `aws-auth` configmap can be found in the [`aws-iam-authenticator` source code repository](https://github.com/kubernetes-sigs/aws-iam-authenticator#full-configuration-format).
+
+```tf
+module "gitlab_ref_arch_aws" {
+  // other variables...
+
+  aws_auth_roles: [{
+    rolearn = 'arn:aws:iam::12345:AWS_ROLE_ARN'        // IAM Role ARN
+    kube_username = 'my_kube_username:{{SessionName}}' // Kubernetes RBAC username to map for the Role ARN
+    kube_groups = ['system:masters']                   // Kubernetes RBAC groups to map for Role ARN
+  }]
+}
+```
+
+##### Updating `aws-auth` after initialization
+
+If you would like to add additional roles, these can be added through the `aws_auth_roles` variable. When this is set, GET will initialize the `kube-system/aws-auth` config map with the configured rules.
+
+Note that after the initialization, GET will not update this config map. This is because Terraform's default behaviour would overwrite any future changes to the config map. Other EKS processes outside of Terraform may update the `aws-auth` config map, so Terraform would overwrite those changes. As a result, we have disabled updates to the `kube-system/aws-auth` config map after the initial configuration.
+
+If you would like to update the AWS Auth config map after the initial provisioning, use `kubectl edit -n kube-system configmap/aws-auth` to edit the namespace manually. Further details can be found in the AWS EKS Documentation.
 
 ## 3. Setting up authentication for the provisioned Kubernetes Cluster
 
@@ -228,12 +250,13 @@ By design, this file is similar to the one used in a [standard environment](envi
 - `cloud_native_hybrid_environment` - Sets Ansible to know it's configuring a Cloud Native Hybrid Reference Architecture environment. Required.
 - `kubeconfig_setup` - When true, will attempt to automatically configure the `.kubeconfig` file entry for the provisioned Kubernetes cluster.
 - `external_ip` - **GCP only** External IP the environment will run on. Required along with `external_url` for Cloud Native Hybrid installs.
+- `external_url` - This cannot be an IP address in a hybrid environment. You will need a domain or sub-domain to which you or your company owns, to which you can add a DNS record.
 - `gcp_zone` - **GCP only** Zone name the GCP project is in. Only required for Cloud Native Hybrid installs when `kubeconfig_setup` is set to true.
 - `aws_region` - **AWS only** Name of the region where the EKS cluster is located. Only required for Cloud Native Hybrid installs when `kubeconfig_setup` is set to true.
 - `aws_allocation_ids` - **AWS only** A comma separated list of allocation IDs to assign to the AWS load balancer.
   - With AWS you **must have an [Elastic IP](https://gitlab.com/gitlab-org/quality/gitlab-environment-toolkit/-/blob/master/docs/environment_prep.md#4-create-static-external-ip-aws-elastic-ip-allocation) for each subnet being used**, each Elastic IP will have an allocation ID that must be stored in this list.
 Below are examples for a `vars.yml` file with all config for each cloud provider based on a [10k Cloud Native Hybrid Reference Architecture](https://docs.gitlab.com/ee/administration/reference_architectures/10k_users.html#cloud-native-hybrid-reference-architecture-with-helm-charts-alternative):
-
+  
 ### Google Cloud Platform (GCP)
 
 ```yml

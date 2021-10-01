@@ -5,6 +5,7 @@
 - [GitLab Environment Toolkit - Configuring the environment with Ansible](environment_configure.md)
 - [GitLab Environment Toolkit - Advanced - Cloud Native Hybrid](environment_advanced_hybrid.md)
 - [GitLab Environment Toolkit - Advanced - External SSL](environment_advanced_ssl.md)
+- [GitLab Environment Toolkit - Advanced - Cloud Services](environment_advanced_services.md)
 - [**GitLab Environment Toolkit - Advanced - Geo, Advanced Search, Custom Config and more**](environment_advanced.md)
 - [GitLab Environment Toolkit - Upgrade Notes](environment_upgrades.md)
 - [GitLab Environment Toolkit - Legacy Setups](environment_legacy.md)
@@ -60,7 +61,7 @@ module "gitlab_ref_arch_*" {
 Next you need to add 2 new labels that helps to identify the machines as belonging to our Geo deployment and if they are part of the primary or secondary site:
 
 - `geo_site` - used to identify if a machine belongs to the primary or secondary site. This must be set to either `geo-primary-site` or `geo-secondary-site`.
-- `geo_deployment` - used to identify that a primary and secondary site belong to the same Geo deployment. This must be unique across all Geo deployments thats will be stored alongside each other.
+- `geo_deployment` - used to identify that a primary and secondary site belong to the same Geo deployment. This must be unique across all Geo deployments that will be stored alongside each other.
 
 The recommended way to do this is to first set them in the `variables.tf` file, for example:
 
@@ -98,11 +99,15 @@ We will need to start by creating new inventories for a Geo deployment. For Geo 
 ansible
 └── environments
     └── my-geo-deployment
-        ├── files
-        └── inventory
-            ├── all
-            ├── primary
-            └── secondary
+        ├── all
+        |   ├── files
+        |   └── inventory
+        ├── primary
+        |   ├── files
+        |   └── inventory
+        └── secondary
+            ├── files
+            └── inventory
 ```
 
 For Omnibus environments the `primary` and `secondary` folders are treated the same as non Geo environments and as such the steps for [GitLab Environment Toolkit - Configuring the environment with Ansible](environment_configure.md) should be followed.
@@ -309,17 +314,53 @@ In this section we detail how to set up custom config for Omnibus and Helm chart
 
 ### Omnibus
 
-TBC
+Providing custom config for components run as part of an Omnibus environment is done as follows:
+
+1. Create a [gitlab.rb](https://gitlab.com/gitlab-org/omnibus-gitlab/blob/master/files/gitlab-config-template/gitlab.rb.template) file in the correct format with the specific custom settings you wish to apply
+1. By default the Toolkit looks for a files in the [environments](environment_configure.md#2-setup-the-environments-inventory-and-config) `files/gitlab_configs` folder path. E.G. `ansible/environments/<env_name>/files/gitlab_configs/<component>.rb`. Save your file in this location with the same name.
+    - If you wish to store your file in a different location or use a different name the full path that Ansible should use can be set via a variable for each different component e.g. `<component>_custom_config_file`
+    - Available component options: `consul`, `postgres`, `pgbouncer`, `redis`, `redis_cache`, `redis_persistent`, `praefect_postgres`, `praefect`, `gitaly`, `gitlab_rails`, `sidekiq` and `monitor`.
+
+With the above done the file will be picked up by the Toolkit and used when configuring Omnibus.
 
 ### Helm
 
 Providing custom config for components run via Helm charts in Cloud Native Hybrid environments is done as follows:
 
 1. Create a [GitLab Charts](https://docs.gitlab.com/charts/) yaml file in the correct format with the specific custom settings you wish to apply
-1. By default the Toolkit will looks for a file named `gitlab_charts.yml` in the [environments](environment_configure.md#2-setup-the-environments-inventory-and-config) `files/config` folder path. E.G. `ansible/environments/<env_name>/files/config/gitlab_charts.yml`. Save your file in this location with the same name.
+1. By default the Toolkit looks for a file named `gitlab_charts.yml` in the [environments](environment_configure.md#2-setup-the-environments-inventory-and-config) `files/gitlab_configs` folder path. E.G. `ansible/environments/<env_name>/files/gitlab_configs/gitlab_charts.yml`. Save your file in this location with the same name.
     - If you wish to store your file in a different location or use a different name the full path that Ansible should use can be set via the `gitlab_charts_custom_config_file` inventory variable.
 
 With the above done the file will be picked up by the Toolkit and used when configuring the Helm charts.
+
+Additionally, the Toolkit provides an ability to pass a custom Chart task list that will run against the cluster before installing the [GitLab Charts](https://docs.gitlab.com/charts/). This feature could be used if you need some further customizations, for example creating custom secrets. When creating the file follow these requirements:
+
+- The file should be a standard Ansible Tasks yaml file that will be used with [`include_tasks`](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/include_tasks_module.html).
+- By default, the Toolkit will look for a Chart Ansible Task file alongside your Ansible inventory in `environments/<inventory name>/files/gitlab_configs/charts_tasks.yml`.
+  - If you want to store your custom task at another path then you can set the variable `gitlab_charts_custom_tasks_file` to point to your custom location.
+
+### API
+
+Some config in GitLab can only be changed via API. As such, the Toolkit supports passing a custom API Ansible Task list that will be executed during the [Post Configure](https://gitlab.com/gitlab-org/quality/gitlab-environment-toolkit/-/tree/master/ansible/roles/post-configure/tasks) role from [localhost](https://gitlab.com/gitlab-org/quality/gitlab-environment-toolkit/-/blob/master/ansible/post-configure.yml). This feature could be used when you want to do further configuration changes to your environment after it's deployed. For example, modifying GitLab [application settings using API](https://docs.gitlab.com/ee/api/settings.html).
+
+Note that this file should be a standard Ansible Tasks yaml file that will be used with [`include_tasks`](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/include_tasks_module.html).
+
+By default, the Toolkit will look for an API Ansible Task file alongside your Ansible inventory in `environments/<inventory name>/files/gitlab_configs/api_tasks.yml`. If you want to store your custom task at another path then you can set the variable `post_configure_api_tasks_file` to point to your custom location.
+
+## Custom Grafana Dashboards
+
+When using the Toolkit it is possible to pass custom Grafana dashboards during setup to allow Grafana to monitor any metrics required by the user.
+
+By default we recommend storing any custom dashboards alongside your Ansible inventory in `environments/<inventory name>/files/grafana/<collection name>/<dashboard files>`. You can create multiple folders to store different dashboards or store everything in a single folder. If you want to store your custom dashboards in a folder other than `environments/<inventory name>/files/grafana/` then you can set the variable `monitor_custom_dashboards_path` to point to your custom location.
+
+Once the dashboards are in place you can add the `monitor_custom_dashboards` variable into your `vars.yml` file.
+
+```yaml
+monitor_custom_dashboards: [{ display_name: 'Sidekiq Dashboards', folder: "my_sidekiq_dashboards" }, { display_name: 'Gitaly Dashboards', folder: "my_gitaly_dashboards" }]
+```
+
+- `display_name`: This is how the collection will appear in the Grafana UI and the name of the folder the dashboards will be stored in on the Grafana server.
+- `folder`: This is the name of the folder in `monitor_custom_dashboards_path` that holds your collection of dashboards.
 
 ## Container Registry
 
@@ -355,3 +396,24 @@ disk_mounts:
   - { device_name: 'log', mount_dir: '/var/log/gitlab' }
   - { device_name: 'data', mount_dir: '/var/opt/gitlab' }
 ```
+
+## Disable External IPs (GCP Only)
+
+Optionally, you may want to disable External IPs on your provisioned nodes. This is done in Terraform with the `setup_external_ips` variable being set to false in your `environment.tf` file:
+
+```tf
+module "gitlab_ref_arch_gcp" {
+  source = "../../modules/gitlab_ref_arch_gcp"
+[...]
+
+  setup_external_ips = false
+}
+```
+
+Once set no external IPs will be created or added to your nodes.
+
+In this setup however some tweaks will need to be made to ansible:
+
+- It will need to be run from a box that can access the boxes via internal IPs
+- When using the Dynamic Inventory it will need to be adjusted to return internal IPs. This can be done by changing the `compose.ansible_host` setting to `private_ip_address`
+- The `external_url` setting should be set to the URL that the instance will be reachable internally

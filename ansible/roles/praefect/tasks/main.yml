@@ -12,6 +12,14 @@
   shell: "cp {{ gitlab_nfs_path }}/gitlab-secrets.json /etc/gitlab/gitlab-secrets.json 2>/dev/null || true"
   tags: secrets
 
+- name: Check if custom config exists
+  stat:
+    path: "{{ praefect_custom_config_file }}"
+  delegate_to: localhost
+  become: false
+  tags: reconfigure
+  register: praefect_custom_config_file_path
+
 - name: Non Omnibus database related tasks
   block:
     - name: Create Praefect Database User
@@ -21,7 +29,7 @@
         login_user: "{{ postgres_username }}"
         login_password: "{{ postgres_password }}"
         db: "template1"
-        name: "{{ praefect_postgres_username }}"
+        name: "{{ praefect_postgres_username.split('@')[0] }}"
         password: "{{ praefect_postgres_password }}"
         role_attr_flags: CREATEDB
         expires: infinity
@@ -34,7 +42,9 @@
         login_password: "{{ praefect_postgres_password }}"
         name: "{{ praefect_postgres_database_name }}"
         encoding: UTF-8
-  when: "'praefect_postgres' not in groups"
+  when:
+    - ('praefect_postgres' not in groups)
+    - ('geo_secondary_site' not in groups)
   tags:
     - reconfigure
     - db_migrate
@@ -49,6 +59,16 @@
       vars:
         db_migrate: true
 
+    - name: Copy custom GitLab config file
+      copy:
+        src: "{{ praefect_custom_config_file }}"
+        dest: "/etc/gitlab/gitlab.praefect.custom.rb"
+        mode: 0644
+      tags:
+        - reconfigure
+        - db_migrate
+      when: praefect_custom_config_file_path.stat.exists
+
     - name: Reconfigure Praefect deploy node
       shell: gitlab-ctl reconfigure
       register: result
@@ -59,7 +79,7 @@
     - db_migrate
   run_once: true
 
-- name: Setup all Praefect config files
+- name: Setup GitLab config file
   template:
     src: templates/praefect.gitlab.rb.j2
     dest: /etc/gitlab/gitlab.rb
@@ -67,6 +87,14 @@
   retries: 3
   until: result is success
   tags: reconfigure
+
+- name: Copy custom GitLab config file
+  copy:
+    src: "{{ praefect_custom_config_file }}"
+    dest: "/etc/gitlab/gitlab.praefect.custom.rb"
+    mode: 0644
+  tags: reconfigure
+  when: praefect_custom_config_file_path.stat.exists
 
 - name: Reconfigure all Praefects
   shell: gitlab-ctl reconfigure

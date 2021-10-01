@@ -5,8 +5,10 @@
 ansible_python_interpreter: auto
 swap_file_size_mb: "2048"
 swap_swappiness: "10"
-system_packages: "aptitude curl openssh-server ca-certificates glances nano tzdata ack-grep tree python3-pip nfs-common postfix jq libpq-dev"
 internal_cidr_16: "{{ (ansible_default_ipv4.address + '/16') | ipaddr('network/prefix') }}"
+
+system_packages: [aptitude, curl, openssh-server, ca-certificates, glances, nano, tzdata, ack-grep, tree, python3-pip, nfs-common, postfix, jq, libpq-dev]
+python_packages: [requests==2.26.0, google-auth==2.0.1, netaddr==0.8.0, openshift==0.12.1, PyYAML==5.4.1, docker==5.0.0, pexpect==4.8.0, psycopg2==2.9.1]
 
 ################################################################################
 ## Cloud Provider Settings
@@ -79,7 +81,7 @@ gitlab_deb_force_install: false
 gitlab_deb_host_path: "{{ lookup('env','GITLAB_HOST_DEB_PATH')}}"
 ## Specify deb package url
 gitlab_deb_download_url: "{{ lookup('env','GITLAB_DEB_DOWNLOAD_URL')}}"
-gitlab_deb_download_url_headers: "{{ lookup('env','GITLAB_DEB_DOWNLOAD_URL_HEADERS') | default('', true) }}"
+gitlab_deb_download_url_headers: "{{ lookup('env','GITLAB_DEB_DOWNLOAD_URL_HEADERS') | default({}, true) }}"
 gitlab_deb_target_path: "{{ lookup('env','GITLAB_TARGET_DEB_PATH') | default('/tmp/gitlab_deb_package.deb', true)}}"
 
 gitlab_admin_email: "admin@example.com"
@@ -133,25 +135,47 @@ praefect_int_ips: "{{ (groups['praefect'] | map('extract', hostvars, internal_ip
 
 ## Praefect Postgres
 praefect_postgres_int_ip: "{{ (groups['praefect_postgres'] | map('extract', hostvars, internal_ip_lookup[cloud_provider]) | join('')) if 'praefect_postgres_primary' in groups else '' }}"
+praefect_postgres_host: "{{ praefect_postgres_int_ip if praefect_postgres_int_ip != '' else postgres_host }}"
+praefect_postgres_port: "5432"
 praefect_postgres_username: "praefect"
 praefect_postgres_password: ""
 praefect_postgres_database_name: "praefect_production"
 
 # GitLab Monitor
 monitor_int_ip: "{{ (groups['monitor'] | sort | map('extract', hostvars, internal_ip_lookup[cloud_provider]) | join('')) if 'monitor' in groups else '' }}"
+monitor_custom_dashboards: []
+monitor_custom_dashboards_path: "{{ inventory_dir | default(ansible_inventory_sources[0], true) }}/../files/grafana"
 
 # GitLab Redis
-redis_port: 6379
-redis_sentinel_port: 26379
-
+## Combined
 redis_primary_int_ip: "{{ (groups['redis_primary'] | sort | map('extract', hostvars, internal_ip_lookup[cloud_provider]) | join('')) if 'redis' in groups else '' }}"
-redis_sentinel_int_ips: "{{ (groups['redis_sentinel'] | sort | map('extract', hostvars, internal_ip_lookup[cloud_provider]) | list) if 'redis_sentinel' in groups else [] }}"
+redis_int_ips: "{{ (groups['redis'] | sort | map('extract', hostvars, internal_ip_lookup[cloud_provider]) | list) if 'redis' in groups else [] }}"
 
+redis_host: "{{ redis_primary_int_ip }}"
+redis_password: ""
+redis_port: 6379
+redis_external: "{{ 'redis' not in groups and redis_host != '' }}"
+
+## Cache
 redis_cache_primary_int_ip: "{{ (groups['redis_cache_primary'] | sort | map('extract', hostvars, internal_ip_lookup[cloud_provider]) | join('')) if 'redis_cache' in groups else '' }}"
-redis_sentinel_cache_int_ips: "{{ (groups['redis_sentinel_cache'] | sort | map('extract', hostvars, internal_ip_lookup[cloud_provider]) | list) if 'redis_sentinel_cache' in groups else [] }}"
+redis_cache_int_ips: "{{ (groups['redis_cache'] | sort | map('extract', hostvars, internal_ip_lookup[cloud_provider]) | list) if 'redis_cache' in groups else [] }}"
 
+redis_cache_host: "{{ redis_cache_primary_int_ip }}"
+redis_cache_password: "{{ redis_password }}"
+redis_cache_port: "{{ redis_port }}"
+redis_cache_external: "{{ 'redis_cache' not in groups and redis_cache_host != '' }}"
+
+## Persistent
 redis_persistent_primary_int_ip: "{{ (groups['redis_persistent_primary'] | sort | map('extract', hostvars, internal_ip_lookup[cloud_provider]) | join('')) if 'redis_persistent' in groups else '' }}"
-redis_sentinel_persistent_int_ips: "{{ (groups['redis_sentinel_persistent'] | sort | map('extract', hostvars, internal_ip_lookup[cloud_provider]) | list) if 'redis_sentinel_persistent' in groups else [] }}"
+redis_persistent_int_ips: "{{ (groups['redis_persistent'] | sort | map('extract', hostvars, internal_ip_lookup[cloud_provider]) | list) if 'redis_persistent' in groups else [] }}"
+
+redis_persistent_host: "{{ redis_persistent_primary_int_ip }}"
+redis_persistent_password: "{{ redis_password }}"
+redis_persistent_port: "{{ redis_port }}"
+redis_persistent_external: "{{ 'redis_persistent' not in groups and redis_persistent_host != '' }}"
+
+redis_sentinel_port: 26379
+redis_external_ssl: true
 
 # Sidekiq
 sidekiq_max_concurrency: 10
@@ -190,6 +214,8 @@ aws_backups_object_storage_key: "{{ lookup('template', 'templates/backup_object_
 
 gitlab_charts_show_values: false
 
+use_iam_profile: true
+
 ## Webservice
 gitlab_charts_webservice_requests_memory_gb: 5
 gitlab_charts_webservice_limits_memory_gb: 5.25
@@ -213,12 +239,27 @@ gitlab_charts_sidekiq_min_replicas: ""
 access_token_user: "root"
 access_token_key: "{{ lookup('password', 'tmp/access-token chars=ascii_lowercase,digits length=20') }}"
 access_token_scopes: "[:api]"
+post_configure_api_tasks_file: "{{ inventory_dir | default(ansible_inventory_sources[0], true) }}/../files/gitlab_configs/api_tasks.yml"
 
 ################################################################################
 ## GitLab Component Custom Settings
 ################################################################################
 
-gitlab_charts_custom_config_file: "{{ inventory_dir | default(ansible_inventory_sources[0], true) }}/../files/config/gitlab_charts.yml"
+consul_custom_config_file: "{{ inventory_dir | default(ansible_inventory_sources[0], true) }}/../files/gitlab_configs/consul.rb"
+postgres_custom_config_file: "{{ inventory_dir | default(ansible_inventory_sources[0], true) }}/../files/gitlab_configs/postgres.rb"
+pgbouncer_custom_config_file: "{{ inventory_dir | default(ansible_inventory_sources[0], true) }}/../files/gitlab_configs/pgbouncer.rb"
+redis_custom_config_file: "{{ inventory_dir | default(ansible_inventory_sources[0], true) }}/../files/gitlab_configs/redis.rb"
+redis_cache_custom_config_file: "{{ inventory_dir | default(ansible_inventory_sources[0], true) }}/../files/gitlab_configs/redis_cache.rb"
+redis_persistent_custom_config_file: "{{ inventory_dir | default(ansible_inventory_sources[0], true) }}/../files/gitlab_configs/redis_persistent.rb"
+praefect_postgres_custom_config_file: "{{ inventory_dir | default(ansible_inventory_sources[0], true) }}/../files/gitlab_configs/praefect_postgres.rb"
+praefect_custom_config_file: "{{ inventory_dir | default(ansible_inventory_sources[0], true) }}/../files/gitlab_configs/praefect.rb"
+gitaly_custom_config_file: "{{ inventory_dir | default(ansible_inventory_sources[0], true) }}/../files/gitlab_configs/gitaly.rb"
+gitlab_rails_custom_config_file: "{{ inventory_dir | default(ansible_inventory_sources[0], true) }}/../files/gitlab_configs/gitlab_rails.rb"
+sidekiq_custom_config_file: "{{ inventory_dir | default(ansible_inventory_sources[0], true) }}/../files/gitlab_configs/sidekiq.rb"
+monitor_custom_config_file: "{{ inventory_dir | default(ansible_inventory_sources[0], true) }}/../files/gitlab_configs/monitor.rb"
+
+gitlab_charts_custom_config_file: "{{ inventory_dir | default(ansible_inventory_sources[0], true) }}/../files/gitlab_configs/gitlab_charts.yml"
+gitlab_charts_custom_tasks_file: "{{ inventory_dir | default(ansible_inventory_sources[0], true) }}/../files/gitlab_configs/charts_tasks.yml"
 
 ################################################################################
 ## GitLab Geo Settings
@@ -230,5 +271,15 @@ geo_secondary_site_name: "Secondary Site"
 geo_replication_slot_modifier: "{{ 2 if 'geo_primary_site' in group_names else 1 }}"
 geo_primary_site_postgres_group_name: "{% if 'geo_primary_site_postgres_primary' in groups %}geo_primary_site_postgres_primary{% elif 'geo_primary_site_gitlab_rails_primary' in groups %}geo_primary_site_gitlab_rails_primary{% elif 'postgres_primary' in groups%}postgres_primary{% else %}gitlab_rails_primary{% endif %}"
 geo_primary_site_postgres_int_ip: "{{ (groups[geo_primary_site_postgres_group_name] | sort | map('extract', hostvars, internal_ip_lookup[cloud_provider]) | join('')) }}"
-geo_secondary_site_postgres_group_name: "{% if 'geo_secondary_site_postgres_primary' in groups %}geo_secondary_site_postgres_primary{% elif 'geo_secondary_site_gitlab_rails_primary' in groups %}geo_secondary_site_gitlab_rails_primary{% else %}gitlab_rails_primary{% endif %}"
-geo_secondary_site_postgres_int_ip: "{{ (groups[geo_secondary_site_postgres_group_name] | sort | map('extract', hostvars, internal_ip_lookup[cloud_provider]) | join('')) }}"
+geo_secondary_site_postgres_group_name: "{% if 'geo_secondary_site_postgres_primary' in groups %}geo_secondary_site_postgres_primary{% elif 'geo_secondary_site_gitlab_rails_primary' in groups %}geo_secondary_site_gitlab_rails_primary{% else %}{% endif %}"
+geo_secondary_site_postgres_int_ip: "{{ (groups[geo_secondary_site_postgres_group_name] | sort | map('extract', hostvars, internal_ip_lookup[cloud_provider]) | join('')) if geo_secondary_site_postgres_group_name != '' else '' }}"
+
+geo_secondary_postgres_host: ""
+geo_secondary_praefect_postgres_host: ""
+
+# Geo Tracking Postgres
+geo_tracking_postgres_host: "{% if geo_secondary_praefect_postgres_host != '' and postgres_external %}{{ geo_secondary_praefect_postgres_host }}{% elif cloud_native_hybrid_geo and postgres_external %}{{ praefect_postgres_host }}{% else %}{{ geo_secondary_site_postgres_int_ip }}{% endif %}"
+geo_tracking_postgres_user: "gitlab_geo"
+geo_tracking_postgres_port: "5431"
+geo_tracking_postgres_password: "{{ postgres_password }}"
+geo_tracking_postgres_database: "gitlabhq_geo_production"
