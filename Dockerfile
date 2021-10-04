@@ -35,7 +35,7 @@ RUN asdf plugin add terraform && \
 RUN asdf plugin add python && \
     asdf install python && \
     pip install --upgrade pip && \
-    pip install --no-cache-dir -r /gitlab-environment-toolkit/ansible/requirements/ansible-python-packages.txt --user
+    pip install --no-cache-dir -r /gitlab-environment-toolkit/ansible/requirements/requirements.txt --user
 
 # Install Ansible & Dependencies
 RUN /get/.local/bin/ansible-galaxy install -r /gitlab-environment-toolkit/ansible/requirements/ansible-galaxy-requirements.yml
