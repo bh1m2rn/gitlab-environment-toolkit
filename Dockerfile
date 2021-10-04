@@ -1,5 +1,6 @@
 FROM alpine:3.13
 
+RUN apk add -u --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/community git-crypt
 RUN apk add --virtual .asdf-deps --no-cache jq bash openssh curl git gnupg grep yq cargo alpine-sdk openssl-dev zlib-dev bzip2-dev readline-dev sqlite-dev libffi-dev musl-dev
 SHELL ["/bin/bash", "-l", "-c"]
 
