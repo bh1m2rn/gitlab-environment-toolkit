@@ -69,11 +69,29 @@
         - db_migrate
       when: praefect_custom_config_file_path.stat.exists
 
+    - name: Enable workaround for 3806 # https://gitlab.com/gitlab-org/gitaly/-/issues/3806
+      community.postgresql.postgresql_query:
+        login_host: "{{ praefect_postgres_host }}"
+        login_port: "{{ praefect_postgres_port }}"
+        login_user: "{{ praefect_postgres_username }}"
+        login_password: "{{ praefect_postgres_password }}"
+        db: "{{ praefect_postgres_database_name }}"
+        query: ALTER TABLE storage_repositories DISABLE TRIGGER notify_on_update
+
     - name: Reconfigure Praefect deploy node
       shell: gitlab-ctl reconfigure
       register: result
       retries: 3
       until: result is success
+
+    - name: Disable workaround for 3806 # https://gitlab.com/gitlab-org/gitaly/-/issues/3806
+      community.postgresql.postgresql_query:
+        login_host: "{{ praefect_postgres_host }}"
+        login_port: "{{ praefect_postgres_port }}"
+        login_user: "{{ praefect_postgres_username }}"
+        login_password: "{{ praefect_postgres_password }}"
+        db: "{{ praefect_postgres_database_name }}"
+        query: ALTER TABLE storage_repositories ENABLE TRIGGER notify_on_update
   tags:
     - reconfigure
     - db_migrate
