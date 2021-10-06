@@ -6,6 +6,7 @@ module "consul" {
   node_count        = var.consul_node_count
   additional_labels = var.additional_labels
   tags              = var.tags
+  zones             = var.zones
 
   machine_type  = var.consul_machine_type
   machine_image = var.machine_image

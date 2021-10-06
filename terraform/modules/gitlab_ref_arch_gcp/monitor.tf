@@ -5,6 +5,7 @@ module "monitor" {
   node_type         = "monitor"
   node_count        = var.monitor_node_count
   additional_labels = var.additional_labels
+  zones             = var.zones
 
   machine_type  = var.monitor_machine_type
   machine_image = var.machine_image

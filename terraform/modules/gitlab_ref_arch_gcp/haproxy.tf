@@ -5,6 +5,7 @@ module "haproxy_external" {
   node_type         = "haproxy-external"
   node_count        = var.haproxy_external_node_count
   additional_labels = var.additional_labels
+  zones             = var.zones
 
   machine_type  = var.haproxy_external_machine_type
   machine_image = var.machine_image
@@ -34,6 +35,7 @@ module "haproxy_internal" {
   node_type         = "haproxy-internal"
   node_count        = var.haproxy_internal_node_count
   additional_labels = var.additional_labels
+  zones             = var.zones
 
   machine_type  = var.haproxy_internal_machine_type
   machine_image = var.machine_image

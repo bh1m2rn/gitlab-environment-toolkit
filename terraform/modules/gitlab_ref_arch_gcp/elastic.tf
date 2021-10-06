@@ -6,6 +6,7 @@ module "elastic" {
   node_count        = var.elastic_node_count
   additional_labels = var.additional_labels
   tags              = var.tags
+  zones             = var.zones
 
 
   machine_type  = var.elastic_machine_type

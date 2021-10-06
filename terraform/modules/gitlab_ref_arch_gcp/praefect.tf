@@ -6,6 +6,7 @@ module "praefect" {
   node_count        = var.praefect_node_count
   additional_labels = var.additional_labels
   tags              = var.tags
+  zones             = var.zones
 
   machine_type  = var.praefect_machine_type
   machine_image = var.machine_image

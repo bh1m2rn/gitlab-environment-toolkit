@@ -509,3 +509,9 @@ variable "additional_labels" {
   type    = map(any)
   default = {}
 }
+
+variable "zones" {
+  type    = list(any)
+  default = null
+}
+
