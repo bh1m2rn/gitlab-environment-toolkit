@@ -12,9 +12,12 @@ resource "google_container_cluster" "gitlab_cluster" {
   remove_default_node_pool = true
   initial_node_count       = 1
 
+<<<<<<< HEAD
   network    = local.vpc_name
   subnetwork = local.subnet_name
 
+=======
+>>>>>>> 5499bf7 (Made changes to reflect labels and tags)
   # Require VPC Native cluster
   # https://registry.terraform.io/providers/hashicorp/google/latest/docs/guides/using_gke_with_terraform#vpc-native-clusters
   # Blank block enables this and picks at random
@@ -83,7 +86,11 @@ resource "google_container_node_pool" "gitlab_supporting_pool" {
 
 resource "google_compute_firewall" "gitlab_kubernetes_vms_internal" {
   name    = "${var.prefix}-kubernetes-vms-internal"
+<<<<<<< HEAD
   network = local.vpc_name
+=======
+  network = "default"
+>>>>>>> 5499bf7 (Made changes to reflect labels and tags)
   count   = min(local.total_node_pool_count, 1)
 
   description = "Allow internal access between GitLab Kubernetes containers and VMs"

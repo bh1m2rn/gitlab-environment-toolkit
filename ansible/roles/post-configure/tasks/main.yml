@@ -1,7 +1,12 @@
 - name: End run if running against Geo secondary site
   meta: end_play
   when:
+<<<<<<< HEAD
     - ('geo_secondary_site' in groups)
+=======
+    - cloud_native_hybrid_geo
+    - cloud_native_hybrid_geo_role == 'secondary'
+>>>>>>> 5499bf7 (Made changes to reflect labels and tags)
 
 - name: Wait for GitLab to be available
   uri:

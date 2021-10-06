@@ -37,6 +37,12 @@ variable "object_storage_buckets" {
   default = ["artifacts", "backups", "dependency-proxy", "lfs", "mr-diffs", "packages", "terraform-state", "uploads"]
 }
 
+# Set use_existing_nat=true to use a NAT outside of GET
+variable "use_existing_nat" {
+  type    = bool
+  default = false
+}
+
 # Machines
 variable "consul_node_count" {
   type    = number
@@ -499,4 +505,24 @@ variable "subnet_cidr" {
 variable "setup_external_ips" {
   type    = bool
   default = true
+  }
+variable "tags" {
+  type    = list(string)
+  default = []
+}
+
+variable "additional_labels" {
+  type    = map(any)
+  default = {}
+}
+
+variable "vpc" {
+  type    = string
+  default = "default"
+}
+
+
+variable "zones" {
+  type    = list(any)
+  default = null
 }

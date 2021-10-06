@@ -209,6 +209,7 @@ Next in the file are the various machine settings, separated the same as the Ref
 - `*_machine_type` - The [GCP Machine Type](https://cloud.google.com/compute/docs/machine-types) (size) for that component
 - `haproxy_external_external_ips` - Set the external HAProxy load balancer to assume the external IP set in `variables.tf`. Note that this is an array setting as the advanced underlying functionality needs to account for the specific setting of IPs for potentially multiple machines. In this case though it should always only be one IP.
 
+<<<<<<< HEAD
 ##### Configure network setup (GCP)
 
 The module for GCP can configure the [network stack](https://cloud.google.com/vpc/docs/vpc) (VPC, Subnets, etc...) for your environment in several different ways:
@@ -289,6 +290,8 @@ module "gitlab_ref_arch_gcp" {
   [...]
 ```
 
+=======
+>>>>>>> 5499bf7 (Made changes to reflect labels and tags)
 #### Configure Authentication (GCP)
 
 Finally the last thing to configure is authentication. This is required so Terraform can access GCP (provider) as well as its State Storage Bucket (backend).

@@ -12,6 +12,7 @@
     - reconfigure
     - charts
 
+<<<<<<< HEAD
 - name: Run custom chart tasks
   block:
     - name: Check if Custom Chart tasks file exists
@@ -26,6 +27,8 @@
     - reconfigure
     - charts
 
+=======
+>>>>>>> 5499bf7 (Made changes to reflect labels and tags)
 - name: Gather facts for Omnibus Postgres cluster
   block:
     - name: Get latest Postgres Leader

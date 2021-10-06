@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 - name: Configure Tracking database for Omnibus managed databases
   block:
     - name: Tracking Database - Add new config
@@ -47,3 +48,15 @@
   when:
     - deploy_host is defined
     - inventory_hostname == deploy_host
+=======
+- name: Tracking Database - Add new config
+  template:
+    src: templates/tracking-database.rb.j2
+    dest: /etc/gitlab/gitlab.geo.tracking-database.rb
+
+- name: Tracking Database - Run gitlab-ctl reconfigure
+  command: gitlab-ctl reconfigure
+
+- name: Tracking Database - Run gitlab-ctl restart for updates to take effect
+  command: gitlab-ctl restart
+>>>>>>> 5499bf7 (Made changes to reflect labels and tags)

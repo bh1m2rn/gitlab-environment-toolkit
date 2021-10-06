@@ -16,6 +16,7 @@ praefect['enable'] = true
 praefect['listen_addr'] = '0.0.0.0:2305'
 praefect['auth_token'] = '{{ praefect_external_token }}'
 
+<<<<<<< HEAD
 praefect['database_host'] = '{{ praefect_postgres_host }}'
 praefect['database_port'] = '{{ praefect_postgres_port }}'
 
@@ -23,6 +24,14 @@ praefect['database_port'] = '{{ praefect_postgres_port }}'
 {% if gitlab_version != '' and gitlab_version is version('14.0', '<') %}
 praefect['database_host_no_proxy'] = '{{ praefect_postgres_host }}'
 praefect['database_port_no_proxy'] = '{{ praefect_postgres_port }}'
+=======
+{% if 'praefect_postgres' in groups %}
+praefect['database_host'] = '{{ praefect_postgres_int_ip }}'
+praefect['database_port'] = 5432
+{% else %}
+praefect['database_host'] = '{{ postgres_host }}'
+praefect['database_port'] = '{{ postgres_port }}'
+>>>>>>> 5499bf7 (Made changes to reflect labels and tags)
 {% endif %}
 
 praefect['database_user'] = '{{ praefect_postgres_username }}'

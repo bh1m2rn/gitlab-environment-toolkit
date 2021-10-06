@@ -470,6 +470,7 @@ variable "rds_postgres_kms_key_arn" {
   type    = string
   default = null
 }
+<<<<<<< HEAD
 variable "rds_postgres_replication_database_arn" {
   type    = string
   default = null
@@ -588,6 +589,9 @@ variable "rds_geo_tracking_postgres_backup_retention_period" {
 }
 
 ## Redis
+=======
+
+>>>>>>> 5499bf7 (Made changes to reflect labels and tags)
 ### Combined
 variable "elasticache_redis_node_count" {
   type    = number

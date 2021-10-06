@@ -7,7 +7,7 @@
 
 config {
   module = false
-  force = false
+  force = true
 
   variables = [ "prefix=tflint" ]
 }

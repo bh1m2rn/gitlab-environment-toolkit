@@ -45,7 +45,11 @@ backend gitlab-rails
     option srvtcpka
 
 {% for ip in gitlab_rails_int_ips %}
+<<<<<<< HEAD
     server gitlab-rails{{loop.index}} {{ ip }}:80 check inter 3s fall 1
+=======
+    server gitlab-rails{{loop.index}} {{ ip }}:80 check
+>>>>>>> 5499bf7 (Made changes to reflect labels and tags)
 {% endfor %}
 {% endif %}
 
@@ -56,7 +60,11 @@ backend pgbouncer
     option srvtcpka
 
 {% for ip in pgbouncer_int_ips %}
+<<<<<<< HEAD
     server pgbouncer{{loop.index}} {{ ip }}:6432 check inter 3s fall 1
+=======
+    server pgbouncer{{loop.index}} {{ ip }}:6432 check
+>>>>>>> 5499bf7 (Made changes to reflect labels and tags)
 {% endfor %}
 {% endif %}
 
@@ -67,7 +75,11 @@ backend praefect
     option srvtcpka
 
 {% for ip in praefect_int_ips %}
+<<<<<<< HEAD
     server praefect{{loop.index}} {{ ip }}:2305 check inter 3s fall 1
+=======
+    server praefect{{loop.index}} {{ ip }}:2305 check
+>>>>>>> 5499bf7 (Made changes to reflect labels and tags)
 {% endfor %}
 {% endif %}
 

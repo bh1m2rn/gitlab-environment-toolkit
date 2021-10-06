@@ -135,8 +135,11 @@ praefect_int_ips: "{{ (groups['praefect'] | map('extract', hostvars, internal_ip
 
 ## Praefect Postgres
 praefect_postgres_int_ip: "{{ (groups['praefect_postgres'] | map('extract', hostvars, internal_ip_lookup[cloud_provider]) | join('')) if 'praefect_postgres_primary' in groups else '' }}"
+<<<<<<< HEAD
 praefect_postgres_host: "{{ praefect_postgres_int_ip if praefect_postgres_int_ip != '' else postgres_host }}"
 praefect_postgres_port: "5432"
+=======
+>>>>>>> 5499bf7 (Made changes to reflect labels and tags)
 praefect_postgres_username: "praefect"
 praefect_postgres_password: ""
 praefect_postgres_database_name: "praefect_production"
@@ -150,6 +153,7 @@ monitor_custom_dashboards_path: "{{ inventory_dir | default(ansible_inventory_so
 ## Combined
 redis_primary_int_ip: "{{ (groups['redis_primary'] | sort | map('extract', hostvars, internal_ip_lookup[cloud_provider]) | join('')) if 'redis' in groups else '' }}"
 redis_int_ips: "{{ (groups['redis'] | sort | map('extract', hostvars, internal_ip_lookup[cloud_provider]) | list) if 'redis' in groups else [] }}"
+<<<<<<< HEAD
 
 redis_host: "{{ redis_primary_int_ip }}"
 redis_password: ""
@@ -165,6 +169,23 @@ redis_cache_password: "{{ redis_password }}"
 redis_cache_port: "{{ redis_port }}"
 redis_cache_external: "{{ 'redis_cache' not in groups and redis_cache_host != '' }}"
 
+=======
+
+redis_host: "{{ redis_primary_int_ip }}"
+redis_password: ""
+redis_port: 6379
+redis_external: "{{ 'redis' not in groups and redis_host != '' }}"
+
+## Cache
+redis_cache_primary_int_ip: "{{ (groups['redis_cache_primary'] | sort | map('extract', hostvars, internal_ip_lookup[cloud_provider]) | join('')) if 'redis_cache' in groups else '' }}"
+redis_cache_int_ips: "{{ (groups['redis_cache'] | sort | map('extract', hostvars, internal_ip_lookup[cloud_provider]) | list) if 'redis_cache' in groups else [] }}"
+
+redis_cache_host: "{{ redis_cache_primary_int_ip }}"
+redis_cache_password: "{{ redis_password }}"
+redis_cache_port: "{{ redis_port }}"
+redis_cache_external: "{{ 'redis_cache' not in groups and redis_cache_host != '' }}"
+
+>>>>>>> 5499bf7 (Made changes to reflect labels and tags)
 ## Persistent
 redis_persistent_primary_int_ip: "{{ (groups['redis_persistent_primary'] | sort | map('extract', hostvars, internal_ip_lookup[cloud_provider]) | join('')) if 'redis_persistent' in groups else '' }}"
 redis_persistent_int_ips: "{{ (groups['redis_persistent'] | sort | map('extract', hostvars, internal_ip_lookup[cloud_provider]) | list) if 'redis_persistent' in groups else [] }}"
@@ -259,7 +280,10 @@ sidekiq_custom_config_file: "{{ inventory_dir | default(ansible_inventory_source
 monitor_custom_config_file: "{{ inventory_dir | default(ansible_inventory_sources[0], true) }}/../files/gitlab_configs/monitor.rb"
 
 gitlab_charts_custom_config_file: "{{ inventory_dir | default(ansible_inventory_sources[0], true) }}/../files/gitlab_configs/gitlab_charts.yml"
+<<<<<<< HEAD
 gitlab_charts_custom_tasks_file: "{{ inventory_dir | default(ansible_inventory_sources[0], true) }}/../files/gitlab_configs/charts_tasks.yml"
+=======
+>>>>>>> 5499bf7 (Made changes to reflect labels and tags)
 
 ################################################################################
 ## GitLab Geo Settings
@@ -271,6 +295,7 @@ geo_secondary_site_name: "Secondary Site"
 geo_replication_slot_modifier: "{{ 2 if 'geo_primary_site' in group_names else 1 }}"
 geo_primary_site_postgres_group_name: "{% if 'geo_primary_site_postgres_primary' in groups %}geo_primary_site_postgres_primary{% elif 'geo_primary_site_gitlab_rails_primary' in groups %}geo_primary_site_gitlab_rails_primary{% elif 'postgres_primary' in groups%}postgres_primary{% else %}gitlab_rails_primary{% endif %}"
 geo_primary_site_postgres_int_ip: "{{ (groups[geo_primary_site_postgres_group_name] | sort | map('extract', hostvars, internal_ip_lookup[cloud_provider]) | join('')) }}"
+<<<<<<< HEAD
 geo_secondary_site_postgres_group_name: "{% if 'geo_secondary_site_postgres_primary' in groups %}geo_secondary_site_postgres_primary{% elif 'geo_secondary_site_gitlab_rails_primary' in groups %}geo_secondary_site_gitlab_rails_primary{% else %}{% endif %}"
 geo_secondary_site_postgres_int_ip: "{{ (groups[geo_secondary_site_postgres_group_name] | sort | map('extract', hostvars, internal_ip_lookup[cloud_provider]) | join('')) if geo_secondary_site_postgres_group_name != '' else '' }}"
 
@@ -283,3 +308,7 @@ geo_tracking_postgres_user: "gitlab_geo"
 geo_tracking_postgres_port: "5431"
 geo_tracking_postgres_password: "{{ postgres_password }}"
 geo_tracking_postgres_database: "gitlabhq_geo_production"
+=======
+geo_secondary_site_postgres_group_name: "{% if 'geo_secondary_site_postgres_primary' in groups %}geo_secondary_site_postgres_primary{% elif 'geo_secondary_site_gitlab_rails_primary' in groups %}geo_secondary_site_gitlab_rails_primary{% else %}gitlab_rails_primary{% endif %}"
+geo_secondary_site_postgres_int_ip: "{{ (groups[geo_secondary_site_postgres_group_name] | sort | map('extract', hostvars, internal_ip_lookup[cloud_provider]) | join('')) }}"
+>>>>>>> 5499bf7 (Made changes to reflect labels and tags)
