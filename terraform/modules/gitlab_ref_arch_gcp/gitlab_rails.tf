@@ -4,7 +4,7 @@ module "gitlab_rails" {
   prefix     = var.prefix
   node_type  = "gitlab-rails"
   node_count = var.gitlab_rails_node_count
-  tags = var.tags
+  tags       = var.tags
 
   machine_type  = var.gitlab_rails_machine_type
   machine_image = var.machine_image

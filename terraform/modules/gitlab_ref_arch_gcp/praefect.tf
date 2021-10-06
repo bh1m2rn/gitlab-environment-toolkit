@@ -4,7 +4,7 @@ module "praefect" {
   prefix     = var.prefix
   node_type  = "praefect"
   node_count = var.praefect_node_count
-  tags = var.tags
+  tags       = var.tags
 
   machine_type  = var.praefect_machine_type
   machine_image = var.machine_image

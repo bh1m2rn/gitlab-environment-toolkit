@@ -18,7 +18,7 @@ module "monitor" {
   geo_site       = var.geo_site
   geo_deployment = var.geo_deployment
 
-  tags = ["${var.prefix}-web", var.tags]
+  tags = distinct(concat(["${var.prefix}-web"], var.tags))
 }
 
 output "monitor" {

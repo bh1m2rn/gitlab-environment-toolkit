@@ -4,7 +4,7 @@ module "gitaly" {
   prefix     = var.prefix
   node_type  = "gitaly"
   node_count = var.gitaly_node_count
-  tags = var.tags
+  tags       = var.tags
 
   machine_type  = var.gitaly_machine_type
   machine_image = var.machine_image

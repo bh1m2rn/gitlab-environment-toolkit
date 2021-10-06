@@ -4,7 +4,7 @@ module "postgres" {
   prefix     = var.prefix
   node_type  = "postgres"
   node_count = var.postgres_node_count
-  tags = var.tags
+  tags       = var.tags
 
   machine_type  = var.postgres_machine_type
   machine_image = var.machine_image

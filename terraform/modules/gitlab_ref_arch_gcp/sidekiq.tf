@@ -4,7 +4,7 @@ module "sidekiq" {
   prefix     = var.prefix
   node_type  = "sidekiq"
   node_count = var.sidekiq_node_count
-  tags = var.tags
+  tags       = var.tags
 
   machine_type  = var.sidekiq_machine_type
   machine_image = var.machine_image
