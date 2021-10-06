@@ -505,3 +505,7 @@ variable "tags" {
   type    = list(string)
   default = []
 }
+variable "additional_labels" {
+  type    = map(any)
+  default = {}
+}

@@ -1,10 +1,11 @@
 module "pgbouncer" {
   source = "../gitlab_gcp_instance"
 
-  prefix     = var.prefix
-  node_type  = "pgbouncer"
-  node_count = var.pgbouncer_node_count
-  tags       = var.tags
+  prefix            = var.prefix
+  node_type         = "pgbouncer"
+  node_count        = var.pgbouncer_node_count
+  additional_labels = var.additional_labels
+  tags              = var.tags
 
   machine_type  = var.pgbouncer_machine_type
   machine_image = var.machine_image

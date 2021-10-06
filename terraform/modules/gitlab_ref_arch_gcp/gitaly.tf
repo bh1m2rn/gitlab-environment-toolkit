@@ -1,10 +1,11 @@
 module "gitaly" {
   source = "../gitlab_gcp_instance"
 
-  prefix     = var.prefix
-  node_type  = "gitaly"
-  node_count = var.gitaly_node_count
-  tags       = var.tags
+  prefix            = var.prefix
+  node_type         = "gitaly"
+  node_count        = var.gitaly_node_count
+  additional_labels = var.additional_labels
+  tags              = var.tags
 
   machine_type  = var.gitaly_machine_type
   machine_image = var.machine_image
