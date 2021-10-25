@@ -7,6 +7,26 @@ stages:
 #########################
 ##     Lint Checks     ##
 #########################
+check:checkov:
+  stage: validate
+  image:
+    name: bridgecrew/checkov:2.0.513
+    entrypoint:
+      - '/usr/bin/env'
+      - 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+  script:
+    - checkov --soft-fail -d . -o junitxml | tee checkov.test.xml
+  artifacts:
+    reports:
+      junit: "checkov.test.xml"
+    paths:
+      - "checkov.test.xml"
+  only:
+    - master
+    - merge_requests
+  except:
+    - schedules
+    - tags
 
 check:terraform-fmt:
   stage: test
