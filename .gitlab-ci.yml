@@ -8,7 +8,7 @@ stages:
 ##     Lint Checks     ##
 #########################
 check:checkov:
-  stage: validate
+  stage: test
   image:
     name: bridgecrew/checkov:2.0.513
     entrypoint:
