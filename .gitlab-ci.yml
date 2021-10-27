@@ -3,6 +3,7 @@ include:
 
 stages:
   - test
+  - build
 
 #########################
 ##     Lint Checks     ##
@@ -84,3 +85,17 @@ check_requirements:
     - changes:
         - ansible/requirements/requirements.txt
         - ansible/requirements/ansible-galaxy-requirements.yml
+
+build_image:
+  stage: build
+  image: docker:dind
+  variables:
+    DOCKER_DRIVER: overlay2
+    DOCKER_HOST: tcp://docker:2375
+  services:
+    - name: docker:dind
+      alias: localhost
+  script:
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN $CI_REGISTRY
+    - docker build -t ${CI_REGISTRY_IMAGE}:without-get-user .
+    - docker push ${CI_REGISTRY_IMAGE}:without-get-user
