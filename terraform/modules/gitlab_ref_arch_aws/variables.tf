@@ -877,7 +877,7 @@ variable "elasticache_redis_cache_snapshot_window" {
 }
 variable "elasticache_redis_cache_apply_immediately" {
   type    = bool
-  default = null
+  default = true
 }
 
 ### Separate - Persistent
@@ -920,7 +920,7 @@ variable "elasticache_redis_persistent_snapshot_window" {
 }
 variable "elasticache_redis_persistent_apply_immediately" {
   type    = bool
-  default = null
+  default = true
 }
 
 # Networking
