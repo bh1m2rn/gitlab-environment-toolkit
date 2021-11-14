@@ -9,7 +9,7 @@
       purge: true
     when:
       - cloud_native_hybrid_environment
-    tags:  gitlab_charts
+    tags: gitlab_charts
 
   - name: Uninstall GitLab package
     command: "{{ item }}"
