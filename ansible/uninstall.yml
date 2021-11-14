@@ -37,3 +37,4 @@
       state: absent
     when:
       - omnibus_node
+#samplecomment
