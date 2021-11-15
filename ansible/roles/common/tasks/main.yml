@@ -202,6 +202,7 @@
         dest: /etc/gitlab/trusted-certs
         mode: 0644
       loop: "{{ trusted_certs_urls }}"
+      when: omnibus_node
 
     - name: Mark common has run
       set_fact:
