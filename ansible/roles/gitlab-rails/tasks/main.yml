@@ -54,14 +54,6 @@
   when:
     - cloud_provider == 'gcp'
 
-- name: Check if custom config exists
-  stat:
-    path: "{{ gitlab_rails_custom_config_file }}"
-  delegate_to: localhost
-  become: false
-  tags: reconfigure
-  register: gitlab_rails_custom_config_file_path
-
 - name: Get Omnibus Postgres Primary
   block:
     - name: Gather facts for Omnibus Postgres cluster
@@ -124,6 +116,14 @@
   retries: 3
   until: result is success
   tags: reconfigure
+
+- name: Check if custom config exists
+  stat:
+    path: "{{ gitlab_rails_custom_config_file }}"
+  delegate_to: localhost
+  become: false
+  tags: reconfigure
+  register: gitlab_rails_custom_config_file_path
 
 - name: Copy custom GitLab config file
   copy:

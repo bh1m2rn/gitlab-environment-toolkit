@@ -61,6 +61,9 @@ external_ssl_files_host_path: "{{ inventory_dir | default(ansible_inventory_sour
 external_ssl_files_host_certificate_file: "{{ external_ssl_files_host_path }}/{{ external_host }}.pem"
 external_ssl_files_host_key_file: "{{ external_ssl_files_host_path }}/{{ external_host }}.key"
 
+### Trusted Certificates
+trusted_certs_urls: []
+
 ## Load Balancers
 
 ### HAProxy
