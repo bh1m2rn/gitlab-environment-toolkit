@@ -198,11 +198,12 @@
 
     - name: Download any trusted certs
       get_url:
-        src: "{{ item }}"
+        url: "{{ item }}"
         dest: /etc/gitlab/trusted-certs
         mode: 0644
       loop: "{{ trusted_certs_urls }}"
       when: omnibus_node
+      tags: trusted_certs
 
     - name: Mark common has run
       set_fact:
