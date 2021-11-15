@@ -84,6 +84,20 @@
   when: "'postgres' in groups"
   run_once: true
 
+- name: Create GitLab Database if it doesn't exist
+  community.postgresql.postgresql_db:
+    login_host: "{{ postgres_host }}"
+    login_port: "{{ postgres_port }}"
+    login_user: "{{ postgres_username }}"
+    login_password: "{{ postgres_password }}"
+    name: "{{ postgres_database_name }}"
+    encoding: UTF-8
+  tags:
+    - reconfigure
+    - db_migrate
+  when: postgres_external
+  run_once: true
+
 - name: Run Database Migrations
   block:
     - name: Setup GitLab deploy node config file with DB Migrations
