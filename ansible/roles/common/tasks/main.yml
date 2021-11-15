@@ -199,8 +199,8 @@
     - name: Download any trusted certs
       get_url:
         url: "{{ item }}"
-        dest: /etc/gitlab/trusted-certs
-        mode: 0644
+        dest: /etc/gitlab/trusted-certs/
+        mode: 0755
       loop: "{{ trusted_certs_urls }}"
       when: omnibus_node
       tags: trusted_certs
