@@ -117,6 +117,7 @@ gitlab_object_storage_registry_bucket: "{{ prefix }}-registry"
 
 # Consul
 consul_int_ips: "{{ (groups['consul'] | sort | map('extract', hostvars, internal_ip_lookup[cloud_provider]) | list) if 'consul' in groups else [] }}"
+sharded_consul_int_ips: "{{ (groups['sharded_consul'] | sort | map('extract', hostvars, internal_ip_lookup[cloud_provider]) | list) if 'sharded_consul' in groups else [] }}"
 
 # GitLab Rails (Application nodes)
 gitlab_rails_int_ips: "{{ (groups['gitlab_rails'] | sort | map('extract', hostvars, internal_ip_lookup[cloud_provider]) | list) if 'gitlab_rails_primary' in groups else [] }}"
@@ -124,7 +125,9 @@ gitlab_rails_int_ips: "{{ (groups['gitlab_rails'] | sort | map('extract', hostva
 # GitLab Postgres / PGBouncer
 postgres_primary_int_ip: "{{ (groups['postgres_primary'] | sort | map('extract', hostvars, internal_ip_lookup[cloud_provider]) | join('')) if 'postgres_primary' in groups else '' }}"
 postgres_int_ips: "{{ (groups['postgres'] | map('extract', hostvars, internal_ip_lookup[cloud_provider]) | list) if 'postgres' in groups else [] }}"
+sharded_postgres_int_ips: "{{ (groups['sharded_postgres'] | map('extract', hostvars, internal_ip_lookup[cloud_provider]) | list) if 'sharded_postgres' in groups else [] }}"
 pgbouncer_int_ips: "{{ (groups['pgbouncer'] | sort | map('extract', hostvars, internal_ip_lookup[cloud_provider]) | list) if 'pgbouncer' in groups else [] }}"
+
 
 postgres_host: "{{ postgres_primary_int_ip }}"
 postgres_port: "5432"

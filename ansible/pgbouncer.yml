@@ -1,5 +1,7 @@
 ---
-- hosts: pgbouncer
+- hosts:
+    - pgbouncer
+    - sharded_pgbouncer
   roles:
     - pgbouncer
   become: true

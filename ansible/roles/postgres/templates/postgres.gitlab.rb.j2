@@ -1,7 +1,7 @@
 {% if groups['postgres'] | length > 1 %}
 {% if postgres_replication_manager == 'patroni' %}
 # Disable all components except PostgreSQL, Patroni and Consul
-roles ['patroni_role']
+roles ['patroni_role', 'pgbouncer_role']
 
 # Patroni uses one extra slot per node when initiating the replication
 patroni['postgresql']['max_replication_slots'] = {{ (((groups['postgres'] | length) * 2) * (geo_replication_slot_modifier | int)) }}
@@ -19,7 +19,7 @@ patroni['password'] = '{{ patroni_password }}'
 
 {% elif postgres_replication_manager == 'repmgr' %}
 # Disable all components except PostgreSQL, Repmgr and Consul
-roles ['postgres_role']
+roles ['postgres_role', 'pgbouncer_role']
 
 # Enable Repmgr
 postgresql['shared_preload_libraries'] = 'repmgr_funcs, pg_stat_statements'
@@ -50,14 +50,22 @@ postgresql['version'] = 11
 postgresql['listen_address'] = '0.0.0.0'
 postgresql['max_connections'] = 500
 
-{% if 'pgbouncer' in groups %}
 postgresql['pgbouncer_user_password'] = "{{ (pgbouncer_password + 'pgbouncer') | md5 }}"
-{% endif %}
 postgresql['sql_user_password'] = "{{ (postgres_password + 'gitlab') | md5 }}"
 
 postgresql['trust_auth_cidr_addresses'] = %w(0.0.0.0/0)
 
 gitlab_rails['auto_migrate'] = false
+
+# PgBouncer (for load balancing reads)
+pgbouncer['databases'] = {
+  gitlabhq_production: {
+    host: "127.0.0.1",
+    user: "pgbouncer",
+    password: "{{ (pgbouncer_password + 'pgbouncer') | md5 }}"
+  }
+}
+pgbouncer['max_db_connections'] = 150
 
 # Consul
 {% if groups['postgres'] | length > 1 %}
@@ -65,13 +73,36 @@ consul['services'] = %w(postgresql)
 {% endif %}
 consul['configuration'] = {
   bind_addr: '{{ ansible_default_ipv4.address }}',
+{% if 'postgres' in group_names %}
   retry_join: %w({{ (consul_int_ips if 'consul' in groups else gitlab_rails_int_ips) | join(' ') }})
+{% else %}
+  retry_join: %w({{ sharded_consul_int_ips | join(' ') }})
+{% endif %}
 }
 consul['monitoring_service_discovery'] = true
 
 # Monitoring
 postgres_exporter['listen_address'] = '0.0.0.0:9187'
 node_exporter['listen_address'] = '0.0.0.0:9100'
+
+{% if 'sharded_postgres' in groups and 'sharded_postgres' not in group_names %}
+postgresql['md5_auth_cidr_addresses'] = ['0.0.0.0/0']
+
+patroni['replication_slots'] = {
+    'sharding' => { 'type' => 'physical' }
+}
+
+postgresql['sql_replication_password'] = '{{ (postgres_password + 'gitlab_replicator') | md5 }}'
+patroni['replication_password'] = '{{ postgres_password }}'
+{% elif 'sharded_postgres' in groups and 'sharded_postgres' in group_names %}
+patroni['standby_cluster']['enable'] = true
+patroni['standby_cluster']['host'] = '{{ internal_lb_host }}'
+patroni['standby_cluster']['port'] = 5432
+patroni['standby_cluster']['primary_slot_name'] = 'sharding'
+
+patroni['replication_password'] = '{{ postgres_password }}'
+postgresql['sql_replication_password'] = '{{ (postgres_password + 'gitlab_replicator') | md5 }}'
+{% endif %}
 
 geo_confs = Dir.glob(File.join("/etc/gitlab/", "gitlab.geo.*.rb"))
 geo_confs.each { |conf|

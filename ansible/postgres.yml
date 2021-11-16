@@ -2,6 +2,7 @@
 - hosts:
     - postgres_primary
     - postgres_secondary
+    - sharded_postgres
   roles:
     - postgres
   become: true

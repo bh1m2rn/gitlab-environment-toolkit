@@ -257,6 +257,10 @@ gitaly['enable'] = true
 gitaly['prometheus_listen_addr'] = "0.0.0.0:9236"
 {% endif %}
 
+{% if 'sharded_postgres' in groups %}
+gitlab_rails['db_load_balancing'] = { 'hosts' => [{% for ip in postgres_int_ips %} '{{ip}}', {% endfor %}{% for ip in sharded_postgres_int_ips %} '{{ip}}'{% if not loop.last %}, {% endif %}{% endfor %}] }
+{% endif %}
+
 geo_confs = Dir.glob(File.join("/etc/gitlab/", "gitlab.geo.*.rb"))
 geo_confs.each { |conf|
   from_file conf

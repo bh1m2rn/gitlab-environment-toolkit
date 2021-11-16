@@ -185,6 +185,10 @@ git_data_dirs({
 })
 {% endif %}
 
+{% if 'sharded_postgres' in groups %}
+gitlab_rails['db_load_balancing'] = { 'hosts' => [{% for ip in postgres_int_ips %} '{{ip}}', {% endfor %}{% for ip in sharded_postgres_int_ips %} '{{ip}}'{% if not loop.last %}, {% endif %}{% endfor %}] }
+{% endif %}
+
 geo_confs = Dir.glob(File.join("/etc/gitlab/", "gitlab.geo.*.rb"))
 geo_confs.each { |conf|
   from_file conf

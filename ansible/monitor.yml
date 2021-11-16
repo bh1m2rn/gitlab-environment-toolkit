@@ -1,5 +1,7 @@
 ---
-- hosts: monitor
+- hosts:
+    - monitor
+    - sharded_monitor
   roles:
     - monitor
   become: true

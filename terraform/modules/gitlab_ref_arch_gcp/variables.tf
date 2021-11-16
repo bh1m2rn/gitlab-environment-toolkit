@@ -357,6 +357,90 @@ variable "redis_persistent_disks" {
   default = []
 }
 
+variable "sharded_consul_node_count" {
+  type    = number
+  default = 0
+}
+variable "sharded_consul_machine_type" {
+  type    = string
+  default = ""
+}
+variable "sharded_consul_disk_type" {
+  type    = string
+  default = null
+}
+variable "sharded_consul_disk_size" {
+  type    = string
+  default = null
+}
+variable "sharded_consul_disks" {
+  type    = list(any)
+  default = []
+}
+
+variable "sharded_monitor_node_count" {
+  type    = number
+  default = 0
+}
+variable "sharded_monitor_machine_type" {
+  type    = string
+  default = ""
+}
+variable "sharded_monitor_disk_type" {
+  type    = string
+  default = null
+}
+variable "sharded_monitor_disk_size" {
+  type    = string
+  default = null
+}
+variable "sharded_monitor_disks" {
+  type    = list(any)
+  default = []
+}
+
+variable "sharded_pgbouncer_node_count" {
+  type    = number
+  default = 0
+}
+variable "sharded_pgbouncer_machine_type" {
+  type    = string
+  default = ""
+}
+variable "sharded_pgbouncer_disk_type" {
+  type    = string
+  default = null
+}
+variable "sharded_pgbouncer_disk_size" {
+  type    = string
+  default = null
+}
+variable "sharded_pgbouncer_disks" {
+  type    = list(any)
+  default = []
+}
+
+variable "sharded_postgres_node_count" {
+  type    = number
+  default = 0
+}
+variable "sharded_postgres_machine_type" {
+  type    = string
+  default = ""
+}
+variable "sharded_postgres_disk_type" {
+  type    = string
+  default = null
+}
+variable "sharded_postgres_disk_size" {
+  type    = string
+  default = null
+}
+variable "sharded_postgres_disks" {
+  type    = list(any)
+  default = []
+}
+
 variable "sidekiq_node_count" {
   type    = number
   default = 0

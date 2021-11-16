@@ -10,6 +10,7 @@ prometheus['flags'] = {
    'storage.tsdb.retention.time' => "{{ prometheus_data_retention_period }}",
 }
 
+{% if 'monitor' in group_names %}
 prometheus['scrape_configs'] = [
   {
     'job_name': 'non_omnibus_node',
@@ -72,6 +73,7 @@ prometheus['scrape_configs'] = [
      ],
   },
 ]
+{% endif %}
 
 # Grafana
 {% if grafana_password is defined and grafana_password != '' %}
@@ -134,7 +136,11 @@ grafana['datasources'] = [
 consul['enable'] = true
 consul['configuration'] = {
   bind_addr: '{{ ansible_default_ipv4.address }}',
+{% if 'monitor' in group_names %}
   retry_join: %w({{ (consul_int_ips if 'consul' in groups else gitlab_rails_int_ips) | join(' ') }})
+{% else %}
+  retry_join: %w({{ (sharded_consul_int_ips) | join(' ') }})
+{% endif %}
 }
 consul['monitoring_service_discovery'] = true
 
