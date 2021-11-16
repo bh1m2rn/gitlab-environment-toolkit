@@ -15,6 +15,11 @@ gitlab:
       proxyBodySize: 0  # Bigger file uploads, e.g. imports
     nodeSelector:
       workload: webservice
+# Workaround for project deletion bug https://gitlab.com/gitlab-org/gitlab/-/issues/24110#note_729703160
+{% if not (cloud_provider == 'aws' and external_url_ssl and external_ssl_source != '') %}
+    registry:
+      enabled: false
+{% endif %}
   sidekiq:
     maxReplicas: "{{ gitlab_charts_sidekiq_max_replicas if gitlab_charts_sidekiq_max_replicas != '' else sidekiq_pods }}"
     minReplicas: "{{ gitlab_charts_sidekiq_min_replicas if gitlab_charts_sidekiq_min_replicas != '' else (sidekiq_pods | int * gitlab_charts_sidekiq_min_replicas_scaler) | int }}"
@@ -29,10 +34,20 @@ gitlab:
         memory: "{{ gitlab_charts_sidekiq_requests_memory_gb }}G"
     nodeSelector:
       workload: sidekiq
+# Workaround for project deletion bug https://gitlab.com/gitlab-org/gitlab/-/issues/24110#note_729703160
+{% if not (cloud_provider == 'aws' and external_url_ssl and external_ssl_source != '') %}
+    registry:
+      enabled: false
+{% endif %}
   "{{ 'task-runner' if ((gitlab_version != '') and (gitlab_version is version('14.5', '<'))) else 'toolbox' }}":
     backups:
       objectStorage:
         {{ lookup('template', 'task_runner_backups_object_storage.' + cloud_provider + '.yml.j2') | indent(width=8) }}
+# Workaround for project deletion bug https://gitlab.com/gitlab-org/gitlab/-/issues/24110#note_729703160
+{% if not (cloud_provider == 'aws' and external_url_ssl and external_ssl_source != '') %}
+    registry:
+      enabled: false
+{% endif %}
   migrations:
     psql:
       password:
@@ -139,9 +154,23 @@ global:
     port: "{{ postgres_port }}"
     username: "{{ postgres_username }}"
     database: "{{ postgres_database_name }}"
+{% if postgres_load_balancing_hosts | length > 0 %}
+    load_balancing:
+      hosts:
+{% for postgres_load_balancing_host in postgres_load_balancing_hosts %}
+        - "{{ postgres_load_balancing_host }}"
+{% endfor %}
+{% endif %}
 {% elif 'postgres' in groups %}
     host: "{{ internal_lb_host if 'haproxy_internal' in groups else postgres_host }}"
     port: "{{ 6432 if 'haproxy_internal' in groups else postgres_port }}"
+{% if groups['postgres'] | length > 1 %}
+    load_balancing:
+      hosts:
+{% for postgres_int_ip in postgres_int_ips %}
+        - "{{ postgres_int_ip }}"
+{% endfor %}
+{% endif %}
 {% endif %}
 # Redis
   redis:

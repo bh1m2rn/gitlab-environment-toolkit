@@ -1,6 +1,6 @@
 {% if groups['postgres'] | length > 1 %}
 {% if postgres_replication_manager == 'patroni' %}
-# Disable all components except PostgreSQL, Patroni and Consul
+# Disable all components except PostgreSQL, Patroni, PgBouncer and Consul
 roles ['patroni_role', 'pgbouncer_role']
 
 # Patroni uses one extra slot per node when initiating the replication
