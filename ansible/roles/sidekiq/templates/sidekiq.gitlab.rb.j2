@@ -152,7 +152,7 @@ gitlab_rails['db_port'] = 6432
 gitlab_rails['db_password'] = '{{ postgres_password }}'
 
 {% if groups['postgres'] | length > 1 %}
-gitlab_rails['db_load_balancing'] = { 'hosts' => {{ postgres_int_ips }} }
+gitlab_rails['db_load_balancing'] = { 'hosts' => {{ sharded_postgres_int_ips + postgres_int_ips if 'sharded_postgres' in groups else postgres_int_ips }} }
 {% endif %}
 
 {% endif %}
@@ -191,10 +191,6 @@ git_data_dirs({
   "storage{{loop.index + 1}}" => { 'gitaly_address' => 'tcp://{{ gitaly_secondary_ip }}:8075' },
 {% endfor %}
 })
-{% endif %}
-
-{% if 'sharded_postgres' in groups %}
-gitlab_rails['db_load_balancing'] = { 'hosts' => [{% for ip in postgres_int_ips %} '{{ip}}', {% endfor %}{% for ip in sharded_postgres_int_ips %} '{{ip}}'{% if not loop.last %}, {% endif %}{% endfor %}] }
 {% endif %}
 
 geo_confs = Dir.glob(File.join("/etc/gitlab/", "gitlab.geo.*.rb"))
