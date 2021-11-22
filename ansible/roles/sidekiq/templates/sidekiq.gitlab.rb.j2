@@ -159,14 +159,27 @@ gitlab_rails['db_load_balancing'] = { 'hosts' => {{ sharded_postgres_int_ips + p
 
 gitlab_rails['auto_migrate'] = false
 
+{% if 'sharded_postgres' in groups %}
+gitlab_rails['databases']['ci']['enable'] = true
+gitlab_rails['databases']['ci']['db_adapter'] = 'postgresql'
+gitlab_rails['databases']['ci']['db_database'] = 'gitlabhq_production'
+gitlab_rails['databases']['ci']['db_host'] = '{{ internal_lb_host }}'
+gitlab_rails['databases']['ci']['db_load_balancing'] = { 'hosts' => {{ sharded_postgres_int_ips }} }
+{% endif %}
+
 gitlab_rails['env'] = {
-  # Sidekiq Memory Killer - Disabled by default due to https://gitlab.com/gitlab-org/gitlab/-/issues/225909
-  "SIDEKIQ_MEMORY_KILLER_MAX_RSS" => {{ sidekiq_memory_killer_max_rss }}
+{% if 'sharded_postgres' in groups %}
+  "GITLAB_LOAD_BALANCING_REUSE_PRIMARY_ci" => "main",
+  "GITLAB_MULTIPLE_DATABASE_METRICS" => "true",
+{% endif %}
 
 {% if 'jaeger' in groups %}
   # Jaeger
-  "GITLAB_TRACING" => "opentracing://jaeger?http_endpoint=http%3A%2F%2F{{ jaeger_int_ip }}%3A14268%2Fapi%2Ftraces&sampler=const&sampler_param=0.1"
+  "GITLAB_TRACING" => "opentracing://jaeger?http_endpoint=http%3A%2F%2F{{ jaeger_int_ip }}%3A14268%2Fapi%2Ftraces&sampler=const&sampler_param=0.1",
 {% endif %}
+
+  # Sidekiq Memory Killer - Disabled by default due to https://gitlab.com/gitlab-org/gitlab/-/issues/225909
+  "SIDEKIQ_MEMORY_KILLER_MAX_RSS" => {{ sidekiq_memory_killer_max_rss }}
 }
 
 # Gitaly
