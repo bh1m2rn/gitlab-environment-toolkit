@@ -159,3 +159,9 @@
     path: /etc/gitlab/skip-auto-reconfigure
     state: touch
     mode: u=rw,g=r,o=r
+
+- name: Enable Feature Flags
+  shell: |
+    gitlab-rails runner "Feature.enable(:{{ item }})"
+  loop: "{{ gitlab_rails_feature_flags }}"
+  run_once: true
