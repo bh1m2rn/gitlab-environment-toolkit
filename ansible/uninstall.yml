@@ -3,29 +3,38 @@
   become: true
 
   tasks:
-  - name: Uninstall GitLab package
-    command: "{{ item }}"
-    args:
-      warn: false
-    with_items:
-      - apt-mark install gitlab-ee
-      - apt-get remove gitlab-ee -y
-    when:
-      - omnibus_node
+    - name: Uninstall GitLab package
+      command: "{{ item }}"
+      args:
+        warn: false
+      with_items:
+        - apt-mark install gitlab-ee
+        - apt-get remove gitlab-ee -y
+      when: omnibus_node
 
-  - name: Uninstall any GitLab repositories
-    command: "{{ item }}"
-    args:
-      warn: false
-    with_items:
-      - apt-add-repository -r https://packages.gitlab.com/gitlab/nightly-builds/ubuntu/
-      - apt-add-repository -r https://packages.gitlab.com/gitlab/gitlab-ee/ubuntu/
-    when:
-      - omnibus_node
+    - name: Uninstall any GitLab repositories
+      command: "{{ item }}"
+      args:
+        warn: false
+      with_items:
+        - apt-add-repository -r https://packages.gitlab.com/gitlab/nightly-builds/ubuntu/
+        - apt-add-repository -r https://packages.gitlab.com/gitlab/gitlab-ee/ubuntu/
+      when: omnibus_node
 
-  - name: Remove the repository script file
-    file:
-      path: "{{ gitlab_repo_script_path }}"
-      state: absent
-    when:
-      - omnibus_node
+    - name: Remove the repository script file
+      file:
+        path: "{{ gitlab_repo_script_path }}"
+        state: absent
+      when: omnibus_node
+
+- hosts: localhost
+
+  tasks:
+    - name: Uninstall GitLab Charts
+      kubernetes.core.helm:
+        release_name: gitlab
+        release_namespace: "{{ gitlab_charts_release_namespace }}"
+        state: absent
+        wait: true
+      when: cloud_native_hybrid_environment
+      tags: gitlab_charts
