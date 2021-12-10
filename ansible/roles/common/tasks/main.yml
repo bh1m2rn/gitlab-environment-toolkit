@@ -13,9 +13,8 @@
       tags: hostname
 
     - name: Setup Packages
-      import_tasks: packages.yml
-      tags:
-        - packages
+      import_tasks: packages_setup.yml
+      tags: packages
 
     # https://about.gitlab.com/blog/2019/11/15/tracking-down-missing-tcp-keepalives/
     - name: Configure TCP keepalive settings
@@ -41,6 +40,7 @@
         - name: Mount data disks
           import_tasks: data_disks.yml
           when: group_data_disks | length > 0
+      when: cloud_provider != 'none'
       tags: data_disks
 
     - name: Add GitLab repository GPG key
@@ -51,7 +51,9 @@
       retries: 2
       delay: 3
       until: result is success
-      when: omnibus_node
+      when:
+        - omnibus_node
+        - ansible_facts['os_family'] == "Debian"
       tags: gpg
 
     # Removes the official release repo if it's present as we typically want to stick with Nightly
@@ -63,6 +65,7 @@
       when:
         - omnibus_node
         - gitlab_repo_script_url != "https://packages.gitlab.com/install/repositories/gitlab/gitlab-ee/script.deb.sh"
+        - ansible_facts['os_family'] == "Debian"
 
     # Allows GET to run on a node after running gitlab-ctl cleanse. The current behavior of cleanse is to
     # delete the /etc/gitlab folder, this will cause an error when we try to copy files to the dir.
@@ -106,8 +109,7 @@
       register: repo_file
       retries: 20
       delay: 30
-      when:
-        - omnibus_node
+      when: omnibus_node
 
     - name: Install GitLab repository
       command: bash /tmp/gitlab_install_repository.sh
@@ -126,6 +128,7 @@
       until: result is success
       when:
         - omnibus_node
+        - ansible_facts['os_family'] == "Debian"
 
     # Install GitLab Package via repo. State of latest means always run apt install
     # If gitlab_version is passed then this will always install that version
@@ -142,6 +145,7 @@
         - gitlab_repo_package != ''
         - gitlab_deb_download_url == ''
         - gitlab_deb_host_path == ''
+        - ansible_facts['os_family'] == "Debian"
 
     - name: Download GitLab deb package
       get_url:
@@ -152,6 +156,7 @@
       when:
         - omnibus_node
         - gitlab_deb_download_url != ''
+        - ansible_facts['os_family'] == "Debian"
 
     - name: Copy GitLab deb package
       copy:
@@ -162,6 +167,7 @@
       when:
         - omnibus_node
         - gitlab_deb_host_path != ''
+        - ansible_facts['os_family'] == "Debian"
 
     - name: Install GitLab deb package
       apt:
@@ -170,6 +176,7 @@
       when:
         - omnibus_node
         - (gitlab_deb_host_path != '') or (gitlab_deb_download_url != '')
+        - ansible_facts['os_family'] == "Debian"
 
     - name: Lock GitLab package updates
       command: apt-mark hold gitlab-ee
@@ -179,6 +186,8 @@
       until: result is success
       when:
         - omnibus_node
+        - ansible_facts['os_family'] == "Debian"
+      tags: packages
 
     - name: Configure sshguard whitelist if present
       block:
@@ -195,6 +204,10 @@
             state: restarted
           when: sshguard_whitelist.changed
       when: "'sshguard' in services"
+
+    - name: Upgrade Packages
+      import_tasks: packages_upgrade.yml
+      tags: packages
 
     - name: Mark common has run
       set_fact:

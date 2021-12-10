@@ -395,7 +395,8 @@ By default the Toolkit will deploy the latest [GitLab EE package](https://packag
 
 The Toolkit can install other GitLab versions from `13.2.0` onwards through two different methods:
 
-- The Toolkit can be configured to install a specific GitLab version via the `gitlab_version` inventory variable. This should be set to the full semantic version, e.g. `14.0.0`. If let unset (the default) the Toolkit will look to install the latest version.
+- The Toolkit can be configured to install a specific GitLab version via the `gitlab_version` inventory variable. This should be set to the full semantic version, e.g. `14.0.0`. If left unset (the default) the Toolkit will look to install the latest version.
+  - The Toolkit can also be configured to install a different edition of GitLab, i.e. CE or EE, via the `gitlab_edition` inventory variable. If left unset the Toolkit will look to install the EE edition as recommended for the Reference Architectures.
 - Repo - A different repo and package can be specified via the two inventory variables `gitlab_repo_script_url` and `gitlab_repo_package` respectively. The Toolkit will first install the repo via the script provided and then install the package.
 - Deb file - The Toolkit can install a Debian file directly in several ways:
   - If the package needs to be downloaded from the specific URL you can specify this via the `gitlab_deb_download_url` inventory variable.
@@ -428,6 +429,12 @@ After the config has been setup you're now ready to configure the environment. T
     - If you only want to run a specific playbook & role against the respective VMs you can switch out `all.yml` and replace it with the intended playbook, e.g. `gitlab-rails.yml`
 
 The same commands are used when you wish to update an existing environment.
+
+:information_source:&nbsp; If you ever want to uninstall GitLab, you can do so by running:
+
+```shell
+ansible-playbook -i environments/10k/inventory uninstall.yml
+```
 
 ### Running with ansible-deployer (optional)
 
