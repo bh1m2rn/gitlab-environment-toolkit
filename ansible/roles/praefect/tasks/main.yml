@@ -20,7 +20,29 @@
   tags: reconfigure
   register: praefect_custom_config_file_path
 
-- name: Non Omnibus database related tasks
+- name: Get current Omnibus Postgres Primary
+  block:
+    - name: Get latest Postgres primary
+      command: gitlab-ctl get-postgresql-primary
+      register: postgres_leader_int_address
+      delegate_to: "{{ groups['postgres'][0] }}"
+      delegate_facts: true
+      become: true
+
+    - name: Update Postgres primary IP and Port  # Updates praefect_postgres_host and praefect_postgres_port as well
+      set_fact:
+        postgres_host: "{{ postgres_leader_int_address.stdout.split(':')[0] }}"
+        postgres_port: "{{ postgres_leader_int_address.stdout.split(':')[1] }}"
+  when:
+    - "'praefect_postgres' not in groups"
+    - "'postgres' in groups and groups['postgres'] | length > 1"
+    - postgres_replication_manager == 'patroni'
+  tags:
+    - reconfigure
+    - db_migrate
+  run_once: true
+
+- name: Create Praefect and Database
   block:
     - name: Create Praefect Database User
       community.postgresql.postgresql_user:
@@ -31,16 +53,15 @@
         db: "template1"
         name: "{{ praefect_postgres_username.split('@')[0] }}"
         password: "{{ praefect_postgres_password }}"
-        role_attr_flags: CREATEDB
-        expires: infinity
 
     - name: Create Praefect Database
       community.postgresql.postgresql_db:
         login_host: "{{ praefect_postgres_host }}"
         login_port: "{{ praefect_postgres_port }}"
-        login_user: "{{ praefect_postgres_username }}"
-        login_password: "{{ praefect_postgres_password }}"
+        login_user: "{{ praefect_postgres_admin_username }}"
+        login_password: "{{ praefect_postgres_admin_password }}"
         name: "{{ praefect_postgres_database_name }}"
+        owner: "{{ praefect_postgres_username.split('@')[0] }}"
         encoding: UTF-8
 
     - name: Enable required Postgres extensions
@@ -52,13 +73,10 @@
         name: "{{ item }}"
         db: "{{ praefect_postgres_database_name }}"
       loop: ['pg_trgm', 'btree_gist', 'plpgsql']
-  when:
-    - praefect_postgres_external
-    - (geo_secondary_site_group_name not in groups)
+  when: (geo_secondary_site_group_name not in groups)
   tags:
     - reconfigure
     - db_migrate
-    - postgres_external
   run_once: true
 
 - name: Perform database migrations

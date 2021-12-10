@@ -60,11 +60,6 @@
     - reconfigure
     - restart
 
-- name: Copy secrets file to NFS if missing
-  shell: "cp -n /etc/gitlab/gitlab-secrets.json {{ gitlab_nfs_path }}"
-  tags: secrets
-  run_once: true
-
 - name: Show debug output of postgres cluster status
   block:
     - name: Debug capture output of 'gitlab-ctl repmgr cluster show'
@@ -114,6 +109,11 @@
   failed_when:
     - postgres_secondary_standby_result.rc != 0
     - '"exists already" not in postgres_secondary_standby_result.stderr'
+
+- name: Copy secrets file to NFS if missing
+  shell: "cp -n /etc/gitlab/gitlab-secrets.json {{ gitlab_nfs_path }}"
+  tags: secrets
+  run_once: true
 
 - name: Create skip-auto-reconfigure file
   file:

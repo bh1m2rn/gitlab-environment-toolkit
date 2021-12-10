@@ -58,16 +58,15 @@
         db: "template1"
         name: "{{ postgres_username.split('@')[0] }}"
         password: "{{ postgres_password }}"
-        role_attr_flags: CREATEDB
-        expires: infinity
 
     - name: Create Database
       community.postgresql.postgresql_db:
         login_host: "{{ postgres_host }}"
         login_port: "{{ postgres_port }}"
-        login_user: "{{ postgres_username }}"
-        login_password: "{{ postgres_password }}"
+        login_user: "{{ postgres_admin_username }}"
+        login_password: "{{ postgres_admin_password }}"
         name: "{{ postgres_database_name }}"
+        owner: "{{ postgres_username.split('@')[0] }}"
         encoding: UTF-8
 
     - name: Enable required Postgres extensions

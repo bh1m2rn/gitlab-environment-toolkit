@@ -12,14 +12,40 @@ pgbouncer['users'] = {
     password: "{{ (pgbouncer_password + 'pgbouncer') | md5 }}"
   }
 }
+
+pgbouncer['databases'] = {
+  gitlabhq_production: {},
+{% if not praefect_postgres_external or 'praefect_postgres' in groups %}
+  praefect_production: {},
+  praefect_production_direct: {
+    dbname: '{{ praefect_postgres_database_name }}',
+    pool_mode: 'session'
+  }
+{% endif %}
+}
+
 {% else %}
 pgbouncer['admin_users'] = %w(pgbouncer gitlab-consul)
 pgbouncer['databases'] = {
   gitlabhq_production: {
-    host: "{{ postgres_host }}",
-    user: "pgbouncer",
+    host: '{{ postgres_host }}',
+    user: 'pgbouncer',
     password: "{{ (pgbouncer_password + 'pgbouncer') | md5 }}"
+  },
+{% if not praefect_postgres_external or 'praefect_postgres' in groups %}
+  praefect_production: {
+    host: '{{ postgres_host }}',
+    user: 'pgbouncer',
+    password: "{{ (pgbouncer_password + 'pgbouncer') | md5 }}"
+  },
+  praefect_production_direct: {
+    host: '{{ postgres_host }}',
+    user: 'pgbouncer',,
+    password: "{{ (pgbouncer_password + 'pgbouncer') | md5 }}",
+    dbname: '{{ praefect_postgres_database_name }}',
+    pool_mode: 'session'
   }
+{% endif %}
 }
 {% endif %}
 
