@@ -1,0 +1,14 @@
+gitlab_rails['databases']['ci']['enable'] = true
+gitlab_rails['databases']['ci']['db_adapter'] = 'postgresql'
+gitlab_rails['databases']['ci']['db_database'] = 'gitlabhq_production'
+gitlab_rails['databases']['ci']['db_host'] = '{{ internal_lb_host }}'
+gitlab_rails['databases']['ci']['db_load_balancing'] = { 'hosts' => {{ sharded_postgres_int_ips }} }
+
+gitlab_rails['env'] = {
+
+{% if 'jaeger' in groups %}
+  "GITLAB_TRACING" => "opentracing://jaeger?http_endpoint=http%3A%2F%2F{{ jaeger_int_ip }}%3A14268%2Fapi%2Ftraces&sampler=const&sampler_param=0.1",
+{% endif %}
+  "GITLAB_LOAD_BALANCING_REUSE_PRIMARY_ci" => "main",
+  "GITLAB_MULTIPLE_DATABASE_METRICS" => "true"
+}

@@ -239,10 +239,6 @@ grafana['enable'] = false
 {%- if 'jaeger' in groups %}
 ## Jaeger
 gitlab_rails['env'] = {
-{% if 'sharded_postgres' in groups %}
-  "GITLAB_LOAD_BALANCING_REUSE_PRIMARY_ci" => "main",
-  "GITLAB_MULTIPLE_DATABASE_METRICS" => "true",
-{% endif %}
   "GITLAB_TRACING" => "opentracing://jaeger?http_endpoint=http%3A%2F%2F{{ jaeger_int_ip }}%3A14268%2Fapi%2Ftraces&sampler=const&sampler_param=0.1"
 }
 gitlab_workhorse['env'] = {
@@ -277,23 +273,13 @@ gitaly['enable'] = true
 gitaly['prometheus_listen_addr'] = "0.0.0.0:9236"
 {% endif %}
 
-{% if 'sharded_postgres' in groups %}
-gitlab_rails['databases']['ci']['enable'] = true
-gitlab_rails['databases']['ci']['db_adapter'] = 'postgresql'
-gitlab_rails['databases']['ci']['db_database'] = 'gitlabhq_production'
-gitlab_rails['databases']['ci']['db_host'] = '{{ internal_lb_host }}'
-gitlab_rails['databases']['ci']['db_load_balancing'] = { 'hosts' => {{ sharded_postgres_int_ips }} }
-
-{% if 'jaeger' not in groups %}
-gitlab_rails['env'] = {
-  "GITLAB_LOAD_BALANCING_REUSE_PRIMARY_ci" => "main",
-  "GITLAB_MULTIPLE_DATABASE_METRICS" => "true"
-}
-{% endif %}
-{% endif %}
-
 geo_confs = Dir.glob(File.join("/etc/gitlab/", "gitlab.geo.*.rb"))
 geo_confs.each { |conf|
+  from_file conf
+}
+
+decomposition_confs = Dir.glob(File.join("/etc/gitlab/", "gitlab.decomposition.rb"))
+decomposition_confs.each { |conf|
   from_file conf
 }
 
