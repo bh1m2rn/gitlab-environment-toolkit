@@ -173,11 +173,11 @@
   when: gitlab_rails_custom_config_file_path.stat.exists
 
 - name: Copy decomposition GitLab config
-  copy:
+  template:
     src: templates/gitlab-rails.decomposition.rb.j2
     dest: "/etc/gitlab/gitlab.decomposition.rb"
     mode: 0644
-  tags: reconfigure
+  tags: test
   when: ('sharded_postgres' in groups)
 
 - name: Reconfigure all GitLab Rails
