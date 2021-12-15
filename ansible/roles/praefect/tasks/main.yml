@@ -42,7 +42,7 @@
     - db_migrate
   run_once: true
 
-- name: Create Praefect and Database
+- name: Create Praefect User and Database
   block:
     - name: Create Praefect Database User
       community.postgresql.postgresql_user:
@@ -73,6 +73,15 @@
         name: "{{ item }}"
         db: "{{ praefect_postgres_database_name }}"
       loop: ['pg_trgm', 'btree_gist', 'plpgsql']
+
+    - name: Add PgBouncer login function
+      community.postgresql.postgresql_query:
+        login_host: "{{ praefect_postgres_host }}"
+        login_port: "{{ praefect_postgres_port }}"
+        login_user: "{{ praefect_postgres_admin_username }}"
+        login_password: "{{ praefect_postgres_admin_password }}"
+        db: "{{ praefect_postgres_database_name }}"
+        path_to_script: "pg_shadow_lookup.sql"
   when: (geo_secondary_site_group_name not in groups)
   tags:
     - reconfigure
