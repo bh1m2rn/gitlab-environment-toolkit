@@ -4,11 +4,7 @@ gitlab_rails['auto_migrate'] = false
 
 consul['configuration'] = {
   server: true,
-{% if 'consul' in group_names %}
   retry_join: %w({{ consul_int_ips | join(' ') }}),
-{% else %}
-  retry_join: %w({{ sharded_consul_int_ips | join(' ') }}),
-{% endif %}
   bind_addr: '{{ ansible_default_ipv4.address }}'
 }
 consul['monitoring_service_discovery'] = true

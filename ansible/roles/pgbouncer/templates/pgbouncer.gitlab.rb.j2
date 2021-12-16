@@ -31,11 +31,7 @@ consul['watchers'] = %w(postgresql)
 {% endif %}
 consul['configuration'] = {
   bind_addr: '{{ ansible_default_ipv4.address }}',
-{% if 'pgbouncer' in group_names %}
   retry_join: %w({{ (consul_int_ips if 'consul' in groups else gitlab_rails_int_ips) | join(' ') }})
-{% else %}
-  retry_join: %w({{ sharded_consul_int_ips | join(' ') }})
-{% endif %}
 }
 consul['monitoring_service_discovery'] = true
 

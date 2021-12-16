@@ -73,11 +73,7 @@ consul['services'] = %w(postgresql)
 {% endif %}
 consul['configuration'] = {
   bind_addr: '{{ ansible_default_ipv4.address }}',
-{% if 'postgres' in group_names %}
   retry_join: %w({{ (consul_int_ips if 'consul' in groups else gitlab_rails_int_ips) | join(' ') }})
-{% else %}
-  retry_join: %w({{ sharded_consul_int_ips | join(' ') }})
-{% endif %}
 }
 consul['monitoring_service_discovery'] = true
 
@@ -94,7 +90,7 @@ patroni['replication_slots'] = {
 
 postgresql['sql_replication_password'] = '{{ (postgres_password + 'gitlab_replicator') | md5 }}'
 patroni['replication_password'] = '{{ postgres_password }}'
-{% elif 'sharded_postgres' in groups and 'sharded_postgres' in group_names %}
+{% elif 'sharded_postgres' in group_names %}
 patroni['standby_cluster']['enable'] = true
 patroni['standby_cluster']['host'] = '{{ internal_lb_host }}'
 patroni['standby_cluster']['port'] = 5432

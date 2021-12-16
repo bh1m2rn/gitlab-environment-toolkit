@@ -1,7 +1,6 @@
 ---
 - hosts:
     - consul
-    - sharded_consul
   roles:
     - consul
   become: true
