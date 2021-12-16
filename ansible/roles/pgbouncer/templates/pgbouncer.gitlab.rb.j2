@@ -40,6 +40,11 @@ node_exporter['listen_address'] = '0.0.0.0:9100'
 pgbouncer_exporter['enable'] = true
 pgbouncer_exporter['listen_address'] = '0.0.0.0:9188'
 
+{% if 'sharded_pgbouncer' in group_names %}
+consul['internal']['postgresql_service_name'] = "patroni-decomposition-cluster"
+patroni['scope'] = "patroni-decomposition-cluster"
+{% endif %}
+
 custom_confs = Dir.glob(File.join("/etc/gitlab/", "gitlab.pgbouncer.*.rb"))
 custom_confs.each { |conf|
   from_file conf
