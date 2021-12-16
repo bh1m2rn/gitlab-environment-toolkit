@@ -1,5 +1,7 @@
 ---
-- hosts: pgbouncer
+- hosts:
+    - pgbouncer
+    - praefect_pgbouncer
   roles:
     - pgbouncer
   become: true

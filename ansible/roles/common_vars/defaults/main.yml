@@ -122,7 +122,7 @@ consul_int_ips: "{{ (groups['consul'] | sort | map('extract', hostvars, internal
 # GitLab Rails (Application nodes)
 gitlab_rails_int_ips: "{{ (groups['gitlab_rails'] | sort | map('extract', hostvars, internal_ip_lookup[cloud_provider]) | list) if 'gitlab_rails_primary' in groups else [] }}"
 
-# GitLab Postgres / PGBouncer
+# GitLab Postgres / PgBouncer
 postgres_primary_int_ip: "{{ (groups['postgres_primary'] | sort | map('extract', hostvars, internal_ip_lookup[cloud_provider]) | join('')) if 'postgres_primary' in groups else '' }}"
 postgres_int_ips: "{{ (groups['postgres'] | map('extract', hostvars, internal_ip_lookup[cloud_provider]) | list) if 'postgres' in groups else [] }}"
 pgbouncer_int_ips: "{{ (groups['pgbouncer'] | sort | map('extract', hostvars, internal_ip_lookup[cloud_provider]) | list) if 'pgbouncer' in groups else [] }}"
@@ -139,6 +139,9 @@ postgres_database_name: "gitlabhq_production"
 postgres_load_balancing_hosts: []
 postgres_external: "{{ 'postgres' not in groups and postgres_host != '' }}"
 
+pgbouncer_port: '6432'
+pgbouncer_password: ''
+
 ## Postgres Omnibus
 postgres_replication_manager: "{{ 'patroni' if ((groups['postgres'] is defined) and (groups['postgres'] | length > 1)) else 'none' }}"
 
@@ -152,9 +155,12 @@ praefect_primary_int_ip: "{{ (groups['praefect_primary'] | map('extract', hostva
 praefect_secondary_int_ips: "{{ (groups['praefect_secondary'] | map('extract', hostvars, internal_ip_lookup[cloud_provider]) | list) if 'praefect_secondary' in groups else [] }}"
 praefect_int_ips: "{{ (groups['praefect'] | map('extract', hostvars, internal_ip_lookup[cloud_provider]) | list) if 'praefect' in groups else [] }}"
 
-## Praefect Postgres
-praefect_postgres_int_ip: "{{ (groups['praefect_postgres'] | map('extract', hostvars, internal_ip_lookup[cloud_provider]) | join('')) if 'praefect_postgres_primary' in groups else '' }}"
-praefect_postgres_host: "{{ praefect_postgres_int_ip if praefect_postgres_int_ip != '' else postgres_host }}"
+## Praefect Postgres / PgBouncer
+praefect_postgres_primary_int_ip: "{{ (groups['praefect_postgres_primary'] | sort | map('extract', hostvars, internal_ip_lookup[cloud_provider]) | join('')) if 'praefect_postgres_primary' in groups else '' }}"
+praefect_pgbouncer_int_ips: "{{ (groups['praefect_pgbouncer'] | sort | map('extract', hostvars, internal_ip_lookup[cloud_provider]) | list) if 'praefect_pgbouncer' in groups else [] }}"
+
+### Conditionals handle several potential scenarios - Separate or Colocated with main GitLab database on either Omnibus or External service
+praefect_postgres_host: "{{ praefect_postgres_primary_int_ip if praefect_postgres_primary_int_ip != '' else postgres_host }}"
 praefect_postgres_port: '5432'
 praefect_postgres_cache_host: "{{ praefect_postgres_host }}"
 praefect_postgres_cache_port: '5432'
@@ -162,11 +168,15 @@ praefect_postgres_migrations_host: "{{ praefect_postgres_host }}"
 praefect_postgres_migrations_port: '5432'
 praefect_postgres_username: "praefect"
 praefect_postgres_password: ""
-praefect_postgres_admin_username: "{{ praefect_postgres_username if praefect_postgres_host != postgres_host else postgres_admin_username }}"
-praefect_postgres_admin_password: "{{ praefect_postgres_password if praefect_postgres_host != postgres_host else postgres_admin_password }}"
+praefect_postgres_admin_username: "{{ 'gitlab-psql' if 'praefect_postgres' in groups else (postgres_admin_username if praefect_postgres_host == postgres_host else praefect_postgres_username) }}"
+praefect_postgres_admin_password: "{{ '' if 'praefect_postgres' in groups else (postgres_admin_username if praefect_postgres_host == postgres_host else praefect_postgres_username) }}"
 praefect_postgres_database_name: "praefect_production"
 praefect_postgres_cache_database_name: "{{ praefect_postgres_database_name }}"
-praefect_postgres_external: "{{ 'praefect_postgres' not in groups and (praefect_postgres_host != postgres_host or postgres_external) }}"
+praefect_postgres_external: "{{ 'praefect_postgres' not in groups and (praefect_postgres_host != postgres_host or postgres_external) }}"  # If Praefect Postgres doesn't exist and (not sharing same URL as Postgres if Omnibus or Postgres is external)
+praefect_postgres_colocated: "{{ praefect_postgres_host == postgres_host }}"
+
+praefect_pgbouncer_port: '7432'
+praefect_pgbouncer_password: ''
 
 # GitLab Monitor
 monitor_int_ip: "{{ (groups['monitor'] | sort | map('extract', hostvars, internal_ip_lookup[cloud_provider]) | join('')) if 'monitor' in groups else '' }}"

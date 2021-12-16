@@ -18,7 +18,7 @@
 
 - name: Setup GitLab config file
   template:
-    src: templates/pgbouncer.gitlab.rb.j2
+    src: "templates/{{ pgbouncer_group_name }}.gitlab.rb.j2"
     dest: /etc/gitlab/gitlab.rb
   tags: reconfigure
 
@@ -66,9 +66,27 @@
 - name: Create .pgpass file
   command: gitlab-ctl write-pgpass --host 127.0.0.1 --database pgbouncer --hostuser gitlab-consul
   args:
-    stdin: "{{ pgbouncer_password }}\n{{ pgbouncer_password }}\n"
+    stdin: "{{ lookup('vars', pgbouncer_group_name + '_password') }}\n{{ lookup('vars', pgbouncer_group_name + '_password') }}\n"
     creates: /var/opt/gitlab/postgresql/.pgpass
   tags: reconfigure
+
+- name: Consul Service/Watcher workarounds for Praefect Postgres HA
+  block:
+    - name: Replace service name in failover_pgbouncer script
+      replace:
+        path: /var/opt/gitlab/consul/scripts/failover_pgbouncer
+        regexp: "'service:postgresql'"
+        replace: "'service:praefect_postgresql'"
+
+    - name: Replace service name name in watcher_postgresql config
+      replace:
+        path: /var/opt/gitlab/consul/config.d/watcher_postgresql.json
+        regexp: '"service":"postgresql"'
+        replace: '"service":"praefect_postgresql"'
+  when: "'praefect_pgbouncer' in group_names"
+  tags:
+    - consul_workaround
+    - reconfigure
 
 # Bug - https://gitlab.com/gitlab-org/omnibus-gitlab/issues/3448
 - name: Restart Consul
@@ -77,6 +95,7 @@
   retries: 2
   until: result is success
   tags:
+    - consul_workaround
     - reconfigure
     - restart
 

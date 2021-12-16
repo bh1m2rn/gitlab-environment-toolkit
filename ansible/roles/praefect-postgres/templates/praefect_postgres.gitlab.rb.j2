@@ -1,19 +1,39 @@
+{% if groups['praefect_postgres'] | length > 1 %}
 # Disable all components except PostgreSQL and Consul
+roles ['patroni_role']
+
+# Patroni uses one extra slot per node when initiating the replication
+patroni['postgresql']['max_replication_slots'] = {{ (groups['postgres'] | length) * 2 }}
+patroni['postgresql']['max_wal_senders'] = {{ (groups['postgres'] | length) * 2 }}
+
+patroni['remove_data_directory_on_rewind_failure'] = {{ patroni_remove_data_directory_on_rewind_failure | lower }}
+patroni['remove_data_directory_on_diverged_timelines'] = {{ patroni_remove_data_directory_on_diverged_timelines | lower }}
+
+patroni['scope'] = 'praefect-postgresql-ha'
+
+{% else %}
 roles ['postgres_role']
 
 repmgr['enable'] = false
 patroni['enable'] = false
+{% endif %}
 
 # PostgreSQL configuration
 postgresql['listen_address'] = '0.0.0.0'
+
+postgresql['pgbouncer_user_password'] = "{{ (praefect_pgbouncer_password + 'pgbouncer') | md5 }}"
 postgresql['sql_user_password'] = "{{ (praefect_postgres_password + 'praefect') | md5 }}"
+
 postgresql['trust_auth_cidr_addresses'] = %w(0.0.0.0/0)
 postgresql['shared_preload_libraries'] = 'pg_stat_statements'
 
 gitlab_rails['auto_migrate'] = false
 
 # Consul
-consul['enable'] = true
+{% if groups['praefect_postgres'] | length > 1 %}
+consul['services'] = %w(postgresql)
+consul['internal']['postgresql_service_name'] = 'praefect_postgresql'
+{% endif %}
 consul['configuration'] = {
   bind_addr: '{{ ansible_default_ipv4.address }}',
   retry_join: %w({{ (consul_int_ips if 'consul' in groups else gitlab_rails_int_ips) | join(' ') }})

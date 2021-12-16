@@ -1,0 +1,3 @@
+---
+
+pgbouncer_group_name: "{{ group_names | select('match', 'praefect_pgbouncer.*|pgbouncer.*') | reject('match', '.*_primary|.*_secondary') | first }}"

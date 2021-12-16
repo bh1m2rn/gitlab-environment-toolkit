@@ -17,7 +17,9 @@
     path: "{{ praefect_custom_config_file }}"
   delegate_to: localhost
   become: false
-  tags: reconfigure
+  tags:
+    - reconfigure
+    - db_migrate
   register: praefect_custom_config_file_path
 
 - name: Get current Omnibus Postgres Primary
@@ -29,7 +31,7 @@
       delegate_facts: true
       become: true
 
-    - name: Update Postgres primary IP and Port  # Updates praefect_postgres_host and praefect_postgres_port as well
+    - name: Update Postgres primary IP and port
       set_fact:
         postgres_host: "{{ postgres_leader_int_address.stdout.split(':')[0] }}"
         postgres_port: "{{ postgres_leader_int_address.stdout.split(':')[1] }}"
@@ -40,6 +42,26 @@
   tags:
     - reconfigure
     - db_migrate
+  run_once: true
+
+- name: Get current Omnibus Praefect Postgres Primary
+  block:
+    - name: Get latest Praefect Postgres primary
+      command: gitlab-ctl get-postgresql-primary
+      register: praefect_postgres_leader_int_address
+      delegate_to: "{{ groups['praefect_postgres'][0] }}"
+      delegate_facts: true
+      become: true
+
+    - name: Update Praefect Postgres primary IP and port
+      set_fact:
+        praefect_postgres_host: "{{ praefect_postgres_leader_int_address.stdout.split(':')[0] }}"
+        praefect_postgres_port: "{{ praefect_postgres_leader_int_address.stdout.split(':')[1] }}"
+  when: "'praefect_postgres' in groups and groups['praefect_postgres'] | length > 1"
+  tags:
+    - reconfigure
+    - db_migrate
+    - test
   run_once: true
 
 - name: Create Praefect User and Database
@@ -81,7 +103,7 @@
         login_user: "{{ praefect_postgres_admin_username }}"
         login_password: "{{ praefect_postgres_admin_password }}"
         db: "{{ praefect_postgres_database_name }}"
-        path_to_script: "pg_shadow_lookup.sql"
+        query: "{{ lookup('file', 'pg_shadow_lookup.sql') }}"
   when: (geo_secondary_site_group_name not in groups)
   tags:
     - reconfigure

@@ -3,57 +3,50 @@ roles ['pgbouncer_role']
 
 # Configure Pgbouncer
 
-{% if groups['postgres'] | length > 1 %}
+{% if groups['praefect_postgres'] | length > 1 %}
 pgbouncer['users'] = {
   'gitlab-consul': {
     password: "{{ ((consul_database_password | default(consul_password)) + 'gitlab-consul') | md5 }}"
   },
   'pgbouncer': {
-    password: "{{ (pgbouncer_password + 'pgbouncer') | md5 }}"
+    password: "{{ (praefect_pgbouncer_password + 'pgbouncer') | md5 }}"
   }
 }
 
 pgbouncer['databases'] = {
-  gitlabhq_production: {},
-{% if praefect_postgres_colocated %}
   praefect_production: {},
   praefect_production_direct: {
     dbname: '{{ praefect_postgres_database_name }}',
     pool_mode: 'session'
   }
-{% endif %}
 }
 
 {% else %}
 pgbouncer['admin_users'] = %w(pgbouncer gitlab-consul)
 pgbouncer['databases'] = {
-  gitlabhq_production: {
-    host: '{{ postgres_host }}',
-    user: 'pgbouncer',
-    password: "{{ (pgbouncer_password + 'pgbouncer') | md5 }}"
-  },
-{% if praefect_postgres_colocated %}
   praefect_production: {
-    host: '{{ postgres_host }}',
+    host: '{{ praefect_postgres_host }}',
     user: 'pgbouncer',
-    password: "{{ (pgbouncer_password + 'pgbouncer') | md5 }}"
+    password: "{{ (praefect_pgbouncer_password + 'pgbouncer') | md5 }}"
   },
   praefect_production_direct: {
     host: '{{ postgres_host }}',
     user: 'pgbouncer',,
-    password: "{{ (pgbouncer_password + 'pgbouncer') | md5 }}",
+    password: "{{ (praefect_pgbouncer_password + 'pgbouncer') | md5 }}",
     dbname: '{{ praefect_postgres_database_name }}',
     pool_mode: 'session'
   }
-{% endif %}
 }
 {% endif %}
 
+pgbouncer['listen_port'] = '{{ praefect_pgbouncer_port }}'
 pgbouncer['max_db_connections'] = 150
 
 # Configure Consul agent
 {% if groups['postgres'] | length > 1 %}
 consul['watchers'] = %w(postgresql)
+consul['internal']['postgresql_service_name'] = 'praefect_postgresql'
+patroni['scope'] = 'praefect-postgresql-ha'
 {% endif %}
 consul['configuration'] = {
   bind_addr: '{{ ansible_default_ipv4.address }}',

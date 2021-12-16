@@ -18,6 +18,16 @@ frontend internal-pgbouncer-tcp-in
     default_backend pgbouncer
 {% endif %}
 
+{% if 'praefect_pgbouncer' in groups %}
+frontend internal-praefect-pgbouncer-tcp-in
+    bind *:7432
+    mode tcp
+    option tcplog
+    option clitcpka
+
+    default_backend praefect-pgbouncer
+{% endif %}
+
 {% if 'praefect' in groups %}
 frontend internal-praefect-tcp-in
     bind *:2305
@@ -57,6 +67,17 @@ backend pgbouncer
 
 {% for ip in pgbouncer_int_ips %}
     server pgbouncer{{loop.index}} {{ ip }}:6432 check inter 3s fall 1
+{% endfor %}
+{% endif %}
+
+{% if 'praefect_pgbouncer' in groups %}
+backend praefect-pgbouncer
+    mode tcp
+    option tcp-check
+    option srvtcpka
+
+{% for ip in praefect_pgbouncer_int_ips %}
+    server praefect-pgbouncer{{loop.index}} {{ ip }}:7432 check inter 3s fall 1
 {% endfor %}
 {% endif %}
 

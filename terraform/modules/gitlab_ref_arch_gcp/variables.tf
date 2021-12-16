@@ -294,6 +294,27 @@ variable "praefect_postgres_disks" {
   default = []
 }
 
+variable "praefect_pgbouncer_node_count" {
+  type    = number
+  default = 0
+}
+variable "praefect_pgbouncer_machine_type" {
+  type    = string
+  default = ""
+}
+variable "praefect_pgbouncer_disk_type" {
+  type    = string
+  default = null
+}
+variable "praefect_pgbouncer_disk_size" {
+  type    = string
+  default = null
+}
+variable "praefect_pgbouncer_disks" {
+  type    = list(any)
+  default = []
+}
+
 variable "redis_node_count" {
   type    = number
   default = 0
