@@ -61,7 +61,9 @@
     path: "{{ gitlab_rails_custom_config_file }}"
   delegate_to: localhost
   become: false
-  tags: reconfigure
+  tags:
+    - reconfigure
+    - db_migrate
   register: gitlab_rails_custom_config_file_path
 
 - name: Get Omnibus Postgres Primary

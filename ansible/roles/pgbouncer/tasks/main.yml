@@ -49,15 +49,6 @@
   until: result is success
   tags: reconfigure
 
-- name: Restart PgBouncer
-  command: gitlab-ctl restart
-  register: result
-  retries: 2
-  until: result is success
-  tags:
-    - reconfigure
-    - restart
-
 - name: Copy secrets file to NFS if missing
   shell: "cp -n /etc/gitlab/gitlab-secrets.json {{ gitlab_nfs_path }}"
   tags: secrets
@@ -88,9 +79,8 @@
     - consul_workaround
     - reconfigure
 
-# Bug - https://gitlab.com/gitlab-org/omnibus-gitlab/issues/3448
-- name: Restart Consul
-  command: gitlab-ctl restart consul
+- name: Restart PgBouncer and Consul
+  command: gitlab-ctl restart
   register: result
   retries: 2
   until: result is success
