@@ -72,7 +72,7 @@ resource "aws_default_route_table" "gitlab_vpc_rt" {
 # Select vpc \ subnet ids if created or given, null if using defaults
 locals {
   vpc_id             = local.create_network ? aws_vpc.gitlab_vpc[0].id : var.vpc_id
-  subnet_ids         = local.create_network ? aws_subnet.gitlab_vpc_sn_pub[*].id : var.subnet_ids
+  subnet_ids         = local.create_network ? aws_subnet.gitlab_vpc_sn_pub[*].id : var.subnet_ids == null ? data.aws_subnet_ids.defaults[0].ids : var.subnet_ids
   default_vpc_id     = local.create_network ? null : aws_default_vpc.default[0].id
   default_subnet_ids = local.create_network ? null : data.aws_subnet_ids.defaults[0].ids
 }
