@@ -23,7 +23,7 @@ variable "external_ips" {
 
 variable "machine_type" {
   type    = string
-  default = "n1-standard-2"
+  default = "n2d-standard-2"
 }
 
 variable "machine_image" {
