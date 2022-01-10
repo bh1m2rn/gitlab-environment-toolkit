@@ -498,5 +498,5 @@ variable "subnet_cidr" {
 ## External IPs
 variable "setup_external_ips" {
   type    = bool
-  default = true
+  default = false
 }

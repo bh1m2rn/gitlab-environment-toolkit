@@ -97,7 +97,7 @@ variable "zones" {
 
 variable "setup_external_ip" {
   type    = bool
-  default = true
+  default = false
 }
 
 variable "name_override" {
