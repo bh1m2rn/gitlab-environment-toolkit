@@ -1,11 +1,12 @@
 include:
   - template: Security/Dependency-Scanning.gitlab-ci.yml
+  - template: Security/Secret-Detection.gitlab-ci.yml
 
 stages:
   - test
 
 #################################
-##     Dependency Scanning     ##
+##            SAST             ##
 #################################
 
 .on_merge_request_and_merged_events:
@@ -17,6 +18,8 @@ gemnasium-dependency_scanning:
     - !reference [.on_merge_request_and_merged_events, rules]
 
 gemnasium-python-dependency_scanning:
+  variables:
+    DS_MAJOR_VERSION: 2-python-3.9
   rules:
     - !reference [.on_merge_request_and_merged_events, rules]
 
@@ -24,6 +27,9 @@ bundler-audit-dependency_scanning:
   rules:
     - !reference [.on_merge_request_and_merged_events, rules]
 
+secret_detection:
+  rules:
+    - !reference [.on_merge_request_and_merged_events, rules]
 
 #########################
 ##     Lint Checks     ##

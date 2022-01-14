@@ -40,7 +40,9 @@ If using Terraform, one important caveat is preparing its [State](https://www.te
 
 To ensure the state is correct for everyone using the toolkit we store it on the environment cloud platform in a specific bucket. This needs to be configured manually for each environment once.
 
-Each project's State bucket is a standard one and will typically follow a simple naming convention - `<env_short_name>-terraform-state`. The name can be anything as desired though as long as it's configured subsequently in the environment's `main.tf` file.
+Each project's State bucket is a standard one and will typically follow a simple naming convention, e.g. `<env_short_name>-terraform-state`. The name can be anything as desired though as long as it's configured subsequently in the environment's `main.tf` file.
+
+:information_source:&nbsp; Note that GitLab itself provides a feature where it can store Terraform state, which will be created with the name `<prefix>-terraform-state`. The Terraform state bucket then for the environment itself must avoid this name as a result.
 
 ### Static External IP
 
@@ -151,6 +153,9 @@ This is straightforward with AWS. All that's required is for a key to be created
 
 It is also possible to use an existing SSH key pair, but it is recommended to use a new key to avoid any potential security implications.
 
+SSH usernames are provided by AWS depending on the [AMI Image](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/connection-prereqs.html#connection-prereqs-get-info-about-instance) used. With the Toolkit's defaults this will typically be `ubuntu`.
+Take a note of this username as later, in the [Environment config - vars.yml](environment_configure.md#environment-config-varsyml) section, it will be used to configure Ansible.
+
 That's all that's required for now. Later on in this guide we'll configure the Toolkit to use this key for adding into the AWS machines as well as accessing them.
 
 ### 3. Setup Terraform State Storage - AWS S3
@@ -167,6 +172,8 @@ A static IP, AKA an Elastic IP, can be generated in AWS as follows:
 - Use the default options when given a choice
 
 Once the IP is available take note of its allocation ID for later.
+
+:information_source:&nbsp;  if you are deploying a Cloud Native Hybrid GitLab setup you'll need to allocate one Elastic IP for each subnet in the VPC instead of a single one.
 
 ## Azure
 
