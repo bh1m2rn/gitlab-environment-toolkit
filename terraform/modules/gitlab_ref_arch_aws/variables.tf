@@ -919,6 +919,10 @@ variable "subnet_pub_count" {
   type    = number
   default = 2
 }
+variable "zones_exclude" {
+  type    = list(string)
+  default = null
+}
 
 ## Existing network
 variable "vpc_id" {
@@ -935,4 +939,9 @@ variable "subnet_ids" {
 variable "elb_internal_create" {
   type    = bool
   default = false
+}
+
+variable "additional_tags" {
+  type    = map(any)
+  default = {}
 }

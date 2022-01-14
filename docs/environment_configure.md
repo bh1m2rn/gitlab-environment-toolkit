@@ -62,7 +62,11 @@ Hopefully with this overview it's clearer how Ansible in the Toolkit works. Belo
 
 ## 1. Install Ansible
 
-The Toolkit requires Ansible to be installed. You can either use a Python virtual environment or install Ansible globally. Additionally you can avoid installing anything by using the Toolkit's Docker image. We recommend using the method you're most familiar with.
+The Toolkit requires Ansible to be installed. We recommend [Ansible `5.0` or higher](https://docs.ansible.com/ansible/devel/reference_appendices/release_and_maintenance.html#ansible-community-changelogs) but versions containing [`ansible-core 2.11` upwards](https://docs.ansible.com/ansible/devel/reference_appendices/release_and_maintenance.html#ansible-core-changelogs) should should continue to work if desired.
+
+Whatever version you chose will have a corresponding Python version requirement. For example with Ansible `5.x`, [Python `3.8` or higher is required](https://github.com/ansible-community/ansible-build-data/blob/main/5/CHANGELOG-v5.rst#major-changes-1). Refer to the corresponding release notes for Ansible to verify the required Python version.
+
+You can either use a Python virtual environment or install Ansible globally. Additionally you can avoid installing anything by using the Toolkit's Docker image. We recommend using the method you're most familiar with.
 
 ### Using Ansible inside a Docker container
 
@@ -88,6 +92,8 @@ pip install -r ansible/requirements/requirements.txt
 ansible-galaxy install -r ansible/requirements/ansible-galaxy-requirements.yml
 ```
 
+:information_source:&nbsp; Note that if you're on a Mac OS machine you also need to install `gnu-tar` - `brew install gnu-tar`
+
 ### Bring-Your-Own Ansible
 
 If you have installed Ansible inside a virtual environment, you can skip this step.
@@ -98,9 +104,8 @@ Once you've installed Ansible, install the required dependencies. You'll need to
 
 To do this you only have to run the following before proceeding:
 
-1. `cd` to the `ansible/` directory
-1. First install the Python packages via `pip3 install -r requirements/ansible-python-packages.txt`.
-1. Next, run the following command to install the roles - `ansible-galaxy install -r requirements/ansible-galaxy-requirements.yml`
+1. First install the Python packages via `pip3 install -r ansible/requirements/ansible-python-packages.txt`.
+1. Next, run the following command to install the roles - `ansible-galaxy install -r ansible/requirements/ansible-galaxy-requirements.yml`
 1. Note that if you're on a Mac OS machine you also need to install `gnu-tar` - `brew install gnu-tar`
 
 ## 2. Setup the Environment's Inventory and Config
@@ -169,7 +174,7 @@ compose:
 
 Finally the last thing to configure is authentication. This is required so Ansible can access GCP to build its dynamic inventory.
 
-Ansible provides several ways to authenticate with [GCP](https://docs.ansible.com/ansible/latest/collections/google/cloud/gcp_compute_inventory.html#parameters), you can select any method that is desired.
+Ansible provides several ways to authenticate with [GCP](https://docs.ansible.com/ansible/latest/scenario_guides/guide_gce.html#credentials), you can select any method that is desired.
 
 All of the methods given involve the Service Account file you generated previously. We've found the authentication methods that work best with the Toolkit in terms of ease of use are as follows:
 
@@ -178,7 +183,7 @@ All of the methods given involve the Service Account file you generated previous
 - `gcloud` login - Authentication can also occur automatically through the [`gcloud`](https://cloud.google.com/sdk/gcloud/reference/auth/application-default) command line tool. Make sure the user that's logged in has access to the Project.
   - Note that the `GCP_AUTH_KIND` variable also needs to be set to `application` for this authentication method.
 
-Alternatively, instead of setting `GCP_AUTH_KIND`, you can add `auth_kind` to your [Environment config file](#environment-config-varsyml) (`vars.yml`) file to specify which authentication method you'd like to use.
+Alternatively, instead of setting `GCP_AUTH_KIND`, you can add `auth_kind` to your Inventory config file to specify which authentication method you'd like to use.
 
 #### Amazon Web Services (AWS)
 

@@ -47,44 +47,6 @@
     - reconfigure
     - charts
 
-- name: Non Omnibus database related tasks
-  block:
-    - name: Create Database User
-      community.postgresql.postgresql_user:
-        login_host: "{{ postgres_host }}"
-        login_port: "{{ postgres_port }}"
-        login_user: "{{ postgres_admin_username }}"
-        login_password: "{{ postgres_admin_password }}"
-        db: "template1"
-        name: "{{ postgres_username.split('@')[0] }}"
-        password: "{{ postgres_password }}"
-        role_attr_flags: CREATEDB
-        expires: infinity
-
-    - name: Create Database
-      community.postgresql.postgresql_db:
-        login_host: "{{ postgres_host }}"
-        login_port: "{{ postgres_port }}"
-        login_user: "{{ postgres_username }}"
-        login_password: "{{ postgres_password }}"
-        name: "{{ postgres_database_name }}"
-        encoding: UTF-8
-
-    - name: Enable required Postgres extensions
-      community.postgresql.postgresql_ext:
-        login_host: "{{ postgres_host }}"
-        login_port: "{{ postgres_port }}"
-        login_user: "{{ postgres_admin_username }}"
-        login_password: "{{ postgres_admin_password }}"
-        name: "{{ item }}"
-        db: "{{ postgres_database_name }}"
-      loop: ['pg_trgm', 'btree_gist', 'plpgsql']
-  when: postgres_external
-  tags:
-    - reconfigure
-    - db_migrate
-  run_once: true
-
 - name: Gather facts for Node Pools
   block:
     - name: Gather all Node Pool Info
@@ -165,22 +127,6 @@
       debug:
         msg: "Charts version for {{ gitlab_version }} is {{ gitlab_charts_version }}"
   when: gitlab_version != ""
-  tags:
-    - reconfigure
-    - charts
-    - charts_version
-
-# To set task runner/toolbox pod based on GitLab app version in Charts
-- name: Get GitLab App version if version is not specified
-  block:
-    - name: Get all GitLab Charts versions
-      command: helm search repo gitlab/gitlab -l -o json
-      register: gitlab_charts_versions
-
-    - name: Get latest GitLab app version from Charts
-      set_fact:
-        gitlab_version: "{{ (gitlab_charts_versions.stdout | from_json | selectattr('name', 'equalto', 'gitlab/gitlab'))[0].app_version }}"
-  when: gitlab_version == ""
   tags:
     - reconfigure
     - charts

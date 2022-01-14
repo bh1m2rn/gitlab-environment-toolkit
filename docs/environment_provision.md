@@ -210,6 +210,7 @@ output "gitlab_ref_arch_gcp" {
   - `prefix` - The name prefix of the project. Set in `variables.tf`.
   - `project` - The [ID](https://support.google.com/googleapi/answer/7014113?hl=en) of the GCP project to connect to. Set in `variables.tf`.
   - `allow_stopping_for_update` - Controls whether Terraform can restart VMs when making changes (required in some cases). Should only be disabled for additional resilience. Refer to [Allow Stopping for Updates (GCP)](#allow-stopping-for-updates-gcp) for more info. Defaults to `true`.
+  - `object_storage_force_destroy` - Controls whether Terraform can delete all objects (including any locked objects) from the bucket so that the bucket can be destroyed without error. Consider setting this value to `false` for production systems. Defaults to `true`.
 
 Next in the file are the various machine settings, separated the same as the Reference Architectures. To avoid repetition we'll describe each setting once:
 
@@ -217,11 +218,23 @@ Next in the file are the various machine settings, separated the same as the Ref
 - `*_machine_type` - The [GCP Machine Type](https://cloud.google.com/compute/docs/machine-types) (size) for that component
 - `haproxy_external_external_ips` - Set the external HAProxy load balancer to assume the external IP set in `variables.tf`. Note that this is an array setting as the advanced underlying functionality needs to account for the specific setting of IPs for potentially multiple machines. In this case though it should always only be one IP.
 
+:information_source:&nbsp; Redis prefixes depend on the target Reference Architecture - set `redis_*` for combined Redis, `redis_cache_*` and `redis_persistent_*` for separated Redis setup.
+
+:information_source:&nbsp; The Toolkit currently **requires** a NFS node to distribute select config.
+
 ##### Allow Stopping for Updates (GCP)
 
 For GCP, changing some settings such as `*_machine_type` on a started instance will require restarting it.
 
 As an additional level of resilience you can disable this behaviour by setting `allow_stopping_for_update` to `false` in the [module's environment config file](#configure-module-settings-environmenttf). Note though that when you wish to upgrade in the future you may need to re-enable this setting.
+
+##### Machine Secure Boot (GCP)
+
+Compute instances in GCP can be configured to run with [Secure Boot](https://cloud.google.com/security/shielded-cloud/shielded-vm#secure-boot). This feature is enabled by default and can be disabled by setting the variable `machine_secure_boot = false`.
+
+> Secure Boot helps ensure that the system only runs authentic software by verifying the digital signature of all boot components, and halting the boot process if signature verification fails.
+
+Secure boot can only be enabled for OS Images that support the `Shielded VM` feature. The default value for the variable `machine_image` contain the value of an image that supports this feature. If you plan on changing this, you can find which OS images on [Google's documentation]([GCP documentation](https://cloud.google.com/compute/docs/images/os-details#security-features)).
 
 ##### Configure network setup (GCP)
 
@@ -375,7 +388,7 @@ variable "external_ip_allocation" {
 - `prefix` - Used to set the names and labels of the VMs in a consistent way. Once set this should not be changed. An example of what this could be is `gitlab-qa-10k`.
 - `region` - The AWS region of the project.
 - `ssh_public_key_file` - Path to the public SSH key file. Previously created in the [Setup SSH Authentication - AWS](environment_prep.md#2-setup-ssh-authentication-aws) step.
-- `external_ip_allocation` - The static external IP the environment will be accessible one. Previously created in the [Create Static External IP - AWS Elastic IP Allocation](environment_prep.md#4-create-static-external-ip-aws-elastic-ip-allocation) step.
+- `external_ip_allocation` - The Allocation ID for the static external IP the environment will be accessible on. Previously created in the [Create Static External IP - AWS Elastic IP Allocation](environment_prep.md#4-create-static-external-ip-aws-elastic-ip-allocation) step.
 
 #### Configure Terraform settings - `main.tf`
 
@@ -484,12 +497,15 @@ output "gitlab_ref_arch_aws" {
   - `source` - The relative path to the `gitlab_ref_arch_aws` module. We assume you're creating config in the `terraform/environments/` folder here but if you're in a different location this setting must be updated to the correct path.
   - `prefix` - The name prefix of the project. Set in `variables.tf`.
   - `ssh_public_key_file` - The file path of the public SSH key. Set in `variables.tf`.
+  - `object_storage_force_destroy` - Controls whether Terraform can delete all objects (including any locked objects) from the bucket so that the bucket can be destroyed without error. Consider setting this value to `false` for production systems. Defaults to `true`.
 
 Next in the file are the various machine settings, separated the same as the Reference Architectures. To avoid repetition we'll describe each setting once:
 
 - `*_node_count` - The number of machines to set up for that component
 - `*_instance_type` - The [AWS Instance Type Machine Type](https://aws.amazon.com/ec2/instance-types/) (size) for that component
 - `haproxy_external_elastic_ip_allocation_ids` - Set the external HAProxy load balancer to assume the external IP allocation ID set in `variables.tf`. Note that this is an array setting as the advanced underlying functionality needs to account for the specific setting of IPs for potentially multiple machines. In this case though it should always only be one IP allocation ID.
+
+:information_source:&nbsp; Redis prefixes depend on the target Reference Architecture - set `redis_*` for combined Redis, `redis_cache_*` and `redis_persistent_*` for separated Redis setup.
 
 ##### Configure network setup (AWS)
 
@@ -546,6 +562,7 @@ In addition to the above the following _optional_ settings change how the networ
 - `vpc_cidr_block` - The [CIDR block](https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Subnets.html#vpc-sizing-ipv4) that will be used for your VPC. This shouldn't need to be changed in most scenarios unless you want to use a specific CIDR block. Default is `172.31.0.0/16`.
 - `subpub_pub_cidr_block`- A list of [CIDR blocks](https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Subnets.html#vpc-sizing-ipv4) that will be used for each subnet created. This shouldn't need to be changed in most scenarios unless you want to use a specific CIDR blocks. Default is `["172.31.0.0/20","172.31.16.0/20","172.31.32.0/20"]`
   - As a convenience the module has up to 3 subnet CIDR blocks it will use. If you have set `subnet_pub_count` higher than 3 then this variable will need to be adjusted to match the number of Subnets to be created.
+- `zones_exclude` - In rare cases you may need to avoid specific Availability Zones [as they don't have the available resource to deploy the infrastructure in](https://aws.amazon.com/premiumsupport/knowledge-center/eks-cluster-creation-errors/). When this is the case you can specify a list of Zones by name via this setting that will then be avoided by the Toolkit, e.g. `["us-east-1e"]`. Default is `null`.
 
 **Existing**
 
@@ -817,6 +834,8 @@ Next in the file are the various machine settings, separated the same as the Ref
 - `*_node_count` - The number of machines to set up for that component
 - `*_size` - The [Azure Machine Size](https://docs.microsoft.com/en-us/azure/virtual-machines/sizes) for that component
 - `haproxy_external_external_ip_names` - Set the external HAProxy load balancer to assume the external IP name set in `variables.tf`. Note that this is an array setting as the advanced underlying functionality needs to account for the specific setting of IPs for potentially multiple machines. In this case though it should always only be one IP name.
+
+:information_source:&nbsp; Redis prefixes depend on the target Reference Architecture - set `redis_*` for combined Redis, `redis_cache_*` and `redis_persistent_*` for separated Redis setup.
 
 #### Configure Authentication (Azure)
 
