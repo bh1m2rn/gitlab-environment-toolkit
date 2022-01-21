@@ -452,6 +452,13 @@ variable "subnet_cidr" {
   default = "10.86.0.0/16"
 }
 
+## GKE Subnet
+### Used in all network types to prevent clashes
+variable "cluster_subnet_cidr" {
+  type    = string
+  default = "10.90.0.0/16"
+}
+
 ## External IPs
 variable "setup_external_ips" {
   type    = bool

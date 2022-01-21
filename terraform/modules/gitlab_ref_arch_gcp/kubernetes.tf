@@ -8,7 +8,7 @@ resource "google_compute_subnetwork" "gitlab_cluster_subnet" {
   count = min(local.total_node_pool_count, 1)
 
   name                     = "${var.prefix}-cluster-subnet"
-  ip_cidr_range            = "10.90.0.0/16"
+  ip_cidr_range            = var.cluster_subnet_cidr
   network                  = local.vpc_name
   private_ip_google_access = true
 }
