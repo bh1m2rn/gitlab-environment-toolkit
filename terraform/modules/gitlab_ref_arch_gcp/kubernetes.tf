@@ -3,6 +3,16 @@ locals {
   node_pool_zones       = var.kubernetes_zones != null ? var.kubernetes_zones : var.zones
 }
 
+# Separate Subnet for Cluster - Always required to prevent clashes
+resource "google_compute_subnetwork" "gitlab_cluster_subnet" {
+  count = min(local.total_node_pool_count, 1)
+
+  name                     = "${var.prefix}-cluster-subnet"
+  ip_cidr_range            = "10.90.0.0/16"
+  network                  = local.vpc_name
+  private_ip_google_access = true
+}
+
 resource "google_container_cluster" "gitlab_cluster" {
   count = min(local.total_node_pool_count, 1)
   name  = var.prefix
@@ -15,7 +25,7 @@ resource "google_container_cluster" "gitlab_cluster" {
   enable_shielded_nodes    = true
 
   network    = local.vpc_name
-  subnetwork = local.subnet_name
+  subnetwork = google_compute_subnetwork.gitlab_cluster_subnet[0].name
 
   # Require VPC Native cluster
   # https://registry.terraform.io/providers/hashicorp/google/latest/docs/guides/using_gke_with_terraform#vpc-native-clusters
