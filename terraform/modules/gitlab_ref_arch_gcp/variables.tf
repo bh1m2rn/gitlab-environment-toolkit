@@ -37,6 +37,11 @@ variable "object_storage_buckets" {
   default = ["artifacts", "backups", "dependency-proxy", "lfs", "mr-diffs", "packages", "terraform-state", "uploads"]
 }
 
+variable "object_storage_buckets_location" {
+  type    = string
+  default = "US"
+}
+
 # Machines
 variable "consul_node_count" {
   type    = number
