@@ -10,6 +10,10 @@
     validate_certs: false
     status_code: 200, 201
     body_format: json
+  register: result
+  until: result is success
+  retries: 3
+  delay: 5
 
 - name: Disable Limits
   uri:
@@ -25,6 +29,10 @@
     validate_certs: false
     status_code: 200, 201
     body_format: json
+  register: result
+  until: result is success
+  retries: 3
+  delay: 5
 
 - name: Disable User Signup
   uri:
@@ -38,6 +46,10 @@
     validate_certs: false
     status_code: 200, 201
     body_format: json
+  register: result
+  until: result is success
+  retries: 3
+  delay: 5
 
 - name: Disable Write to "authorized_keys" file setting
   uri:
@@ -51,6 +63,10 @@
     validate_certs: false
     status_code: 200, 201
     body_format: json
+  register: result
+  until: result is success
+  retries: 3
+  delay: 5
 
 - name: Run custom API tasks
   block:
