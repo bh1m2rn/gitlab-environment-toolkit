@@ -10,8 +10,8 @@
     return_content: true
   register: license_response
   until: license_response is success
-  retries: 3
-  delay: 5
+  retries: 5
+  delay: 10
 
 - name: Configure Ultimate License (if missing)
   uri:
@@ -29,8 +29,8 @@
   register: configure_license_response
   when: license_response.json == None
   until: configure_license_response is success
-  retries: 3
-  delay: 5
+  retries: 5
+  delay: 10
 
 - name: Save License Plan
   set_fact:

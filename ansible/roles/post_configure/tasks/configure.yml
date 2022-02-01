@@ -12,8 +12,8 @@
     body_format: json
   register: result
   until: result is success
-  retries: 3
-  delay: 5
+  retries: 5
+  delay: 10
 
 - name: Disable Limits
   uri:
@@ -31,8 +31,8 @@
     body_format: json
   register: result
   until: result is success
-  retries: 3
-  delay: 5
+  retries: 5
+  delay: 10
 
 - name: Disable User Signup
   uri:
@@ -48,8 +48,8 @@
     body_format: json
   register: result
   until: result is success
-  retries: 3
-  delay: 5
+  retries: 5
+  delay: 10
 
 - name: Disable Write to "authorized_keys" file setting
   uri:
@@ -65,8 +65,8 @@
     body_format: json
   register: result
   until: result is success
-  retries: 3
-  delay: 5
+  retries: 5
+  delay: 10
 
 - name: Run custom API tasks
   block:
