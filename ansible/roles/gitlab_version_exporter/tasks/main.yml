@@ -1,0 +1,33 @@
+- block:
+  - name: Install cron to write the metric "omnibus_build_info" into node-exporter's textfile collector dir
+    ansible.builtin.cron:
+      name: "Omnibus Build Info Metric"
+      minute: "*/10"
+      user: root
+      job: >
+        omnibus_info=$(dpkg-query --showformat='${Version} ${db:Status-Abbrev}' --show {{ gitlab_edition }});
+        version=$(echo $omnibus_info | cut -f1 -d ' ');
+        status=$(echo $omnibus_info | cut -f2 -d ' ');
+        echo omnibus_build_info{version=\"$version\",status=\"$status\"} 1.0 > {{ node_exporter_metrics_path }}/omnibus_build_info.prom
+
+  - name: Ensure path to gitlab-version-exporter (GVE) exists
+    ansible.builtin.file:
+      path: "{{ gitlab_version_exporter_install_path }}"
+      state: directory
+      owner: root
+      group: root
+
+  - name: Install GVE script
+    ansible.builtin.copy:
+      src: "gitlab_version_exporter.sh"
+      dest: "{{ gitlab_version_exporter_script_path }}"
+      mode: 0755
+
+  - name: Install cron to execute GVE and write the metric "gitlab_version_info" into node-exporter's textfile collector dir
+    ansible.builtin.cron:
+      name: "GitLab Build Info Metric"
+      minute: "*/10"
+      user: root
+      job: "{{ gitlab_version_exporter_script_path }} | sponge {{ node_exporter_metrics_path }}/gitlab_version_info.prom"
+
+  when: omnibus_node

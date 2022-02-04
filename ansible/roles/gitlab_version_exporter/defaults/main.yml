@@ -1,0 +1,3 @@
+gitlab_version_exporter_install_path: '/opt/gitlab-version-exporter'
+gitlab_version_exporter_script_path: "{{ gitlab_version_exporter_install_path }}/gitlab-version-exporter"
+node_exporter_metrics_path: '/var/opt/gitlab/node-exporter/textfile_collector'

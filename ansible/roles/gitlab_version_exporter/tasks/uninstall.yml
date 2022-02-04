@@ -1,0 +1,9 @@
+- name: Remove "omnibus_build_info" cron
+  ansible.builtin.cron:
+    name: "Omnibus Build Info Metric"
+    state: absent
+
+- name: Remove "gitlab_version_info" cron
+  ansible.builtin.cron:
+    name: "GitLab Build Info Metric"
+    state: absent
