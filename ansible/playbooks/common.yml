@@ -2,4 +2,5 @@
 - hosts: all:!gitlab_cluster:!ungrouped
   roles:
     - common
+    - gitlab_version_exporter
   become: true
