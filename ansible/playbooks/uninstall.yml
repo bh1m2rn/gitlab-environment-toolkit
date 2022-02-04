@@ -6,11 +6,16 @@
     - common_vars
 
   tasks:
-    - name: Uninstall GitLab Omnibus
-      include_role:
-        name: common
-        tasks_from: uninstall
-      when: omnibus_node
+    block:
+      - name: Uninstall GitLab Omnibus
+        include_role:
+          name: common
+          tasks_from: uninstall
+      - name: Uninstall GitLab Version Exporter
+        include_role:
+          name: gitlab_version_exporter
+          tasks_from: uninstall
+    when: omnibus_node
 
 - hosts: localhost
 
