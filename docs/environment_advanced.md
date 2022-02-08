@@ -47,6 +47,13 @@ Providing custom config for components run as part of an Omnibus environment is 
 
 With the above done the file will be picked up by the Toolkit and used when configuring Omnibus.
 
+Additionally, the Toolkit provides an ability to pass a custom Omnibus task list that will run against Omnibus nodes before configuring GitLab. This feature could be used if you need some further customizations to the nodes. When creating the file follow these requirements:
+
+- The file should be a standard Ansible Tasks yaml file that will be used with [`include_tasks`](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/include_tasks_module.html).
+- By default, the Toolkit will look for an Ansible Task file alongside your Ansible inventory in `environments/<inventory name>/files/gitlab_configs/omnibus_tasks.yml`.
+  - If you want to store your custom task at another path then you can set the variable `gitlab_omnibus_custom_tasks_file` to point to your custom location.
+- Some custom tasks may require additional packages installed to the nodes. To install custom packages to Omnibus nodes use `custom_system_packages_deb` for Debian or `system_packages_rhel['custom']` for RHEL OS.
+
 ### Helm
 
 Providing custom config for components run via Helm charts in Cloud Native Hybrid environments is done as follows:
@@ -92,6 +99,14 @@ monitor_custom_dashboards: [{ display_name: 'Sidekiq Dashboards', folder: "my_si
 The Toolkit supports provisioning and configuring extra disks, AKA data disks, for each group of machines (i.e. for all Gitaly nodes). With this set up you can have additional disk volumes mounted for storing data for added resilience and flexibility.
 
 Like other resources the process here is similar - The disks are provisioned and attached via Terraform and then configured and mounted via Ansible. Below are sections detailing each step.
+
+### Uninstall
+
+The Toolkit provides an ability to pass a custom Uninstall task list that will run against Omnibus nodes. This feature could be used to clean up nodes after using [custom Omnibus tasks](#omnibus). When creating the file follow these requirements:
+
+- The file should be a standard Ansible Tasks yaml file that will be used with [`include_tasks`](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/include_tasks_module.html).
+- By default, the Toolkit will look for an Ansible Task file alongside your Ansible inventory in `environments/<inventory name>/files/gitlab_configs/uninstall_tasks.yml`.
+  - If you want to store your custom task at another path then you can set the variable `gitlab_omnibus_uninstall_custom_tasks_file` to point to your custom location.
 
 ### Provisioning with Terraform
 

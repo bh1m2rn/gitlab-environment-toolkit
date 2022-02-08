@@ -2,7 +2,7 @@
 # Debian
 - name: Install system packages (Ubuntu)
   apt:
-    name: "{{ system_packages_deb }}"
+    name: "{{ system_packages_deb + custom_system_packages_deb }}"
     update_cache: true
   register: result
   retries: 20
@@ -33,7 +33,7 @@
 
 - name: Install system packages (RHEL)
   yum:
-    name: "{{ system_packages_rhel['all'] + system_packages_rhel[ansible_distribution_major_version | int] }}"
+    name: "{{ system_packages_rhel['all'] + system_packages_rhel['custom'] + system_packages_rhel[ansible_distribution_major_version | int] }}"
     update_cache: true
   register: result
   retries: 20

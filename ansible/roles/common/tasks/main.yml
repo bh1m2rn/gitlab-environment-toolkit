@@ -257,3 +257,19 @@
       set_fact:
         common_performed: true
   when: common_performed is not defined
+
+- name: Perform Custom Omnibus Tasks
+  block:
+    - name: Check if Custom Omnibus tasks file exists
+      stat:
+        path: "{{ gitlab_omnibus_custom_tasks_file }}"
+      register: gitlab_omnibus_custom_tasks_file_path
+      delegate_to: localhost
+      become: false
+
+    - name: Run Custom Omnibus tasks
+      include_tasks: "{{ gitlab_omnibus_custom_tasks_file }}"
+      when: gitlab_omnibus_custom_tasks_file_path.stat.exists
+  when: omnibus_node
+  tags:
+    - reconfigure

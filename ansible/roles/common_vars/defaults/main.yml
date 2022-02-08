@@ -289,7 +289,10 @@ sidekiq_custom_config_file: "{{ inventory_dir | default(ansible_inventory_source
 monitor_custom_config_file: "{{ inventory_dir | default(ansible_inventory_sources[0], true) }}/../files/gitlab_configs/monitor.rb.j2"
 gitlab_charts_custom_config_file: "{{ inventory_dir | default(ansible_inventory_sources[0], true) }}/../files/gitlab_configs/gitlab_charts.yml.j2"
 
+gitlab_omnibus_custom_tasks_file: "{{ inventory_dir | default(ansible_inventory_sources[0], true) }}/../files/gitlab_configs/omnibus_tasks.yml"
 gitlab_charts_custom_tasks_file: "{{ inventory_dir | default(ansible_inventory_sources[0], true) }}/../files/gitlab_configs/charts_tasks.yml"
+
+gitlab_omnibus_uninstall_custom_tasks_file: "{{ inventory_dir | default(ansible_inventory_sources[0], true) }}/../files/gitlab_configs/uninstall_tasks.yml"
 
 ################################################################################
 ## GitLab Geo Settings
