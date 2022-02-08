@@ -105,7 +105,7 @@ resource "aws_security_group" "gitlab_external_haproxy_stats" {
 }
 
 resource "aws_security_group" "gitlab_external_monitor" {
-  count  = min(var.monitor_node_count, 1)
+  count  = var.create_influxdb_network_rule ? min(var.monitor_node_count, 1) : 0
   name   = "${var.prefix}-external-monitor"
   vpc_id = local.vpc_id
   ingress {

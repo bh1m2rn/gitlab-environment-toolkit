@@ -31,7 +31,7 @@ resource "google_compute_firewall" "gitlab_ssh" {
 }
 
 resource "google_compute_firewall" "monitor" {
-  count   = min(var.monitor_node_count, 1)
+  count   = var.create_influxdb_network_rule ? min(var.monitor_node_count, 1) : 0
   name    = "${var.prefix}-monitor"
   network = local.vpc_name
 

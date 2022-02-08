@@ -1,3 +1,17 @@
 ---
 - import_tasks: monitor.yml
-- import_tasks: influxdb-exporter.yml
+
+- name: Perform Custom Monitor Tasks
+  block:
+    - name: Check if Custom Monitor tasks file exists
+      stat:
+        path: "{{ gitlab_monitor_custom_tasks_file }}"
+      register: gitlab_monitor_custom_tasks_file_path
+      delegate_to: localhost
+      become: false
+
+    - name: Run Custom Monitor tasks
+      include_tasks: "{{ gitlab_monitor_custom_tasks_file }}"
+      when: gitlab_monitor_custom_tasks_file_path.stat.exists
+  tags:
+    - reconfigure

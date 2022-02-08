@@ -64,6 +64,14 @@ haproxy_internal_int_ip: "{{ (groups[haproxy_internal_primary_site_group_name] |
 haproxy_external_int_ip: "{{ (groups['haproxy_external'] | sort | map('extract', hostvars, internal_ip_lookup[cloud_provider]) | join('')) if 'haproxy_external' in groups else '' }}"
 haproxy_external_ext_ip: "{{ (groups['haproxy_external'] | sort | map('extract', hostvars, external_ip_lookup[cloud_provider]) | join('')) if 'haproxy_external' in groups else '' }}"
 
+haproxy_external_custom_config_file: "{{ inventory_dir | default(ansible_inventory_sources[0], true) }}/../files/gitlab_configs/custom_external_haproxy.cfg.j2"
+haproxy_external_ports: ['80:80', '443:443', '1936:1936', '2222:2222', '9090:9090', '5601:5601']
+haproxy_custom_external_ports: []
+
+haproxy_internal_custom_config_file: "{{ inventory_dir | default(ansible_inventory_sources[0], true) }}/../files/gitlab_configs/custom_internal_haproxy.cfg.j2"
+haproxy_internal_ports: ['80:80', '6432:6432', '2305:2305', '1936:1936', '5432:5432']
+haproxy_custom_internal_ports: []
+
 ### Internal Load Balancer
 internal_lb_host: "{{ haproxy_internal_int_ip }}"
 
@@ -180,6 +188,7 @@ praefect_postgres_external: "{{ 'praefect_postgres' not in groups and praefect_p
 monitor_int_ip: "{{ (groups['monitor'] | sort | map('extract', hostvars, internal_ip_lookup[cloud_provider]) | join('')) if 'monitor' in groups else '' }}"
 monitor_custom_dashboards: []
 monitor_custom_dashboards_path: "{{ inventory_dir | default(ansible_inventory_sources[0], true) }}/../files/grafana"
+monitor_custom_prometheus_scrape_configs: ''
 
 # GitLab Redis
 ## Combined
@@ -290,6 +299,7 @@ monitor_custom_config_file: "{{ inventory_dir | default(ansible_inventory_source
 gitlab_charts_custom_config_file: "{{ inventory_dir | default(ansible_inventory_sources[0], true) }}/../files/gitlab_configs/gitlab_charts.yml.j2"
 
 gitlab_omnibus_custom_tasks_file: "{{ inventory_dir | default(ansible_inventory_sources[0], true) }}/../files/gitlab_configs/omnibus_tasks.yml"
+gitlab_monitor_custom_tasks_file: "{{ inventory_dir | default(ansible_inventory_sources[0], true) }}/../files/gitlab_configs/monitor_tasks.yml"
 gitlab_charts_custom_tasks_file: "{{ inventory_dir | default(ansible_inventory_sources[0], true) }}/../files/gitlab_configs/charts_tasks.yml"
 
 gitlab_omnibus_uninstall_custom_tasks_file: "{{ inventory_dir | default(ansible_inventory_sources[0], true) }}/../files/gitlab_configs/uninstall_tasks.yml"

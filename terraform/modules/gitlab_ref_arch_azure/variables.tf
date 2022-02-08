@@ -344,6 +344,12 @@ variable "sidekiq_disk_size" {
   default = null
 }
 
+# Monitoring
+variable "create_influxdb_network_rule" {
+  type    = bool
+  default = false
+}
+
 #Networking
 
 variable "vnet_address_space" {

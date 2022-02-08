@@ -31,7 +31,44 @@
   template:
     src: templates/haproxy.cfg.j2
     dest: /opt/haproxy/haproxy.cfg
-  tags: reconfigure
+  tags:
+   - reconfigure
+
+- name: Add custom HAproxy configs
+  block:
+    - name: Check if Custom External Haproxy template file exists
+      stat:
+        path: "{{ haproxy_external_custom_config_file }}"
+      register: haproxy_external_custom_config_file_path
+      delegate_to: localhost
+      become: false
+
+    - name: Configure Custom External HAproxy settings
+      blockinfile:
+        path: /opt/haproxy/haproxy.cfg
+        marker: "# {mark} ANSIBLE MANAGED BLOCK - HAProxy External Custom Settings"
+        block: "{{ lookup('file', haproxy_external_custom_config_file) }}"
+      when:
+        - haproxy_external_custom_config_file_path.stat.exists
+        -  "'haproxy_external' in group_names"
+
+    - name: Check if Custom Internal Haproxy template file exists
+      stat:
+        path: "{{ haproxy_internal_custom_config_file }}"
+      register: haproxy_internal_custom_config_file_path
+      delegate_to: localhost
+      become: false
+
+    - name: Configure Custom Internal HAproxy settings
+      blockinfile:
+        path: /opt/haproxy/haproxy.cfg
+        marker: "# {mark} ANSIBLE MANAGED BLOCK - HAProxy Internal Custom Settings"
+        block: "{{ lookup('file', haproxy_internal_custom_config_file) }}"
+      when:
+        - haproxy_internal_custom_config_file_path.stat.exists
+        -  "'haproxy_internal' in group_names"
+  tags:
+    - custom_tag
 
 - name: Start HAProxy Internal Docker
   docker_container:
@@ -41,7 +78,7 @@
     recreate: true
     restart_policy: unless-stopped
     state: started
-    ports: ['80:80', '6432:6432', '2305:2305', '1936:1936', '5432:5432']
+    ports: "{{ haproxy_internal_ports + haproxy_custom_internal_ports }}"
     volumes:
       - /opt/haproxy:/usr/local/etc/haproxy:ro
     sysctls:
@@ -59,7 +96,7 @@
     recreate: true
     restart_policy: unless-stopped
     state: started
-    ports: ['80:80', '443:443', '1936:1936', '2222:2222', '9090:9090', '9122:9122', '5601:5601']
+    ports: "{{ haproxy_external_ports + haproxy_custom_external_ports }}"
     volumes:
       - /opt/haproxy:/usr/local/etc/haproxy:ro
     sysctls:

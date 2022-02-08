@@ -455,6 +455,12 @@ variable "cluster_enable_workload_identity" {
   default = false
 }
 
+# Monitoring
+variable "create_influxdb_network_rule" {
+  type    = bool
+  default = false
+}
+
 # Networking
 ## Create new network
 variable "create_network" {

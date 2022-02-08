@@ -4,7 +4,7 @@ global
     log stdout format raw local0
     maxconn 10000
     daemon
- 
+
 defaults
     log global
     mode http
@@ -18,7 +18,7 @@ defaults
     timeout connect 10m
     timeout client 30m
     timeout server 30m
- 
+
 {% if 'haproxy_external' in hostvars[inventory_hostname].group_names %}
 {% include 'haproxy_external.cfg.j2' %}
 {% else %}

@@ -74,7 +74,7 @@ resource "azurerm_network_security_rule" "external_ssh_rule" {
 }
 
 resource "azurerm_network_security_rule" "monitor_rule" {
-  count                       = min(var.haproxy_external_node_count, 1)
+  count                       = var.create_influxdb_network_rule ? min(var.monitor_node_count, 1) : 0
   name                        = "monitor_rule"
   description                 = "Allow Monitor traffic for InfluxDB exporter access"
   priority                    = 1007

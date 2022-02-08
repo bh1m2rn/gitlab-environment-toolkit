@@ -901,6 +901,12 @@ variable "elasticache_redis_persistent_snapshot_window" {
   default = null
 }
 
+# Monitoring
+variable "create_influxdb_network_rule" {
+  type    = bool
+  default = false
+}
+
 # Networking
 ## Default network
 variable "default_allowed_egress_cidr_blocks" {
