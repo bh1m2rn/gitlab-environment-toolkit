@@ -7,13 +7,13 @@ module "redis" {
   additional_tags = var.additional_tags
 
   instance_type    = var.redis_instance_type
-  ami_id           = coalesce(var.ami_id, data.aws_ami.ubuntu_18_04.id)
+  ami_id           = var.ami_id != null ? var.ami_id : data.aws_ami.ubuntu_18_04[0].id
   disk_size        = coalesce(var.redis_disk_size, var.default_disk_size)
   disk_type        = coalesce(var.redis_disk_type, var.default_disk_type)
   disk_encrypt     = coalesce(var.redis_disk_encrypt, var.default_disk_encrypt)
   disk_kms_key_arn = var.redis_disk_kms_key_arn != null ? var.redis_disk_kms_key_arn : var.default_kms_key_arn
   data_disks       = var.redis_data_disks
-  subnet_ids       = local.subnet_ids
+  subnet_ids       = local.backend_subnet_ids
 
   ssh_key_name = aws_key_pair.ssh_key.key_name
   security_group_ids = [
@@ -42,13 +42,13 @@ module "redis_cache" {
   additional_tags = var.additional_tags
 
   instance_type    = var.redis_cache_instance_type
-  ami_id           = coalesce(var.ami_id, data.aws_ami.ubuntu_18_04.id)
+  ami_id           = var.ami_id != null ? var.ami_id : data.aws_ami.ubuntu_18_04[0].id
   disk_size        = coalesce(var.redis_cache_disk_size, var.default_disk_size)
   disk_type        = coalesce(var.redis_cache_disk_type, var.default_disk_type)
   disk_encrypt     = coalesce(var.redis_cache_disk_encrypt, var.default_disk_encrypt)
   disk_kms_key_arn = var.redis_cache_disk_kms_key_arn != null ? var.redis_cache_disk_kms_key_arn : var.default_kms_key_arn
   data_disks       = var.redis_cache_data_disks
-  subnet_ids       = local.subnet_ids
+  subnet_ids       = local.backend_subnet_ids
 
   ssh_key_name = aws_key_pair.ssh_key.key_name
   security_group_ids = [
@@ -75,13 +75,13 @@ module "redis_persistent" {
   additional_tags = var.additional_tags
 
   instance_type    = var.redis_persistent_instance_type
-  ami_id           = coalesce(var.ami_id, data.aws_ami.ubuntu_18_04.id)
+  ami_id           = var.ami_id != null ? var.ami_id : data.aws_ami.ubuntu_18_04[0].id
   disk_size        = coalesce(var.redis_persistent_disk_size, var.default_disk_size)
   disk_type        = coalesce(var.redis_persistent_disk_type, var.default_disk_type)
   disk_encrypt     = coalesce(var.redis_persistent_disk_encrypt, var.default_disk_encrypt)
   disk_kms_key_arn = var.redis_persistent_disk_kms_key_arn != null ? var.redis_persistent_disk_kms_key_arn : var.default_kms_key_arn
   data_disks       = var.redis_persistent_data_disks
-  subnet_ids       = local.subnet_ids
+  subnet_ids       = local.backend_subnet_ids
 
   ssh_key_name = aws_key_pair.ssh_key.key_name
   security_group_ids = [

@@ -902,6 +902,37 @@ variable "elasticache_redis_persistent_snapshot_window" {
 }
 
 # Networking
+## Default network
+variable "default_allowed_egress_cidr_blocks" {
+  type    = list(string)
+  default = ["0.0.0.0/0"]
+}
+
+variable "default_allowed_ingress_cidr_blocks" {
+  type    = list(string)
+  default = ["0.0.0.0/0"]
+}
+
+variable "http_allowed_ingress_cidr_blocks" {
+  type    = list(any)
+  default = []
+}
+
+variable "ssh_allowed_ingress_cidr_blocks" {
+  type    = list(any)
+  default = []
+}
+
+variable "external_ssh_allowed_ingress_cidr_blocks" {
+  type    = list(any)
+  default = []
+}
+
+variable "monitor_allowed_ingress_cidr_blocks" {
+  type    = list(any)
+  default = []
+}
+
 ## Create new network
 variable "create_network" {
   type    = bool
@@ -911,13 +942,21 @@ variable "vpc_cidr_block" {
   type    = string
   default = "172.31.0.0/16"
 }
-variable "subpub_pub_cidr_block" {
+variable "subnet_pub_cidr_block" {
   type    = list(string)
   default = ["172.31.0.0/20", "172.31.16.0/20", "172.31.32.0/20"]
 }
 variable "subnet_pub_count" {
   type    = number
   default = 2
+}
+variable "subnet_priv_cidr_block" {
+  type    = list(string)
+  default = ["172.31.128.0/20", "172.31.144.0/20", "172.31.160.0/20"]
+}
+variable "subnet_priv_count" {
+  type    = number
+  default = 0
 }
 variable "zones_exclude" {
   type    = list(string)
@@ -929,7 +968,11 @@ variable "vpc_id" {
   type    = string
   default = null
 }
-variable "subnet_ids" {
+variable "subnet_pub_ids" {
+  type    = list(string)
+  default = null
+}
+variable "subnet_priv_ids" {
   type    = list(string)
   default = null
 }

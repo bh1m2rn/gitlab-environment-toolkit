@@ -5,6 +5,7 @@
 - [**GitLab Environment Toolkit - Configuring the environment with Ansible**](environment_configure.md)
 - [GitLab Environment Toolkit - Advanced - Cloud Native Hybrid](environment_advanced_hybrid.md)
 - [GitLab Environment Toolkit - Advanced - External SSL](environment_advanced_ssl.md)
+- [GitLab Environment Toolkit - Advanced - Network Setup](environment_advanced_network.md)
 - [GitLab Environment Toolkit - Advanced - Component Cloud Services / Custom (Load Balancers, PostgreSQL, Redis)](environment_advanced_services.md)
 - [GitLab Environment Toolkit - Advanced - Geo](environment_advanced_geo.md)
 - [GitLab Environment Toolkit - Advanced - Custom Config, Data Disks, Advanced Search and more](environment_advanced.md)
@@ -66,11 +67,13 @@ The Toolkit requires Ansible to be installed. We recommend [Ansible `5.0` or hig
 
 Whatever version you chose will have a corresponding Python version requirement. For example with Ansible `5.x`, [Python `3.8` or higher is required](https://github.com/ansible-community/ansible-build-data/blob/main/5/CHANGELOG-v5.rst#major-changes-1). Refer to the corresponding release notes for Ansible to verify the required Python version.
 
+When choosing an [Ansible control node](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#control-node-requirements), we recommend that it's in the same or near location as the environment being built to avoid network slowdown. Additionally, if you plan to use a cloud machine as a control node it is _not_ recommended to use [burstable instances](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/burstable-performance-instances.html) as they can lead to inconsistent behaviour.
+
 You can either use a Python virtual environment or install Ansible globally. Additionally you can avoid installing anything by using the Toolkit's Docker image. We recommend using the method you're most familiar with.
 
 ### Using Ansible inside a Docker container
 
-With Docker the only prerequisite is installation, the Toolkit's image contains everything else you'll need. The official [Docker installation instructions](https://docs.docker.com/engine/install/) should be followed to correctly install and run Docker.
+With Docker the only prerequisite is installation, the [Toolkit's image](https://gitlab.com/gitlab-org/gitlab-environment-toolkit/container_registry/2697240) contains everything else you'll need. The official [Docker installation instructions](https://docs.docker.com/engine/install/) should be followed to correctly install and run Docker.
 
 ### Installing Ansible with a Virtual Environment
 
@@ -206,7 +209,8 @@ hostnames:
   # List host by name instead of the default public ip
   - tag:Name
 compose:
-  # Use the public IP address to connect to the host
+  # Set to public_ip_address to connect from outwith the network
+  # Set to private_ip_address to connect from within the network
   # (note: this does not modify inventory_hostname, which is set via I(hostnames))
   ansible_host: public_ip_address
 ```
@@ -216,7 +220,7 @@ compose:
 - `filters` - A label filter for Ansible to use. This ensures it only configures the machines we want on the project and not any others based on the machine tab `gitlab_node_prefix` that set automatically in Terraform. Should be set the same `prefix` value set in Terraform.
 - `keyed_groups` - Configures Ansible to look for the tags automatically set by Terraform and to set up its host groups based on them. This config block shouldn't be changed from what's shown.
 - `hostnames` - Config block for how Ansible should show the hosts in its output. This block configures the use of hostnames rather than IPs for better readability. This config block should not be changed.
-- `compose`: As shown in the comment this set what IPs Ansible should use. This config block shouldn't be changed unless private IPs are desired as mentioned in the comment.
+- `compose`: This sets what IP addresses Ansible should use. This config block should be changed when using private IP addresses.
 
 ##### Configure Authentication (AWS)
 
@@ -390,7 +394,7 @@ There are several plugins available for well known Secret Managers such as [AWS 
 
 These sorts of plugins will typically need authentication configured, which is usually done via environment variables (refer to each plugin's docs for more info).
 
-As an example - AWS Secret Manager can be favorable here for AWS environments as the same authentication is used as the one for the Dynamic Inventory, so no further authentication is required. If we had a secret configured in AWS Secret Manager for GitLab Rails Password called `gitlab_rails_password` this can be configured as follows:
+As an example - AWS Secret Manager can be favourable here for AWS environments as the same authentication is used as the one for the Dynamic Inventory, so no further authentication is required. If we had a secret configured in AWS Secret Manager for GitLab Rails Password called `gitlab_rails_password` this can be configured as follows:
 
 ```yaml
 gitlab_rails_password: "{{ lookup('amazon.aws.aws_secret', 'gitlab_rails_password', region=aws_region) }}"
@@ -426,7 +430,7 @@ As mentioned earlier, we may also refer to additional variables in detail later 
 
 ## 3. Run the GitLab Environment Toolkit's Docker container (optional)
 
-Before running the Docker container you will need to setup your Inventory files by following [2. Setup the Environment's Inventory and Config](#2-setup-the-environments-inventory-and-config). The container can be started once the Inventory has been configured. When starting the container it is important to pass in your inventory files and keys, as well as set any authentication based environment variables.
+Before running the [Docker container](https://gitlab.com/gitlab-org/gitlab-environment-toolkit/container_registry/2697240) you will need to setup your Inventory files by following [2. Setup the Environment's Inventory and Config](#2-setup-the-environments-inventory-and-config). The container can be started once the Inventory has been configured. When starting the container it is important to pass in your inventory files and keys, as well as set any authentication based environment variables.
 
 Below is an example of how to run the container when using a GCP service account:
 
@@ -435,10 +439,10 @@ docker run -it \
   -e GOOGLE_APPLICATION_CREDENTIALS="/gitlab-environment-toolkit/keys/<service account file>" \
   -v <path to keys directory>:/gitlab-environment-toolkit/keys \
   -v <path to Ansible inventory>:/gitlab-environment-toolkit/ansible/environments/<environment name> \
-  gitlab/gitlab-environment-toolkit:latest
+  registry.gitlab.com/gitlab-org/gitlab-environment-toolkit:latest
 ```
 
-You can also use a simplified command if you store your Inventory outside of the toolkit. Using the folder structure below you're able to store multiple environments alongside each other and when using the Toolkits container you can simply pass in a single folder and still have access to all your different environments.
+You can also use a simplified command if you store your Inventory outside of the toolkit. Using the folder structure below you're able to store multiple environments alongside each other and when using the Toolkit's container you can simply pass in a single folder and still have access to all your different environments.
 
 ```sh
 get_environments
@@ -457,10 +461,8 @@ get_environments
 docker run -it \
   -e GOOGLE_APPLICATION_CREDENTIALS="/gitlab-environment-toolkit/keys/<service account file>" \
   -v <path to `get_environments` directory>:/environments \
-  gitlab/gitlab-environment-toolkit:latest
+  registry.gitlab.com/gitlab-org/gitlab-environment-toolkit:latest
 ```
-
-> :information_source:&nbsp; The Docker image is currently not available from the Toolkit's project, this will be blocked until [the project is moved](https://gitlab.com/gitlab-org/quality/gitlab-environment-toolkit/-/issues/319). Until this is completed you can build and run the image locally with `docker build -t gitlab/gitlab-environment-toolkit:latest .`, you can then run the above commands for running the image.
 
 ## 4. Configure
 
@@ -476,7 +478,7 @@ After the config has been setup you're now ready to configure the environment. T
 1. Run `ansible-playbook` with the intended environment's inventory against the `all.yml` playbook
 
     ```shell
-    ansible-playbook -i environments/10k/inventory all.yml
+    ansible-playbook -i environments/10k/inventory playbooks/all.yml
     ```
 
     - Note that we pass the whole inventory folder - `environments/10k/inventory`. This ensures Ansible reads all the files in the directory.
@@ -487,19 +489,32 @@ The same commands are used when you wish to update an existing environment.
 :information_source:&nbsp; If you ever want to uninstall GitLab, you can do so by running:
 
 ```shell
-ansible-playbook -i environments/10k/inventory uninstall.yml
+ansible-playbook -i environments/10k/inventory playbooks/uninstall.yml
+```
+
+### Running with Ansible Collection (optional)
+
+The Toolkit's Ansible Playbooks and Roles can be installed and run as a [Collection](https://docs.ansible.com/ansible/latest/user_guide/collections_using.html). Through this method you don't need the source code available locally to run, only your own Inventory and Variables.
+
+To use this method all that's required is to install the Collection from this repo and then run it as normal.
+
+First, installing the Collection is done as standard via the `ansible-galaxy` command from this repo:
+
+```shell
+ansible-galaxy collection install git+https://gitlab.com/gitlab-org/gitlab-environment-toolkit.git#/ansible/
+```
+
+:information_source:&nbsp; The Collection can only be installed from this repo as shown above and isn't available from Ansible Galaxy due to license compliance.
+
+Once installed you can then run the Collection in [several possible ways](https://docs.ansible.com/ansible/latest/user_guide/collections_using.html#using-collections-in-a-playbook). As an example you can run the `all` playbook directly via the collection name as follows:
+
+```shell
+ansible-playbook -i environments/50k/inventory gitlab.gitlab_environment_toolkit.all
 ```
 
 ### Running with ansible-deployer (optional)
 
-An alternative way to run the playbooks is with the `ansible-deployer` script. This script will run multiple playbooks in parallel where possible while maintaining the required run order. The script can either run all the playbooks by default or a custom list as passed via the `-p` flag. It should be noted that due to the script running tasks in parallel, if any issues arise during setup then the playbooks would be better run sequentially via the standard `ansible-playbook` command to help debug the problem(s).
-
-The script can be run as follows:
-
-1. `cd` to the `ansible/` directory if not already there.
-1. Run `ansible-deployer` with the intended environment's just the same as `ansible-playbook` - `./bin/ansible-deployer -i environments/10k/inventory all.yml`
-
-Due to running multiple commands in parallel the stdout of the ansible runner can get very messy, to alleviate this issue the stdout is suppressed and each playbook will create its own log file in `logs`.
+An alternative way to run the playbooks is with the [`ansible-deployer`](https://gitlab.com/gitlab-org/quality/get-ansible-deployer) script. This script will run multiple playbooks in parallel where possible while maintaining the required run order.
 
 ## Next Steps
 

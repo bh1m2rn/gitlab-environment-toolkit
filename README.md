@@ -4,7 +4,7 @@
 Requires [GitLab Premium](https://about.gitlab.com/pricing/) or above.
 Released under the [GitLab EE license](LICENSE).
 
-GET’s journey is only just beginning. Currently it can configure a base GitLab environment based on the Reference Architectures that can be built upon accordingly.
+GET configures a base GitLab environment based on the Reference Architectures that can be built upon accordingly.
 
 Customers are very welcome to trial and evaluate GET today, however be aware of [key limitations](#missing-features-to-be-aware-of) of the current iteration. For production environments further manual setup will be required based on your specific requirements.
 >>>
@@ -26,8 +26,45 @@ Created and maintained by the GitLab Quality Engineering Enablement team, the To
 - Built in Load Balancing and Monitoring (Prometheus, Grafana) setup
 - External SSL termination
 - Alternative sources (Cloud Services, Custom Servers) for select components (Load Balancers, PostgreSQL, Redis)
+- On Prem Support (Ansible)
 
 By design the Toolkit is meant to be **_one for all_** and aims to deploy a production GitLab environment that will be a good base that can be customized further depending on your requirements.
+
+## Requirements
+
+Note that the Toolkit currently has the following requirements (with related issues to increase support further):
+
+- GitLab version: `13.2.0` and upwards. ([GitLab version support issue](https://gitlab.com/gitlab-org/gitlab-environment-toolkit/-/issues/35)).
+- OS: Ubuntu 18.04+, RHEL 8
+  - At this time the Toolkit only supports clean OS installations. It may work with existing installations but this is not currently being tested.
+  - Admin access to the OS is also required by GET to install various dependencies
+- Types of environment: The Toolkit is designed to deploy the official GitLab [Reference Architectures](https://docs.gitlab.com/ee/administration/reference_architectures) (Standard or Cloud Native Hybrid) as environments.
+  - The Toolkit currently requires a NFS node to distribute select config.
+  - Advanced usage is possible where users can make tweaks to the environments as desired, such as increasing the number of nodes or their specs, but this is generally unrecommended.
+
+## Documentation
+
+- [GitLab Environment Toolkit - Preparing the environment](docs/environment_prep.md)
+- [GitLab Environment Toolkit - Provisioning the environment with Terraform](docs/environment_provision.md)
+- [GitLab Environment Toolkit - Configuring the environment with Ansible](docs/environment_configure.md)
+- [GitLab Environment Toolkit - Advanced - Cloud Native Hybrid](docs/environment_advanced_hybrid.md)
+- [GitLab Environment Toolkit - Advanced - External SSL](docs/environment_advanced_ssl.md)
+- [GitLab Environment Toolkit - Advanced - Network Setup](docs/environment_advanced_network.md)
+- [GitLab Environment Toolkit - Advanced - Component Cloud Services \ Custom (Load Balancers, PostgreSQL, Redis)](docs/environment_advanced_services.md)
+- [GitLab Environment Toolkit - Advanced - Geo](docs/environment_advanced_geo.md)
+- [GitLab Environment Toolkit - Advanced - Custom Config, Data Disks, Advanced Search and more](docs/environment_advanced.md)
+- [GitLab Environment Toolkit - Upgrade Notes](docs/environment_upgrades.md)
+- [GitLab Environment Toolkit - Legacy Setups](docs/environment_legacy.md)
+- [GitLab Environment Toolkit - Considerations After Deployment - Backups, Security](docs/environment_post_considerations.md)
+
+## How To Use
+
+The Toolkit's Terraform and Ansible modules can be used in various ways depending on your requirements:
+
+- Terraform - Source (git checkout), [Docker](docs/environment_provision.md#4-run-the-gitlab-environment-toolkits-docker-container-optional), [Module Registry](docs/environment_provision.md#terraform-module-registry)
+- Ansible - Source (git checkout), [Docker](docs/environment_configure.md#3-run-the-gitlab-environment-toolkits-docker-container-optional), [Collection](docs/environment_configure.md#running-with-ansible-collection-optional)
+
+Refer to the docs above for full instructions on each.
 
 ## Direction
 
@@ -54,50 +91,23 @@ At a high level the Toolkit is designed to be as straightforward as possible. A 
 - Machines are _provisioned_ as per the [Reference Architectures](https://docs.gitlab.com/ee/administration/reference_architectures) with Terraform. Part of this provisioning includes adding specific labels / tags to each machine for Ansible to then use to identify.
 - Machines are _configured_ with Ansible. Through identifying each machine by its Labels, Ansible will intelligently go through them in the correct install order. On each it will install and configure Omnibus to setup the intended component as required. The Ansible scripts have been designed to handle certain dynamic setups depending on what machines have been provisioned (e.g. an environment without Elasticsearch, or a 2k environment with a smaller amount of nodes). Additional tasks are also performed as required such as setting GitLab config through API or Load Balancer and Monitoring setup.
 
-## Requirements
-
-Note that the Toolkit currently has the following requirements (with related issues to increase support further):
-
-- GitLab version: `13.2.0` and upwards. ([GitLab version support issue](https://gitlab.com/gitlab-org/quality/gitlab-environment-toolkit/-/issues/35)).
-- OS: Ubuntu 18.04 ([OS support issue](https://gitlab.com/gitlab-org/quality/gitlab-environment-toolkit/-/issues/43))
-  - Note that additionally at this time GET supports clean Ubuntu installs and may work with existing ones but this is not guaranteed at this time.
-  - Admin access to the OS is also required by GET to install various dependencies
-- Types of environment: The Toolkit is designed to deploy the official GitLab [Reference Architectures](https://docs.gitlab.com/ee/administration/reference_architectures) (Standard or Cloud Native Hybrid) as environments.
-  - The Toolkit currently requires a NFS node to distribute select config.
-  - Advanced usage is possible where users can make tweaks to the environments as desired, such as increasing the number of nodes or their specs, but this is generally unrecommended.
-
-## Documentation
-
-- [GitLab Environment Toolkit - Preparing the environment](docs/environment_prep.md)
-- [GitLab Environment Toolkit - Provisioning the environment with Terraform](docs/environment_provision.md)
-- [GitLab Environment Toolkit - Configuring the environment with Ansible](docs/environment_configure.md)
-- [GitLab Environment Toolkit - Advanced - Cloud Native Hybrid](docs/environment_advanced_hybrid.md)
-- [GitLab Environment Toolkit - Advanced - External SSL](docs/environment_advanced_ssl.md)
-- [GitLab Environment Toolkit - Advanced - Component Cloud Services \ Custom (Load Balancers, PostgreSQL, Redis)](docs/environment_advanced_services.md)
-- [GitLab Environment Toolkit - Advanced - Geo](docs/environment_advanced_geo.md)
-- [GitLab Environment Toolkit - Advanced - Custom Config, Data Disks, Advanced Search and more](docs/environment_advanced.md)
-- [GitLab Environment Toolkit - Upgrade Notes](docs/environment_upgrades.md)
-- [GitLab Environment Toolkit - Legacy Setups](docs/environment_legacy.md)
-- [GitLab Environment Toolkit - Considerations After Deployment - Backups, Security](docs/environment_post_considerations.md)
-
 ## Missing features to be aware of
 
 There are a few key features which are not supported yet, which are important to keep in mind.
 
-- [Certain Cloud-provider services](https://gitlab.com/gitlab-org/quality/gitlab-environment-toolkit/-/issues/74) such as PostgreSQL or Redis. Currently supported services can be seen on the [relevant docs page](docs/environment_advanced_services.md).
-- [GitLab Registry support](https://gitlab.com/gitlab-org/quality/gitlab-environment-toolkit/-/issues/212)
-- [Promotion](https://gitlab.com/gitlab-org/quality/gitlab-environment-toolkit/-/issues/133) of a Geo secondary
+- [Certain Cloud-provider services](https://gitlab.com/gitlab-org/gitlab-environment-toolkit/-/issues/74) such as PostgreSQL or Redis. Currently supported services can be seen on the [relevant docs page](docs/environment_advanced_services.md).
+- [GitLab Registry support](https://gitlab.com/gitlab-org/gitlab-environment-toolkit/-/issues/212)
 
-Our upcoming work, sorted by tentative milestone, can be viewed on [our development board](https://gitlab.com/gitlab-org/quality/gitlab-environment-toolkit/-/boards). Please note that the issues slated for any upcoming release or milestone are subject to change and may not meet the planned timeframes.
+Our upcoming work, sorted by tentative milestone, can be viewed on [our development board](https://gitlab.com/gitlab-org/gitlab-environment-toolkit/-/boards). Please note that the issues slated for any upcoming release or milestone are subject to change and may not meet the planned timeframes.
 
 ## Issues or Feature Requests
 
-Everyone is welcome to open new Issues or Feature Requests (or to upvote existing ones) over on [our tracker](https://gitlab.com/gitlab-org/quality/gitlab-environment-toolkit/-/issues).
+Everyone is welcome to open new Issues or Feature Requests (or to upvote existing ones) over on [our tracker](https://gitlab.com/gitlab-org/gitlab-environment-toolkit/-/issues).
 
 Further information:
 
 <!-- markdownlint-disable proper-names -->
-- Work in progress can also be seen on our [board](https://gitlab.com/gitlab-org/quality/gitlab-environment-toolkit/-/boards).
+- Work in progress can also be seen on our [board](https://gitlab.com/gitlab-org/gitlab-environment-toolkit/-/boards).
 - Issues relating directly to the [Reference Architectures can be found in their own project](https://gitlab.com/gitlab-org/quality/reference-architectures).
 - Issues relating to the previous incarnation of Performance Environment Builder can be found on [the old generic performance issue tracker](https://gitlab.com/gitlab-org/quality/performance/-/issues?scope=all&utf8=%E2%9C%93&state=closed).
 - To contact the team you can also reach out on Slack [#gitlab-environment-toolkit](https://gitlab.slack.com/archives/C01DE8TA545) channel.

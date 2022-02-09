@@ -5,6 +5,7 @@
 - [GitLab Environment Toolkit - Configuring the environment with Ansible](environment_configure.md)
 - [GitLab Environment Toolkit - Advanced - Cloud Native Hybrid](environment_advanced_hybrid.md)
 - [GitLab Environment Toolkit - Advanced - External SSL](environment_advanced_ssl.md)
+- [GitLab Environment Toolkit - Advanced - Network Setup](environment_advanced_network.md)
 - [GitLab Environment Toolkit - Advanced - Component Cloud Services / Custom (Load Balancers, PostgreSQL, Redis)](environment_advanced_services.md)
 - [**GitLab Environment Toolkit - Advanced - Geo**](environment_advanced_geo.md)
 - [GitLab Environment Toolkit - Advanced - Custom Config, Data Disks, Advanced Search and more](environment_advanced.md)
@@ -88,6 +89,8 @@ module "gitlab_ref_arch_*" {
 
   [...]
 ```
+
+:information_source:&nbsp; The configurations above are needed on both the primary and secondary geo sites.
 
 :information_source:&nbsp; When using repmgr on the secondary site the `node_count` in `postgres.tf` should be set to 1 for the secondary sites config. When using Patroni, this can be left at its original value.
 
@@ -289,9 +292,27 @@ gitaly_token: '<gitaly_token>'
 grafana_password: '<grafana_password>'
 ```
 
-Once done we can then run the command `ansible-playbook -i environments/my-geo-deployment/inventory/all gitlab-geo.yml`.
+Once done we can then run the command `ansible-playbook -i environments/my-geo-deployment/inventory/all playbooks/gitlab-geo.yml`.
 
 Once complete the 2 sites will now be part of the same Geo deployment.
+
+## Geo Proxying for Secondary Sites
+
+> The Geo Proxying for Secondary Sites is only available for deployments using GitLab versions 14.6 or above.
+
+Before using [Geo Proxying for Secondary Sites](https://docs.gitlab.com/ee/administration/geo/secondary_proxy/index.html) it is recommended to read the current documentation on this feature within GitLab and to understand the scope and limitations of this feature.
+
+To use a single unified URL to access the primary and secondary sites with the Toolkit you will first need to change a few settings within your inventories to enable this feature.
+
+```yaml
+# Must be set within the all inventory.
+external_url: "<Unified URL>"
+secondary_external_url: "<Unified URL>"
+geo_primary_internal_url: "<Unique URL for the primary site>"
+geo_secondary_internal_url: "<Unique URL for the secondary site>"
+```
+
+Although not required, if you want to disable the Geo proxying feature you can set `geo_disable_secondary_proxying: true` in both your primary and secondary inventories. This doesn't need to be disabled if you're not planning on using secondary proxying, this only needs to be set if you want to disable the feature entirely.
 
 ## Failover and Recovery
 
@@ -303,7 +324,7 @@ The Toolkit provides the ability to failover from a Geo primary site to a second
 
 Before running the failover process you should ensure you have read and completed any required steps outlined in the [Disaster recovery for planned failover](https://docs.gitlab.com/ee/administration/geo/disaster_recovery/planned_failover.html) documentation.
 
-Once you get to the [Promote the secondary node](https://docs.gitlab.com/ee/administration/geo/disaster_recovery/planned_failover.html#promote-the-secondary-node) step in the documentation you can proceed to perform a failover. To do the failover you can use the existing `all` inventory to disable the primary and promote the secondary in a single command `ansible-playbook -i environments/my-geo-deployment/inventory/all gitlab-geo-failover.yml`
+Once you get to the [Promote the secondary node](https://docs.gitlab.com/ee/administration/geo/disaster_recovery/planned_failover.html#promote-the-secondary-node) step in the documentation you can proceed to perform a failover. To do the failover you can use the existing `all` inventory to disable the primary and promote the secondary in a single command `ansible-playbook -i environments/my-geo-deployment/inventory/all playbooks/gitlab-geo-failover.yml`
 
 After failover has occurred it's important to update your inventories to reflect the new roles they now perform and to avoid misconfiguration on subsequent runs. The original primary and secondary inventories need updating. For a cloud native hybrid environment you will need to update the `cloud_native_hybrid_geo_role` variable to reflect the sites new role. For all environment types you will need to update the `geo_primary_site_group_name`/`geo_secondary_site_group_name` also.
 
@@ -325,7 +346,7 @@ Before performing a recovery the `all` inventory must be updated to reflect each
 - `geo_primary_site_group_name`/`geo_secondary_site_group_name`
 - `geo_primary_site_name`/`geo_secondary_site_name`
 
-Once done you can perform the recovery process by running the command `ansible-playbook -i environments/my-geo-deployment/inventory/all gitlab-geo-recovery.yml`
+Once done you can perform the recovery process by running the command `ansible-playbook -i environments/my-geo-deployment/inventory/all playbooks/gitlab-geo-recovery.yml`
 
 ### AWS RDS
 

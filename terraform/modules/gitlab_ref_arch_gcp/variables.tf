@@ -32,9 +32,24 @@ variable "project" {
   default = null
 }
 
+# Object Storage
 variable "object_storage_buckets" {
   type    = list(string)
   default = ["artifacts", "backups", "dependency-proxy", "lfs", "mr-diffs", "packages", "terraform-state", "uploads"]
+}
+variable "object_storage_location" {
+  type    = string
+  default = "US"
+}
+variable "object_storage_force_destroy" {
+  description = "Toggle to enable force-destruction of object storage buckets. Consider setting this value to false for production systems"
+  type        = bool
+  default     = true
+}
+variable "object_storage_labels" {
+  description = "Labels to apply to object storage buckets"
+  type        = map(string)
+  default     = {}
 }
 
 # Machines
@@ -473,11 +488,56 @@ variable "supporting_node_pool_disk_size" {
   default = null
 }
 
+variable "cluster_release_channel" {
+  type    = string
+  default = "STABLE"
+}
+variable "cluster_enable_workload_identity" {
+  type    = bool
+  default = false
+}
+
 # Networking
 ## Create new network
 variable "create_network" {
   type    = bool
   default = false
+}
+
+## Default network
+variable "default_allowed_egress_cidr_blocks" {
+  type    = list(string)
+  default = ["0.0.0.0/0"]
+}
+
+variable "default_allowed_ingress_cidr_blocks" {
+  type    = list(string)
+  default = ["0.0.0.0/0"]
+}
+
+variable "http_allowed_ingress_cidr_blocks" {
+  type    = list(any)
+  default = []
+}
+
+variable "ssh_allowed_ingress_cidr_blocks" {
+  type    = list(any)
+  default = []
+}
+
+variable "external_ssh_allowed_ingress_cidr_blocks" {
+  type    = list(any)
+  default = []
+}
+
+variable "monitor_allowed_ingress_cidr_blocks" {
+  type    = list(any)
+  default = []
+}
+
+variable "icmp_allowed_ingress_cidr_blocks" {
+  type    = list(any)
+  default = []
 }
 
 ## Existing network
@@ -516,23 +576,11 @@ variable "additional_labels" {
   default = {}
 }
 
+# Additional
 variable "allow_stopping_for_update" {
   type    = bool
   default = true
 }
-
-variable "object_storage_force_destroy" {
-  description = "Toggle to enable force-destruction of object storage buckets. Consider setting this value to false for production systems"
-  type        = bool
-  default     = true
-}
-
-variable "object_storage_labels" {
-  description = "Labels to apply to object storage buckets"
-  type        = map(any)
-  default     = {}
-}
-
 variable "machine_secure_boot" {
   type    = bool
   default = false

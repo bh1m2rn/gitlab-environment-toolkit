@@ -8,6 +8,7 @@ prometheus['enable'] = false
 alertmanager['enable'] = false
 grafana['enable'] = false
 gitlab_exporter['enable'] = false
+gitlab_kas['enable'] = false
 nginx['enable'] = false
 
 # Prevent database connections during 'gitlab-ctl reconfigure'
@@ -22,6 +23,8 @@ gitaly['listen_addr'] = "0.0.0.0:8075"
 
 gitaly['prometheus_grpc_latency_buckets'] = [0.001, 0.005, 0.025, 0.1, 0.5, 1.0, 10.0, 30.0, 60.0, 300.0, 1500.0]
 gitaly['ruby_num_workers'] = {{ gitaly_ruby_num_workers }}
+
+gitaly['pack_objects_cache_enabled'] = {{ gitaly_pack_objects_cache | lower }}
 
 {% if 'jaeger' in groups %}
 gitaly['env'] = {

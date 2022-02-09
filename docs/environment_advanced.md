@@ -5,6 +5,7 @@
 - [GitLab Environment Toolkit - Configuring the environment with Ansible](environment_configure.md)
 - [GitLab Environment Toolkit - Advanced - Cloud Native Hybrid](environment_advanced_hybrid.md)
 - [GitLab Environment Toolkit - Advanced - External SSL](environment_advanced_ssl.md)
+- [GitLab Environment Toolkit - Advanced - Network Setup](environment_advanced_network.md)
 - [GitLab Environment Toolkit - Advanced - Component Cloud Services / Custom (Load Balancers, PostgreSQL, Redis)](environment_advanced_services.md)
 - [GitLab Environment Toolkit - Advanced - Geo](environment_advanced_geo.md)
 - [**GitLab Environment Toolkit - Advanced - Custom Config, Data Disks, Advanced Search and more**](environment_advanced.md)
@@ -30,15 +31,18 @@ Custom config should only be used in advanced scenarios where you are fully awar
 - Custom Object Storage
 - Email
 
+Custom configs are treated the same as our built in config templates. As such you have access to the same variables for added flexibility.
+
 In this section we detail how to set up custom config for Omnibus and Helm charts components respectively.
 
 ### Omnibus
 
 Providing custom config for components run as part of an Omnibus environment is done as follows:
 
-1. Create a [gitlab.rb](https://gitlab.com/gitlab-org/omnibus-gitlab/blob/master/files/gitlab-config-template/gitlab.rb.template) file in the correct format with the specific custom settings you wish to apply
-1. By default the Toolkit looks for a files in the [environments](environment_configure.md#2-setup-the-environments-inventory-and-config) `files/gitlab_configs` folder path. E.G. `ansible/environments/<env_name>/files/gitlab_configs/<component>.rb`. Save your file in this location with the same name.
-    - If you wish to store your file in a different location or use a different name the full path that Ansible should use can be set via a variable for each different component e.g. `<component>_custom_config_file`
+1. Create a [gitlab.rb](https://gitlab.com/gitlab-org/omnibus-gitlab/blob/master/files/gitlab-config-template/gitlab.rb.template) template file in the correct format with the specific custom settings you wish to apply.
+1. By default the Toolkit looks for [Jinja2 template files](https://docs.ansible.com/ansible/latest/user_guide/playbooks_templating.html) in the [environments](environment_configure.md#2-setup-the-environments-inventory-and-config) `files/gitlab_configs` folder path. E.G. `ansible/environments/<env_name>/files/gitlab_configs/<component>.rb.j2`. Save your file in this location with the same name.
+    - Files should be saved in Ansible template format - `.j2`.
+    - If you wish to store your file in a different location or use a different name the full path that Ansible should use can be set via a variable for each different component e.g. `<component>_custom_config_file`.
     - Available component options: `consul`, `postgres`, `pgbouncer`, `redis`, `redis_cache`, `redis_persistent`, `praefect_postgres`, `praefect`, `gitaly`, `gitlab_rails`, `sidekiq` and `monitor`.
 
 With the above done the file will be picked up by the Toolkit and used when configuring Omnibus.
@@ -47,8 +51,9 @@ With the above done the file will be picked up by the Toolkit and used when conf
 
 Providing custom config for components run via Helm charts in Cloud Native Hybrid environments is done as follows:
 
-1. Create a [GitLab Charts](https://docs.gitlab.com/charts/) yaml file in the correct format with the specific custom settings you wish to apply
-1. By default the Toolkit looks for a file named `gitlab_charts.yml` in the [environments](environment_configure.md#2-setup-the-environments-inventory-and-config) `files/gitlab_configs` folder path. E.G. `ansible/environments/<env_name>/files/gitlab_configs/gitlab_charts.yml`. Save your file in this location with the same name.
+1. Create a [GitLab Charts](https://docs.gitlab.com/charts/) yaml template file in the correct format with the specific custom settings you wish to apply
+1. By default the Toolkit looks for a [Jinja2 template file](https://docs.ansible.com/ansible/latest/user_guide/playbooks_templating.html) named `gitlab_charts.yml.j2` in the [environments](environment_configure.md#2-setup-the-environments-inventory-and-config) `files/gitlab_configs` folder path. E.G. `ansible/environments/<env_name>/files/gitlab_configs/gitlab_charts.yml.j2`. Save your file in this location with the same name.
+    - Files should be saved in Ansible template format - `.j2`.
     - If you wish to store your file in a different location or use a different name the full path that Ansible should use can be set via the `gitlab_charts_custom_config_file` inventory variable.
 
 With the above done the file will be picked up by the Toolkit and used when configuring the Helm charts.
@@ -61,7 +66,7 @@ Additionally, the Toolkit provides an ability to pass a custom Chart task list t
 
 ### API
 
-Some config in GitLab can only be changed via API. As such, the Toolkit supports passing a custom API Ansible Task list that will be executed during the [Post Configure](https://gitlab.com/gitlab-org/quality/gitlab-environment-toolkit/-/tree/main/ansible/roles/post-configure/tasks) role from [localhost](https://gitlab.com/gitlab-org/quality/gitlab-environment-toolkit/-/blob/main/ansible/post-configure.yml). This feature could be used when you want to do further configuration changes to your environment after it's deployed. For example, modifying GitLab [application settings using API](https://docs.gitlab.com/ee/api/settings.html).
+Some config in GitLab can only be changed via API. As such, the Toolkit supports passing a custom API Ansible Task list that will be executed during the [Post Configure](https://gitlab.com/gitlab-org/gitlab-environment-toolkit/-/tree/main/ansible/roles/post-configure/tasks) role from [localhost](https://gitlab.com/gitlab-org/gitlab-environment-toolkit/-/blob/main/ansible/post-configure.yml). This feature could be used when you want to do further configuration changes to your environment after it's deployed. For example, modifying GitLab [application settings using API](https://docs.gitlab.com/ee/api/settings.html).
 
 Note that this file should be a standard Ansible Tasks yaml file that will be used with [`include_tasks`](https://docs.ansible.com/ansible/latest/collections/ansible/builtin/include_tasks_module.html).
 
@@ -107,8 +112,8 @@ gitaly_disks = [
 
 - `*_disks` - The main setting for each node group.
   - `device_name` - The name _and_ block device identifier for each disk attached. Must be unique per machine. **Required**.
-  - `size` - The size of the disk in GB. __Optional__, default is `100`.
-  - `type` - The [type](https://cloud.google.com/compute/docs/disks) of the disk. __Optional__, default is `pd-standard`.
+  - `size` - The size of the disk in GB. **Optional**, default is `100`.
+  - `type` - The [type](https://cloud.google.com/compute/docs/disks) of the disk. **Optional**, default is `pd-standard`.
 
 **AWS**
 
@@ -122,9 +127,9 @@ gitaly_data_disks = [
 - `*_data_disks` - The main setting for each node group.
   - `name` - The name for each disk attached. Must be unique per machine. **Required**.
   - `device_name` = The block device name for each disk attached. For AWS, due to limitations, this must be in the format `/dev/sd[f-p]` and unique for each disk (more info [here](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/device_naming.html)). Additionally each block device name must be available on all machines in the target group (e.g. `gitaly-1`, `gitaly-2`, etc...). **Required**.
-  - `size` - The size of the disk in GB. __Optional__, default is `100`.
-  - `type` - The [type](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-volume-types.html) of the disk. __Optional__, default is `gp3`.
-  - `iops` - The amount of IOPS to provision for the disk. Only valid for types of `io1`, `io2` or `gp3`. __Optional__, default is `null`.
+  - `size` - The size of the disk in GB. **Optional**, default is `100`.
+  - `type` - The [type](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-volume-types.html) of the disk. **Optional**, default is `gp3`.
+  - `iops` - The amount of IOPS to provision for the disk. Only valid for types of `io1`, `io2` or `gp3`. **Optional**, default is `null`.
 
 ### Configuring with Ansible
 
@@ -365,11 +370,11 @@ Configuring the environment config `vars.yml` file is [much the same as it would
 
 ### Facts Cache (Optional)
 
-When running select playbooks, e.g. running a playbook only for `haproxy` - `ansible-playbook -i <inventory> haproxy.yml`, some additional preparation is required when using a Static Inventory.
+When running select playbooks, e.g. running a playbook only for `haproxy` - `ansible-playbook -i <inventory> playbooks/haproxy.yml`, some additional preparation is required when using a Static Inventory.
 
 Unlike Dynamic Inventories, in this scenario only facts for the HAProxy hosts and no others are collected. This will cause the play to fail as the Toolkit expects to be able to access facts for all hosts throughout.
 
-:information_source:&nbsp; This *doesn't* affect playbooks that run on all hosts, such as `all.yml`, as these will gather facts at runtime.
+:information_source:&nbsp; This _doesn't_ affect playbooks that run on all hosts, such as `all.yml`, as these will gather facts at runtime.
 
 To workaround this limitation a persistent [Fact Cache](https://docs.ansible.com/ansible/latest/plugins/cache.html#cache-plugins) is recommended where all host facts are saved and made available on subsequent runs.
 
@@ -410,21 +415,22 @@ In addition to this it will configure automated security upgrades and can option
 
 ### Automatic Security Upgrades
 
-The Toolkit will install the [Unattended Upgrades](https://help.ubuntu.com/community/AutomaticSecurityUpdates) package on all boxes by default via the [`jnv.unattended-upgrades` Galaxy role](https://galaxy.ansible.com/jnv/unattended-upgrades) to automatically install any security updates for the OS.
+The Toolkit will setup automatic security upgrades as a convenience on the target OS via Ansible Galaxy roles as follows:
 
-The default settings are used in this install which will configure the following:
+- Ubuntu - [Unattended Upgrades](https://help.ubuntu.com/community/AutomaticSecurityUpdates) setup via the [`jnv.unattended-upgrades` Galaxy role](https://galaxy.ansible.com/jnv/unattended-upgrades).
+- RHEL 8 - [DNF Automatic](https://dnf.readthedocs.io/en/latest/automatic.html) setup via the [`exploide.dnf-automatic` Galaxy role](https://galaxy.ansible.com/exploide/dnf-automatic)
+
+The role(s) configure the following:
 
 - Security updates will be installed at least once per day
 - The Toolkit will also run the same updates directly whenever it's run
 - Automatic reboots are disabled to ensure runtime
 
-The package can be configured further as required by simply adding its config into your Ansible environment config file (`vars.yml`). Refer to the [role's docs](https://galaxy.ansible.com/jnv/unattended-upgrades) for more.
-
-While not recommended, if this behaviour is not desired you can disable this completely by setting the `unattended_upgrades` variable to `false`. Note if setting this after it was previously configured the `unattended-upgrades` package will still need to be purged manually on affected boxes (the Toolkit can't handle this directly as it may interfere with other manual installs of this system package).
+If this behaviour is not desired you can disable this by setting the `system_packages_auto_security_upgrade` variable to `false` (can also be set via environment variable `SYSTEM_PACKAGES_AUTO_SECURITY_UPGRADE`). Note if setting this after it was previously configured the `unattended-upgrades` or `dnf-automatic` package will still need to be purged manually on affected boxes.
 
 ### Optional Package Maintenance
 
 The Toolkit can also optionally upgrade all packages and clean up unneeded packages on your nodes on each run. The following settings control this behaviour and can be set in your Ansible environment config file (`vars.yml`) if desired:
 
-- `system_package_upgrades`: Configures the Toolkit to upgrade all packages on nodes. Default is `false`. Can also be set as via the environment variable `SYSTEM_PACKAGE_UPGRADES`.
-- `system_package_autoremove`: Configures the Toolkit to autoremove any old or unneeded packages on nodes. Default is `false`. Can also be set as via the environment variable `SYSTEM_PACKAGE_AUTOREMOVE`.
+- `system_packages_upgrade`: Configures the Toolkit to upgrade all packages on nodes. Default is `false`. Can also be set as via the environment variable `SYSTEM_PACKAGES_UPGRADE`.
+- `system_packages_autoremove`: Configures the Toolkit to autoremove any old or unneeded packages on nodes. Default is `false`. Can also be set as via the environment variable `SYSTEM_PACKAGES_AUTOREMOVE`.

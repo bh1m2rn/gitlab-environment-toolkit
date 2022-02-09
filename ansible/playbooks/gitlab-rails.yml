@@ -1,0 +1,7 @@
+---
+- hosts:
+    - gitlab_rails_primary
+    - gitlab_rails_secondary
+  roles:
+    - gitlab_rails
+  become: true

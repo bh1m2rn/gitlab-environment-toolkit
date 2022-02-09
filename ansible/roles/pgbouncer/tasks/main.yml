@@ -30,8 +30,8 @@
   tags: reconfigure
   register: pgbouncer_custom_config_file_path
 
-- name: Copy custom GitLab config file
-  copy:
+- name: Setup custom GitLab config file
+  template:
     src: "{{ pgbouncer_custom_config_file }}"
     dest: "/etc/gitlab/gitlab.pgbouncer.custom.rb"
     mode: 0644
@@ -43,7 +43,7 @@
   tags: secrets
 
 - name: Reconfigure PgBouncer
-  shell: gitlab-ctl reconfigure
+  command: gitlab-ctl reconfigure
   register: result
   retries: 1
   until: result is success

@@ -1,9 +1,11 @@
 include:
   - template: Security/Dependency-Scanning.gitlab-ci.yml
   - template: Security/Secret-Detection.gitlab-ci.yml
+  - template: Security/Container-Scanning.gitlab-ci.yml
 
 stages:
   - test
+  - upload
 
 #################################
 ##            SAST             ##
@@ -12,6 +14,10 @@ stages:
 .on_merge_request_and_merged_events:
   rules:
     - if: '$CI_BUILD_REF_NAME == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "push" || $CI_PIPELINE_SOURCE == "merge_request_event"'
+
+.on_merge_request_to_main_and_merged_events:
+  rules:
+    - if: '$CI_BUILD_REF_NAME == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "push" || $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == $CI_DEFAULT_BRANCH'
 
 gemnasium-dependency_scanning:
   rules:
@@ -30,6 +36,19 @@ bundler-audit-dependency_scanning:
 secret_detection:
   rules:
     - !reference [.on_merge_request_and_merged_events, rules]
+
+container_scanning:
+  variables:
+    DOCKER_IMAGE: $CI_REGISTRY_IMAGE:dev
+  rules:
+    - !reference [.on_merge_request_to_main_and_merged_events, rules]
+
+container_scanning_release:
+  extends: container_scanning
+  variables:
+    DOCKER_IMAGE: $CI_REGISTRY_IMAGE:$CI_COMMIT_TAG
+  rules:
+    - if: '$CI_COMMIT_TAG'
 
 #########################
 ##     Lint Checks     ##
@@ -71,6 +90,7 @@ check:ansible-lint:
   script:
     - chmod 700 ansible
     - cd ansible
+    - ansible-galaxy install -r requirements/ansible-galaxy-requirements.yml
     - ansible-lint
   only:
     - main
@@ -122,3 +142,52 @@ check_requirements:
       changes:
         - ansible/requirements/requirements.txt
         - ansible/requirements/ansible-galaxy-requirements.yml
+
+########################
+##      Packages      ##
+########################
+
+upload-terraform-module:
+  stage: upload
+  image: curlimages/curl:latest
+  script:
+    - cd terraform
+    - tar -czf gitlab_environment_toolkit.tgz modules
+    - 'curl --header "JOB-TOKEN: $CI_JOB_TOKEN" --upload-file gitlab_environment_toolkit.tgz "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/terraform/modules/gitlab-environment-toolkit/gitlab/${CI_COMMIT_TAG}/file"'
+  only:
+    - tags
+
+.upload-docker-image-base:
+  stage: upload
+  image: alpine
+  services:
+    - docker:stable-dind
+  variables:
+    DOCKER_DRIVER: overlay2
+    DOCKER_HOST: tcp://docker:2375
+  before_script:
+    - apk add -u --no-cache docker
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+  tags:
+    - docker
+
+upload-docker-image-dev:
+  extends: .upload-docker-image-base
+  script:
+    - docker build -t $CI_REGISTRY_IMAGE:dev .
+    - docker push $CI_REGISTRY_IMAGE:dev
+  only:
+    - main
+
+upload-docker-image-release:
+  extends: .upload-docker-image-base
+  script:
+    - docker build -t $CI_REGISTRY_IMAGE:$CI_COMMIT_TAG .
+    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_TAG
+    - |
+      if echo $CI_COMMIT_TAG | grep -qv ".*beta.*"; then
+        docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_TAG $CI_REGISTRY_IMAGE:latest
+        docker push $CI_REGISTRY_IMAGE:latest
+      fi
+  only:
+    - tags

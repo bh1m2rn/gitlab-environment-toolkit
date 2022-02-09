@@ -5,6 +5,7 @@
 - [GitLab Environment Toolkit - Configuring the environment with Ansible](environment_configure.md)
 - [GitLab Environment Toolkit - Advanced - Cloud Native Hybrid](environment_advanced_hybrid.md)
 - [GitLab Environment Toolkit - Advanced - External SSL](environment_advanced_ssl.md)
+- [GitLab Environment Toolkit - Advanced - Network Setup](environment_advanced_network.md)
 - [GitLab Environment Toolkit - Advanced - Component Cloud Services / Custom (Load Balancers, PostgreSQL, Redis)](environment_advanced_services.md)
 - [GitLab Environment Toolkit - Advanced - Geo](environment_advanced_geo.md)
 - [GitLab Environment Toolkit - Advanced - Custom Config, Data Disks, Advanced Search and more](environment_advanced.md)
@@ -20,13 +21,13 @@ The Toolkit provides multiple curated [Terraform Modules](../terraform/modules) 
 
 ## 1. Install Terraform
 
-For the Toolkit we recommend Terraform `1.x` but versions from `0.14.x` versions should continue to work.
+For the Toolkit we recommend Terraform `1.x`.
 
 Terraform generally works best when all users for an environment are using the same major version due to its State. Improvements have been made that allow for the easier upgrading and downgrading of state however. As such it's recommended that all users sync on the same version of Terraform when working against the same environment and any Terraform upgrades are done in unison.
 
 ### Using Terraform inside a Docker container
 
-With Docker the only prerequisite is installation, the Toolkit's image contains everything else you'll need. The official [Docker installation instructions](https://docs.docker.com/engine/install/) should be followed to correctly install and run Docker.
+With Docker the only prerequisite is installation, the [Toolkit's image](https://gitlab.com/gitlab-org/gitlab-environment-toolkit/container_registry/2697240) contains everything else you'll need. The official [Docker installation instructions](https://docs.docker.com/engine/install/) should be followed to correctly install and run Docker.
 
 ### Install Terraform using asdf
 
@@ -42,12 +43,67 @@ Installing Terraform with `asdf` is done as follows:
 
 1. Install `asdf` as per its [documentation](https://asdf-vm.com/#/core-manage-asdf?id=install)
 1. Add the Terraform `asdf` plugin - `asdf plugin add terraform`
-1. Install the intended Terraform version - `asdf install terraform 0.14.4`
-1. Set that version to be the main on your PATH - `asdf global terraform 0.14.4`
+1. Install the intended Terraform version - `asdf install terraform 1.0.0`
+1. Set that version to be the main on your PATH - `asdf global terraform 1.0.0`
 
 With the above completed Terraform should now be available on your command line. You can check this by running `terraform version`.
 
-## 2. Setup the Environment's config
+## 2. Select Module Source
+
+Before you start setting up the config you should select a Terraform Module source to use.
+
+Terraform can retrieve Modules from various [sources](https://www.terraform.io/language/modules/sources). The Toolkit's Modules are available from Local paths, Git URL or this Project's Terraform Module Registry.
+
+:information_source:&nbsp; These docs assume the Local method is being used but any of these sources can be used as desired.
+
+Below we detail each source and how to configure them:
+
+### Local Path
+
+In this setup you have the Modules saved locally on disk, typically through a Git clone of this repo, and Terraform is configured to source them via an absolute or relative local path.
+
+For example, to configure the `gitlab_ref_arch_gcp` module using a relative path that follows this repo's structure you would configure it follows:
+
+```hcl
+module "gitlab_ref_arch_gcp" {
+  source = "../../modules/gitlab_ref_arch_gcp"
+
+  [...]
+}
+```
+
+### Git URL
+
+Terraform can also pull the Modules directly from this repo via a [Git URL](https://www.terraform.io/language/modules/sources#generic-git-repository).
+
+For example, to configure the `gitlab_ref_arch_gcp` module to pull from the repo you would configure it follows:
+
+```hcl
+module "gitlab_ref_arch_gcp" {
+  source = "git::https://gitlab.com/gitlab-org/gitlab-environment-toolkit.git//modules/gitlab_ref_arch_gcp"
+
+  [...]
+}
+```
+
+### Terraform Module Registry
+
+The Toolkit's Modules are also made available via this Project's [Terraform Module Registry](https://gitlab.com/gitlab-org/gitlab-environment-toolkit/-/infrastructure_registry).
+
+For example, to configure the `gitlab_ref_arch_gcp` module to pull from the registry you would configure it follows:
+
+```hcl
+module "gitlab_ref_arch_gcp" {
+  source = "gitlab.com/gitlab-org/gitlab-environment-toolkit/gitlab//modules/gitlab_ref_arch_gcp"
+  version = ">= 2.0.0"
+
+  [...]
+}
+```
+
+Note the `version` setting here [can be changed as desired to any constraint](https://www.terraform.io/language/expressions/version-constraints#version-constraint-syntax) that's `2.0.0` or greater.
+
+## 3. Setup the Environment's config
 
 As mentioned the Toolkit provides several [Terraform Modules](../terraform/modules) that can be used to provision the environment as per the [Reference Architectures](https://docs.gitlab.com/ee/administration/reference_architectures/). While there are several modules provided with the Toolkit most of these are under the hood. For most users only one easy to use `ref_arch` module will need to be configured.
 
@@ -63,7 +119,7 @@ In this step there are sections for each supported host provider on how to confi
 
 ### Google Cloud Platform (GCP)
 
-The Toolkit's module for seamlessly setting up a full GitLab Reference architecture on GCP is **[`gitlab_ref_arch_gcp`](https://gitlab.com/gitlab-org/quality/gitlab-environment-toolkit/-/tree/main/terraform/modules/gitlab_ref_arch_gcp)**.
+The Toolkit's module for seamlessly setting up a full GitLab Reference architecture on GCP is **[`gitlab_ref_arch_gcp`](https://gitlab.com/gitlab-org/gitlab-environment-toolkit/-/tree/main/terraform/modules/gitlab_ref_arch_gcp)**.
 
 In this section we detail all that's needed to configure it.
 
@@ -116,7 +172,7 @@ terraform {
   required_providers {
     google = {
       source  = "hashicorp/google"
-      version = "~> 3"
+      version = "~> 3.0"
     }
   }
 }
@@ -209,8 +265,6 @@ output "gitlab_ref_arch_gcp" {
   - `source` - The relative path to the `gitlab_ref_arch_gcp` module. We assume you're creating config in the `terraform/environments/` folder here but if you're in a different location this setting must be updated to the correct path.
   - `prefix` - The name prefix of the project. Set in `variables.tf`.
   - `project` - The [ID](https://support.google.com/googleapi/answer/7014113?hl=en) of the GCP project to connect to. Set in `variables.tf`.
-  - `allow_stopping_for_update` - Controls whether Terraform can restart VMs when making changes (required in some cases). Should only be disabled for additional resilience. Refer to [Allow Stopping for Updates (GCP)](#allow-stopping-for-updates-gcp) for more info. Defaults to `true`.
-  - `object_storage_force_destroy` - Controls whether Terraform can delete all objects (including any locked objects) from the bucket so that the bucket can be destroyed without error. Consider setting this value to `false` for production systems. Defaults to `true`.
 
 Next in the file are the various machine settings, separated the same as the Reference Architectures. To avoid repetition we'll describe each setting once:
 
@@ -218,9 +272,35 @@ Next in the file are the various machine settings, separated the same as the Ref
 - `*_machine_type` - The [GCP Machine Type](https://cloud.google.com/compute/docs/machine-types) (size) for that component
 - `haproxy_external_external_ips` - Set the external HAProxy load balancer to assume the external IP set in `variables.tf`. Note that this is an array setting as the advanced underlying functionality needs to account for the specific setting of IPs for potentially multiple machines. In this case though it should always only be one IP.
 
+In addition to the above, the following optional settings are also available:
+
+- `machine_image` - The [GCP machine image name] to use for the VMs. Ubuntu 18.04+ and RHEL 8 images are supported at this time. Defaults to `ubuntu-1804-lts`
+- `object_storage_location` - The [GCS Location](https://cloud.google.com/storage/docs/locations) buckets are created in. Refer to the [Object Storage Location (GCP)](#object-storage-location) below for more info.
+- `object_storage_force_destroy` - Controls whether Terraform can delete all objects (including any locked objects) from the bucket so that the bucket can be destroyed without error. Consider setting this value to `false` for production systems. Defaults to `true`.
+- `object_storage_labels` - Labels to apply to object storage buckets.
+- `allow_stopping_for_update` - Controls whether Terraform can restart VMs when making changes (required in some cases). Should only be disabled for additional resilience. Refer to [Allow Stopping for Updates (GCP)](#allow-stopping-for-updates-gcp) for more info. Defaults to `true`.
+
 :information_source:&nbsp; Redis prefixes depend on the target Reference Architecture - set `redis_*` for combined Redis, `redis_cache_*` and `redis_persistent_*` for separated Redis setup.
 
 :information_source:&nbsp; The Toolkit currently **requires** a NFS node to distribute select config.
+
+##### Configure Machine OS Image (GCP)
+
+By default the Toolkit will configure machines using Ubuntu 18.04.
+
+However this can be changed via the `machine_image` in the [module's environment config file](#configure-module-settings-environmenttf) to the [machine image name as given by GCP](https://cloud.google.com/compute/docs/images/os-details), e.g. `ubuntu-1804-lts` or `rhel-8`.
+
+:information_source:&nbsp; The Toolkit currently supports Ubuntu 18.04+ and RHEL 8 images at this time.
+
+##### Object Storage Location (GCP)
+
+The [Terraform Google provider](https://registry.terraform.io/providers/hashicorp/google/latest/docs) doesn't automatically create buckets in the same region it's configured with. [This is due to the various location permutations available in GCP that don't directly map to regions](https://cloud.google.com/storage/docs/locations).
+
+Depending on the provider's version it will typically create buckets in the `US` multi-region by default. The Toolkit follows this design.
+
+To ensure good performance you should select a [location](https://cloud.google.com/storage/docs/locations) that is close to the region you've selected for the environment. We recommend either picking a [Multi-Region](https://cloud.google.com/storage/docs/locations#location-mr) if it's available for built in HA or [Region](https://cloud.google.com/storage/docs/locations#location-r) if the former isn't available. However any location can be chosen as desired based on your requirements.
+
+:warning:&nbsp; **{- Changing this setting on an existing environment must be treated with the utmost caution as it will destroy the previous bucket(s) and lead to data loss-}**+
 
 ##### Allow Stopping for Updates (GCP)
 
@@ -238,86 +318,9 @@ Secure boot can only be enabled for OS Images that support the `Shielded VM` fea
 
 ##### Configure network setup (GCP)
 
-The module for GCP can configure the [network stack](https://cloud.google.com/vpc/docs/vpc) (VPC, Subnets, etc...) for your environment in several different ways:
+By default the toolkit sets up the infrastructure on the default network stack as provided by GCP. However, it can also support other advanced setups such as creating a new network or using an existing one. To learn more refer to [Configure network setup (GCP)](environment_advanced_network.md#configure-network-setup-gcp).
 
-- **Default** - Sets up the infrastructure on the default network stack as provided by GCP. This is the default for the module.
-- **Created** - Creates the required network stack for the infrastructure.
-- **Existing** - Will use a provided network stack passed in by the user.
-
-In this section you will find the config required to set up each depending on your requirements.
-
-:warning:&nbsp; **{- Changing network setup on an existing environment must be treated with the utmost caution-}**. **Doing so can be considered a significant change in GCP and may trigger the recreation of the entire environment leading to data loss**.
-
-**Default**
-
-This is the default setup for the module and is the recommended setup for most standard (Omnibus) environments where GCP will handle the networking by default.
-
-No additional configuration is needed to use this setup.
-
-**Created**
-
-When configured the module will create a network stack to run the environment in. The network stack created is as follows:
-
-- 1 VPC
-- 1 Subnet
-- Firewall rules to allow for required network connections
-
-The environment's machines will be created in the created subnet.
-
-This setup is recommended for users who want a specific network stack for their GitLab environment.
-
-To configure this setup the following config should be added to the [module's environment config file](#configure-module-settings-environmenttf):
-
-- `create_network` - This variable should be set to `true` when you are wanting the module to create a new network stack.
-
-An example of your environment config file then would look like:
-
-```tf
-module "gitlab_ref_arch_gcp" {
-  source = "../../modules/gitlab_ref_arch_gcp"
-
-  prefix = var.prefix
-  project = var.project
-
-  create_network = true
-
-  [...]
-```
-
-In addition to the above the following _optional_ settings change how the network is configured:
-
-- `subnet_cidr`- A [CIDR block](https://cloud.google.com/vpc/docs/vpc#manually_created_subnet_ip_ranges) that will be used for the created subnet. This shouldn't need to be changed in most scenarios unless you want to use a specific CIDR blocks. Default is `"10.86.0.0/16"`
-
-**Existing**
-
-In this setup you have an existing network stack that you want the environment to use.
-
-This is an advanced setup and you must ensure the network stack is configured correctly. This guide doesn't detail the specifics on how to do this but generally a stack should include the same elements as listed in the **Created** for the environment to work properly. Please refer to the GCP docs for more info.
-
-Note that when this is configured the module will configure some GCP Firewall rules in your VPC to enable network access for the environment.
-
-With an existing stack configure the following config should be added to the [module's environment config file](#configure-module-settings-environmenttf):
-
-- `vpc_name` - The name of your existing VPC.
-- `subnet_name` - The name of your existing Subnet. The subnet should be located in the same existing VPC.
-
-An example of your environment config file then would look like:
-
-```tf
-module "gitlab_ref_arch_gcp" {
-  source = "../../modules/gitlab_ref_arch_gcp"
-
-  prefix = var.prefix
-  project = var.project
-
-  vpc_name = "<vpc-name>"
-  subnet_name = "<subnet-name>"
-
-  [...]
-}
-```
-
-###### Zones
+##### Zones
 
 With GCP you can spread optionally spread resources across multiple [Availability Zones](https://cloud.google.com/compute/docs/regions-zones) in the selected region, overriding the default Zone configured in `variables.tf`. By doing this it adds additional resilience for the environment in the case a Zone ever went down.
 
@@ -357,7 +360,7 @@ All of the methods given involve the Service Account file you generated previous
 
 ### Amazon Web Services (AWS)
 
-The Toolkit's module for seamlessly setting up a full GitLab Reference architecture on AWS is **[`gitlab_ref_arch_aws`](https://gitlab.com/gitlab-org/quality/gitlab-environment-toolkit/-/tree/main/terraform/modules/gitlab_ref_arch_aws)**.
+The Toolkit's module for seamlessly setting up a full GitLab Reference architecture on AWS is **[`gitlab_ref_arch_aws`](https://gitlab.com/gitlab-org/gitlab-environment-toolkit/-/tree/main/terraform/modules/gitlab_ref_arch_aws)**.
 
 In this section we detail all that's needed to configure it.
 
@@ -406,7 +409,7 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 3"
+      version = "~> 3.0"
     }
   }
 }
@@ -507,90 +510,17 @@ Next in the file are the various machine settings, separated the same as the Ref
 
 :information_source:&nbsp; Redis prefixes depend on the target Reference Architecture - set `redis_*` for combined Redis, `redis_cache_*` and `redis_persistent_*` for separated Redis setup.
 
+##### Configure Machine OS Image (AWS)
+
+By default the Toolkit will configure machines using the latest Ubuntu 18.04 AMI.
+
+However this can be changed via the `ami_id` setting in the [module's environment config file](#configure-module-settings-environmenttf). [Refer to the AWS docs on how to find the specific AMI ID you require](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/finding-an-ami.html).
+
+:information_source:&nbsp; The Toolkit currently supports Ubuntu 18.04+ and RHEL 8 images at this time.
+
 ##### Configure network setup (AWS)
 
-The module for AWS can configure the [network stack](https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Subnets.html) (VPC, Subnets, etc...) for your environment in several different ways:
-
-- **Default** - Sets up the infrastructure on the default network stack as provided by AWS. This is the default for the module.
-- **Created** - Creates the required network stack for the infrastructure
-- **Existing** - Will use a provided network stack passed in by the user
-
-In this section you will find the config required to set up each depending on your requirements.
-
-:warning:&nbsp; **{- Changing network setup on an existing environment must be avoided-}**. **Doing so is considered a significant change in AWS and will essentially trigger the recreation of the entire environment leading to data loss**.
-
-**Default**
-
-This is the default setup for the module where AWS will handle the networking by default.
-
-**Created**
-
-When configured the module will create a network stack to run the environment in. The network stack created is as follows:
-
-- 1 VPC
-- 2 Subnets
-  - Subnets are created in the created VPC and are additionally spread across the available Availability Zones in the selected region.
-  - The number of Subnets is configurable.
-- 1 Internet Gateway
-- 1 Route Table
-
-The environment's machines will be spread across the created subnets and their Availability Zones evenly.
-
-This setup is recommended for users who want a specific network stack for their GitLab environment. It's also recommended for Cloud Native Hybrid environments running on AWS.
-
-To configure this setup the following config should be added to the [module's environment config file](#configure-module-settings-environmenttf-1):
-
-- `create_network` - This variable should be set to `true` when you are wanting the module to create a new network stack.
-
-An example of your environment config file then would look like:
-
-```tf
-module "gitlab_ref_arch_aws" {
-  source = "../../modules/gitlab_ref_arch_aws"
-
-  prefix = var.prefix
-  ssh_public_key_file = file(var.ssh_public_key_file)
-
-  create_network = true
-
-  [...]
-```
-
-In addition to the above the following _optional_ settings change how the network is configured:
-
-- `subnet_pub_count` - The number of subnets to create in the VPC. This should only be changed if you want increased subnet count for availability reasons. Default is `2`.
-- `vpc_cidr_block` - The [CIDR block](https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Subnets.html#vpc-sizing-ipv4) that will be used for your VPC. This shouldn't need to be changed in most scenarios unless you want to use a specific CIDR block. Default is `172.31.0.0/16`.
-- `subpub_pub_cidr_block`- A list of [CIDR blocks](https://docs.aws.amazon.com/vpc/latest/userguide/VPC_Subnets.html#vpc-sizing-ipv4) that will be used for each subnet created. This shouldn't need to be changed in most scenarios unless you want to use a specific CIDR blocks. Default is `["172.31.0.0/20","172.31.16.0/20","172.31.32.0/20"]`
-  - As a convenience the module has up to 3 subnet CIDR blocks it will use. If you have set `subnet_pub_count` higher than 3 then this variable will need to be adjusted to match the number of Subnets to be created.
-- `zones_exclude` - In rare cases you may need to avoid specific Availability Zones [as they don't have the available resource to deploy the infrastructure in](https://aws.amazon.com/premiumsupport/knowledge-center/eks-cluster-creation-errors/). When this is the case you can specify a list of Zones by name via this setting that will then be avoided by the Toolkit, e.g. `["us-east-1e"]`. Default is `null`.
-
-**Existing**
-
-In this setup you have an existing network stack that you want the environment to use.
-
-This is an advanced setup and you must ensure the network stack is configured correctly. This guide doesn't detail the specifics on how to do this but generally a stack should include the same elements as listed in the **Created** for the environment to work properly. Please refer to the AWS docs for more info.
-
-Note that when this is configured the module will configure some AWS Security Groups in your VPC to enable network access for the environment.
-
-With an existing stack configure the following config should be added to the [module's environment config file](#configure-module-settings-environmenttf-1):
-
-- `vpc_id` - The ID of your existing VPC
-- `subnet_ids` - A list of Subnet IDs the environment's machines should be spread across. The subnets should be located in the same existing VPC.
-
-An example of your environment config file then would look like:
-
-```tf
-module "gitlab_ref_arch_aws" {
-  source = "../../modules/gitlab_ref_arch_aws"
-
-  prefix = var.prefix
-  ssh_public_key_file = file(var.ssh_public_key_file)
-
-  vpc_id = "<vpc-id>"
-  subnet_ids = ["<subnet-1-id>", "<subnet-2-id>"]
-
-  [...]
-```
+By default the toolkit sets up the infrastructure on the default network stack as provided by AWS. However, it can also support other advanced setups such as creating a new network or using an existing one. To learn more refer to [Configure network setup (AWS)](environment_advanced_network.md#configure-network-setup-aws).
 
 ##### Storage Encryption (AWS)
 
@@ -660,7 +590,7 @@ Once the two variables are either set locally or in your CI pipeline Terraform w
 
 ### Azure
 
-The Toolkit's module for seamlessly setting up a full GitLab Reference architecture on Azure is **[`gitlab_ref_arch_azure`](https://gitlab.com/gitlab-org/quality/gitlab-environment-toolkit/-/tree/main/terraform/modules/gitlab_ref_arch_azure)**.
+The Toolkit's module for seamlessly setting up a full GitLab Reference architecture on Azure is **[`gitlab_ref_arch_azure`](https://gitlab.com/gitlab-org/gitlab-environment-toolkit/-/tree/main/terraform/modules/gitlab_ref_arch_azure)**.
 
 In this section we detail all that's needed to configure it.
 
@@ -726,7 +656,7 @@ terraform {
   required_providers {
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "~> 2"
+      version = "~> 2.0"
     }
   }
 }
@@ -837,6 +767,35 @@ Next in the file are the various machine settings, separated the same as the Ref
 
 :information_source:&nbsp; Redis prefixes depend on the target Reference Architecture - set `redis_*` for combined Redis, `redis_cache_*` and `redis_persistent_*` for separated Redis setup.
 
+##### Configure Machine OS Image (Azure)
+
+By default the Toolkit will configure machines using the latest Ubuntu 18.04 AMI.
+
+However this can be changed via the `source_image_reference` dictionary setting in the [module's environment config file](#configure-module-settings-environmenttf). [Refer to the Azure docs on how to find the specific source image details you require](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/cli-ps-findimage).
+
+When the image has been selected the setting will need the `publisher`, `offer`, `sku` and `version` fields set. For example:
+
+```hcl
+module "gitlab_ref_arch_azure" {
+  source = "../../modules/gitlab_ref_arch_azure"
+  
+  source_image_reference = {
+    "publisher" = "Canonical"
+    "offer"     = "UbuntuServer"
+    "sku"       = "18.04-LTS"
+    "version"   = "latest"
+  }
+
+  [...]
+}
+```
+
+:information_source:&nbsp; The Toolkit currently supports Ubuntu 18.04+ and RHEL 8 images at this time.
+
+##### Configure network setup (Azure)
+
+The module for Azure will handle the networking by default by setting up the infrastructure on the default network stack as provided by Azure. It's possible to adjust network rules if needed. To learn more refer to [Restricting External Network Access](environment_advanced_network.md#restricting-external-network-access).
+
 #### Configure Authentication (Azure)
 
 Finally the last thing to configure is authentication. This is required so Terraform can access Azure (provider) as well as its State Storage Bucket (backend).
@@ -887,9 +846,9 @@ module "gitlab_ref_arch_aws" {
 
 Any Terraform Data Source can be used in a similar way. Refer to the specific Data Source docs for more info.
 
-## 3. Run the GitLab Environment Toolkit's Docker container (optional)
+## 4. Run the GitLab Environment Toolkit's Docker container (optional)
 
-Before running the Docker container you will need to setup your environment config files by following [# 2. Setup the Environment's config](#2-setup-the-environments-config). The container can be started once the Terraform config has been setup. When starting the container it is important to pass in your config files and keys, as well as set any authentication based environment variables.
+Before running the [Docker container](https://gitlab.com/gitlab-org/gitlab-environment-toolkit/container_registry/2697240) you will need to setup your environment config files by following [# 2. Setup the Environment's config](#2-setup-the-environments-config). The container can be started once the Terraform config has been setup. When starting the container it is important to pass in your config files and keys, as well as set any authentication based environment variables.
 
 Below is an example of how to run the container when using a GCP service account:
 
@@ -898,7 +857,7 @@ docker run -it \
   -e GOOGLE_APPLICATION_CREDENTIALS="/gitlab-environment-toolkit/keys/<service account file>" \
   -v <path to keys directory>:/gitlab-environment-toolkit/keys \
   -v <path to Terraform config>:/gitlab-environment-toolkit/terraform/environments/<environment name> \
-  gitlab/gitlab-environment-toolkit:latest
+  registry.gitlab.com/gitlab-org/gitlab-environment-toolkit:latest
 ```
 
 You can also use a simplified command if you store your config outside of the toolkit. Using the folder structure below you're able to store multiple environments alongside each other and when using the Toolkits container you can simply pass in a single folder and still have access to all your different environments.
@@ -919,12 +878,10 @@ get_environments
 docker run -it \
   -e GOOGLE_APPLICATION_CREDENTIALS="/gitlab-environment-toolkit/keys/<service account file>" \
   -v <path to `get_environments` directory>:/environments \
-  gitlab/gitlab-environment-toolkit:latest
+  registry.gitlab.com/gitlab-org/gitlab-environment-toolkit:latest
 ```
 
-> :information_source:&nbsp; The Docker image is currently not available from the Toolkit's project, this will be blocked until [the project is moved](https://gitlab.com/gitlab-org/quality/gitlab-environment-toolkit/-/issues/319). Until this is completed you can build and run the image locally with `docker build -t gitlab/gitlab-environment-toolkit:latest .`, you can then run the above commands for running the image.
-
-## 4. Provision
+## 5. Provision
 
 After the config has been setup you're now ready to provision the environment. This is done as follows:
 

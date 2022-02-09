@@ -5,6 +5,7 @@
 - [GitLab Environment Toolkit - Configuring the environment with Ansible](environment_configure.md)
 - [GitLab Environment Toolkit - Advanced - Cloud Native Hybrid](environment_advanced_hybrid.md)
 - [GitLab Environment Toolkit - Advanced - External SSL](environment_advanced_ssl.md)
+- [GitLab Environment Toolkit - Advanced - Network Setup](environment_advanced_network.md)
 - [GitLab Environment Toolkit - Advanced - Component Cloud Services / Custom (Load Balancers, PostgreSQL, Redis)](environment_advanced_services.md)
 - [GitLab Environment Toolkit - Advanced - Geo](environment_advanced_geo.md)
 - [GitLab Environment Toolkit - Advanced - Custom Config, Data Disks, Advanced Search and more](environment_advanced.md)
@@ -30,7 +31,7 @@ Before running any upgrades for your environment we recommend using the latest v
 
 ### Check for any Toolkit breaking or config changes
 
-In addition to the above, when updating the Toolkit, we recommend checking the [Toolkit's release notes](https://gitlab.com/gitlab-org/quality/gitlab-environment-toolkit/-/releases) for any called out breaking or config changes to ensure no issues occur on upgrade.
+In addition to the above, when updating the Toolkit, we recommend checking the [Toolkit's release notes](https://gitlab.com/gitlab-org/gitlab-environment-toolkit/-/releases) for any called out breaking or config changes to ensure no issues occur on upgrade.
 
 ### Perform Terraform Dry Runs for new Toolkit versions
 
@@ -38,7 +39,7 @@ Where possible we **strongly** recommend that you do Terraform dry runs whenever
 
 This is done simply by running `terraform plan`.
 
-Once completed the output will show what actions are to be performed. If any actions are listed to be performed, especially destroy actions, we recommend checking these against the [release notes](https://gitlab.com/gitlab-org/quality/gitlab-environment-toolkit/-/releases) where these should be called out to ensure they are intended. If any of the actions look suspect please reach out to us via the [issue tracker](https://gitlab.com/gitlab-org/quality/gitlab-environment-toolkit/-/issues) or via the standard [support channels](https://about.gitlab.com/support/).
+Once completed the output will show what actions are to be performed. If any actions are listed to be performed, especially destroy actions, we recommend checking these against the [release notes](https://gitlab.com/gitlab-org/gitlab-environment-toolkit/-/releases) where these should be called out to ensure they are intended. If any of the actions look suspect please reach out to us via the [issue tracker](https://gitlab.com/gitlab-org/gitlab-environment-toolkit/-/issues) or via the standard [support channels](https://about.gitlab.com/support/).
 
 This is recommended as certain infrastructure changes can trigger large destroy actions that in turn can lead to the loss of the environment and data. While this is behavior from the cloud providers, every effort is made with the Toolkit to ensure this is avoided but since the consequences can be significant it's always best to do the dry run as described above out an abundance of caution.
 
@@ -67,11 +68,11 @@ Running the zero downtime update process with GET is done in the same way as bui
 1. `cd` to the `ansible/` directory if not already there.
 1. Run `ansible-playbook` with the intended environment's inventory against the `zero-downtime-update.yml` playbook
 
-    `ansible-playbook -i environments/10k/inventory zero-downtime-update.yml`
+    `ansible-playbook -i environments/10k/inventory playbooks/zero-downtime-update.yml`
 
 1. If GET is managing your Praefect Postgres instance you will need to run the following command to update this
 
-    `ansible-playbook -i environments/10k/inventory praefect-postgres.yml`
+    `ansible-playbook -i environments/10k/inventory playbooks/praefect-postgres.yml`
 
 :information_source:&nbsp; This will cause downtime due to GET only using a single Praefect Postgres node.
   If you want to have a highly available setup, Praefect requires a third-party PostgreSQL database and will need to be updated manually.

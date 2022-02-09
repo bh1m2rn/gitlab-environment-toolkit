@@ -5,6 +5,7 @@
 - [GitLab Environment Toolkit - Configuring the environment with Ansible](environment_configure.md)
 - [**GitLab Environment Toolkit - Advanced - Cloud Native Hybrid**](environment_advanced_hybrid.md)
 - [GitLab Environment Toolkit - Advanced - External SSL](environment_advanced_ssl.md)
+- [GitLab Environment Toolkit - Advanced - Network Setup](environment_advanced_network.md)
 - [GitLab Environment Toolkit - Advanced - Component Cloud Services / Custom (Load Balancers, PostgreSQL, Redis)](environment_advanced_services.md)
 - [GitLab Environment Toolkit - Advanced - Geo](environment_advanced_geo.md)
 - [GitLab Environment Toolkit - Advanced - Custom Config, Data Disks, Advanced Search and more](environment_advanced.md)
@@ -119,6 +120,11 @@ output "gitlab_ref_arch_gcp" {
   value = module.gitlab_ref_arch_gcp
 }
 ```
+
+In addition to the above there are some optional settings that can configure the GKE setup as follows:
+
+- `cluster_release_channel` - Set the [GKE release channel](https://cloud.google.com/kubernetes-engine/docs/concepts/release-channels), how fast the cluster will be updated to new Kubernetes releases, `STABLE` by default.
+- `cluster_enable_workload_identity` - Enable [Workload Identity](https://cloud.google.com/kubernetes-engine/docs/concepts/workload-identity) in the GKE cluster to allow Kubernetes service accounts to act as a user-managed [Google IAM Service Account](https://cloud.google.com/iam/docs/service-accounts#user-managed_service_accounts).
 
 #### Networking (GCP)
 
@@ -238,7 +244,7 @@ kubectl edit -n kube-system configmap/aws-auth
 
 Authenticating with Kubernetes is different compared to other services, and can be [considered a challenge](https://registry.terraform.io/providers/hashicorp/google/latest/docs/guides/using_gke_with_terraform#interacting-with-kubernetes) in terms of automation.
 
-In a nutshell authentication must be setup for the `kubectl` command on the machine running the Toolkit. Got the command to be authenticated it requires an entry to be added and selected in its `~/.kubeconfig` file.
+In a nutshell authentication must be setup for the `kubectl` command on the machine running the Toolkit. The Toolkit requires the command to be authenticated and the intended cluster selected as the current context in its `~/.kubeconfig` file.
 
 The easiest way to do this is via the selected cloud providers tooling after the cluster has been provisioned:
 
@@ -260,7 +266,7 @@ By design, this file is similar to the one used in a [standard environment](envi
 - `gcp_zone` - **GCP only** Default Zone name the GCP project is in. Only required for Cloud Native Hybrid installs when `kubeconfig_setup` is set to true.
 - `aws_region` - **AWS only** Name of the region where the EKS cluster is located. Only required for Cloud Native Hybrid installs when `kubeconfig_setup` is set to true.
 - `aws_allocation_ids` - **AWS only** A comma separated list of Elastic IP allocation IDs, that will be assigned to the AWS load balancer.
-  - With AWS you **must have an [Elastic IP](https://gitlab.com/gitlab-org/quality/gitlab-environment-toolkit/-/blob/main/docs/environment_prep.md#4-create-static-external-ip-aws-elastic-ip-allocation) for each subnet being used**. For example using a VPC with 3 subnets will require the creation of 3 Elastic IPs and their individual allocation IDs will need to be stored in this list.
+  - With AWS you **must have an [Elastic IP](https://gitlab.com/gitlab-org/gitlab-environment-toolkit/-/blob/main/docs/environment_prep.md#4-create-static-external-ip-aws-elastic-ip-allocation) for each subnet being used**. For example using a VPC with 3 subnets will require the creation of 3 Elastic IPs and their individual allocation IDs will need to be stored in this list.
 Below are examples for a `vars.yml` file with all config for each cloud provider based on a [10k Cloud Native Hybrid Reference Architecture](https://docs.gitlab.com/ee/administration/reference_architectures/10k_users.html#cloud-native-hybrid-reference-architecture-with-helm-charts-alternative):
 
 ### Google Cloud Platform (GCP)

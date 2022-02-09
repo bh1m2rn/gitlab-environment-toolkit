@@ -23,7 +23,7 @@ resource "google_container_cluster" "gitlab_cluster" {
   ip_allocation_policy {}
 
   release_channel {
-    channel = "STABLE"
+    channel = var.cluster_release_channel
   }
 
   resource_labels = {
@@ -37,6 +37,13 @@ resource "google_container_cluster" "gitlab_cluster" {
     }
   }
 
+  dynamic "workload_identity_config" {
+    for_each = range(var.cluster_enable_workload_identity ? 1 : 0)
+
+    content {
+      workload_pool = "${var.project}.svc.id.goog"
+    }
+  }
 }
 
 resource "google_container_node_pool" "gitlab_webservice_pool" {
@@ -53,6 +60,14 @@ resource "google_container_node_pool" "gitlab_webservice_pool" {
 
     shielded_instance_config {
       enable_secure_boot = var.machine_secure_boot
+    }
+
+    dynamic "workload_metadata_config" {
+      for_each = range(var.cluster_enable_workload_identity ? 1 : 0)
+
+      content {
+        mode = "GKE_METADATA"
+      }
     }
 
     labels = {
@@ -77,6 +92,14 @@ resource "google_container_node_pool" "gitlab_sidekiq_pool" {
       enable_secure_boot = var.machine_secure_boot
     }
 
+    dynamic "workload_metadata_config" {
+      for_each = range(var.cluster_enable_workload_identity ? 1 : 0)
+
+      content {
+        mode = "GKE_METADATA"
+      }
+    }
+
     labels = {
       workload = "sidekiq"
     }
@@ -94,8 +117,17 @@ resource "google_container_node_pool" "gitlab_supporting_pool" {
     machine_type = var.supporting_node_pool_machine_type
     disk_type    = coalesce(var.supporting_node_pool_disk_type, var.default_disk_type)
     disk_size_gb = coalesce(var.supporting_node_pool_disk_size, var.default_disk_size)
+
     shielded_instance_config {
       enable_secure_boot = var.machine_secure_boot
+    }
+
+    dynamic "workload_metadata_config" {
+      for_each = range(var.cluster_enable_workload_identity ? 1 : 0)
+
+      content {
+        mode = "GKE_METADATA"
+      }
     }
 
     labels = {

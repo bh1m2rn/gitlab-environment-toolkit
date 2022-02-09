@@ -1,0 +1,5 @@
+---
+- hosts: all:!praefect_postgres
+  roles:
+    - zero_downtime_upgrade
+  become: true
