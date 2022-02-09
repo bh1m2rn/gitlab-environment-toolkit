@@ -237,16 +237,20 @@ grafana['enable'] = false
 {% endif %}
 
 gitlab_rails['env'] = {
-{%- if 'jaeger' in groups %}
+{% if 'jaeger' in groups %}
   "GITLAB_TRACING" => "opentracing://jaeger?http_endpoint=http%3A%2F%2F{{ jaeger_int_ip }}%3A14268%2Fapi%2Ftraces&sampler=const&sampler_param=0.1",
+{% endif %}
+{% if 'sharded_postgres' in groups %}
+  "GITLAB_LOAD_BALANCING_REUSE_PRIMARY_ci" => "main",
+  "GITLAB_MULTIPLE_DATABASE_METRICS" => "true",
 {% endif %}
 }
 
 gitlab_workhorse['env'] = {
-{%- if geo_disable_secondary_proxying %}
+{% if geo_disable_secondary_proxying %}
   "GEO_SECONDARY_PROXY" => "0",
 {% endif %}
-{%- if 'jaeger' in groups %}
+{% if 'jaeger' in groups %}
 "GITLAB_TRACING" => "opentracing://jaeger?http_endpoint=http%3A%2F%2F{{ jaeger_int_ip }}%3A14268%2Fapi%2Ftraces&sampler=const&sampler_param=0.1",
 {% endif %}
 }
