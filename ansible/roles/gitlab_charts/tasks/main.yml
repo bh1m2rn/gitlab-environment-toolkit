@@ -188,3 +188,17 @@
         src: /tmp/metrics-server.yaml
   when: cloud_provider == 'aws'
   tags: metric-server
+
+- name: Run custom post-install chart tasks
+  block:
+    - name: Check if Custom post-install Chart tasks file exists
+      stat:
+        path: "{{ gitlab_post_install_charts_custom_tasks_file }}"
+      register: gitlab_post_install_charts_custom_tasks_file_path
+
+    - name: Run Custom post-install Chart tasks
+      include_tasks: "{{ gitlab_post_install_charts_custom_tasks_file }}"
+      when: gitlab_post_install_charts_custom_tasks_file_path.stat.exists
+  tags:
+    - reconfigure
+    - charts
