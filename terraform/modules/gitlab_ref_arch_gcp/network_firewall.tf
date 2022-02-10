@@ -44,19 +44,10 @@ resource "google_compute_firewall" "monitor" {
 }
 
 # Created or Existing network rules
-resource "google_compute_firewall" "ssh" {
-  count   = local.vpc_name != "default" ? 1 : 0
-  name    = "${var.prefix}-ssh"
-  network = local.vpc_name
+data "google_compute_subnetwork" "selected" {
+  count = local.vpc_name != "default" ? 1 : 0
 
-  description = "Allow SSH access on the ${local.vpc_name} network"
-
-  allow {
-    protocol = "tcp"
-    ports    = ["22"]
-  }
-
-  priority = 65534
+  name = local.subnet_name
 }
 
 resource "google_compute_firewall" "internal" {
@@ -74,6 +65,22 @@ resource "google_compute_firewall" "internal" {
   allow {
     protocol = "udp"
     ports    = ["0-65535"]
+  }
+
+  priority      = 65534
+  source_ranges = [data.google_compute_subnetwork.selected[0].ip_cidr_range]
+}
+
+resource "google_compute_firewall" "ssh" {
+  count   = local.vpc_name != "default" ? 1 : 0
+  name    = "${var.prefix}-ssh"
+  network = local.vpc_name
+
+  description = "Allow SSH access on the ${local.vpc_name} network"
+
+  allow {
+    protocol = "tcp"
+    ports    = ["22"]
   }
 
   priority = 65534
