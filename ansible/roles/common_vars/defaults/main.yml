@@ -246,6 +246,7 @@ kubeconfig_setup: false
 
 gitlab_charts_release_namespace: default
 gitlab_charts_show_values: false
+gitlab_charts_wait_deployment_to_finish: false
 
 use_iam_profile: true
 
