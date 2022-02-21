@@ -77,7 +77,7 @@ locals {
   default_subnet_ids = local.create_network ? null : data.aws_subnet_ids.defaults[0].ids
 }
 
-output "vpc_id"  {
+output "vpc_id" {
   value = local.vpc_id
 }
 output "vpc_cidr_block" {
