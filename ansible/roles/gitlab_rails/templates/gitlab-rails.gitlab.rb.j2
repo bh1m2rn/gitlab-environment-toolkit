@@ -242,7 +242,8 @@ gitlab_rails['env'] = {
 {% endif %}
 {% if 'sharded_postgres' in groups %}
   "GITLAB_LOAD_BALANCING_REUSE_PRIMARY_ci" => "main",
-  "GITLAB_MULTIPLE_DATABASE_METRICS" => "true",
+  "GITLAB_MULTIPLE_DATABASE_METRICS" => 1,
+  "GITLAB_USE_MODEL_LOAD_BALANCING" => 1
 {% endif %}
 }
 
