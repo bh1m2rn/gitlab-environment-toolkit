@@ -12,6 +12,17 @@
         - ansible_hostname != inventory_hostname
       tags: hostname
 
+    - name: Add GitLab repository GPG key
+      apt_key:
+        url: https://packages.gitlab.com/gpg.key
+        state: present
+      register: result
+      retries: 2
+      delay: 3
+      until: result is success
+      when: omnibus_node
+      tags: gpg
+
     - name: Setup Packages
       import_tasks: packages.yml
       tags:
@@ -42,17 +53,6 @@
           import_tasks: data_disks.yml
           when: group_data_disks | length > 0
       tags: data_disks
-
-    - name: Add GitLab repository GPG key
-      apt_key:
-        url: https://packages.gitlab.com/gpg.key
-        state: present
-      register: result
-      retries: 2
-      delay: 3
-      until: result is success
-      when: omnibus_node
-      tags: gpg
 
     # Removes the official release repo if it's present as we typically want to stick with Nightly
     # Prevents apt from switching to the release channel (when an official release is younger than nightly)
