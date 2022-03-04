@@ -37,7 +37,7 @@ variable "default_disk_type" {
 }
 variable "default_disk_encrypt" {
   type    = bool
-  default = false
+  default = true
 }
 
 variable "default_kms_key_arn" {
@@ -99,6 +99,11 @@ variable "consul_data_disks" {
   default = []
 }
 
+variable "consul_iam_instance_profile" {
+  type    = string
+  default = null
+}
+
 variable "elastic_node_count" {
   type    = number
   default = 0
@@ -126,6 +131,11 @@ variable "elastic_disk_kms_key_arn" {
 variable "elastic_data_disks" {
   type    = list(any)
   default = []
+}
+
+variable "elastic_iam_instance_profile" {
+  type    = string
+  default = null
 }
 
 variable "gitaly_node_count" {
@@ -157,6 +167,11 @@ variable "gitaly_data_disks" {
   default = []
 }
 
+variable "gitaly_iam_instance_profile" {
+  type    = string
+  default = null
+}
+
 variable "gitlab_nfs_node_count" {
   type    = number
   default = 0
@@ -186,6 +201,11 @@ variable "gitlab_nfs_data_disks" {
   default = []
 }
 
+variable "gitlab_nfs_iam_instance_profile" {
+  type    = string
+  default = null
+}
+
 variable "gitlab_rails_node_count" {
   type    = number
   default = 0
@@ -213,6 +233,11 @@ variable "gitlab_rails_disk_kms_key_arn" {
 variable "gitlab_rails_data_disks" {
   type    = list(any)
   default = []
+}
+
+variable "gitlab_rails_iam_instance_profile" {
+  type    = string
+  default = null
 }
 
 variable "haproxy_external_node_count" {
@@ -248,6 +273,11 @@ variable "haproxy_external_elastic_ip_allocation_ids" {
   default = []
 }
 
+variable "haproxy_external_iam_instance_profile" {
+  type    = string
+  default = null
+}
+
 variable "haproxy_internal_node_count" {
   type    = number
   default = 0
@@ -275,6 +305,11 @@ variable "haproxy_internal_disk_kms_key_arn" {
 variable "haproxy_internal_data_disks" {
   type    = list(any)
   default = []
+}
+
+variable "haproxy_internal_iam_instance_profile" {
+  type    = string
+  default = null
 }
 
 variable "monitor_node_count" {
@@ -306,6 +341,11 @@ variable "monitor_data_disks" {
   default = []
 }
 
+variable "monitor_iam_instance_profile" {
+  type    = string
+  default = null
+}
+
 variable "pgbouncer_node_count" {
   type    = number
   default = 0
@@ -333,6 +373,11 @@ variable "pgbouncer_disk_kms_key_arn" {
 variable "pgbouncer_data_disks" {
   type    = list(any)
   default = []
+}
+
+variable "pgbouncer_iam_instance_profile" {
+  type    = string
+  default = null
 }
 
 variable "postgres_node_count" {
@@ -364,6 +409,11 @@ variable "postgres_data_disks" {
   default = []
 }
 
+variable "postgres_iam_instance_profile" {
+  type    = string
+  default = null
+}
+
 variable "praefect_node_count" {
   type    = number
   default = 0
@@ -391,6 +441,11 @@ variable "praefect_disk_kms_key_arn" {
 variable "praefect_data_disks" {
   type    = list(any)
   default = []
+}
+
+variable "praefect_iam_instance_profile" {
+  type    = string
+  default = null
 }
 
 variable "praefect_postgres_node_count" {
@@ -422,6 +477,11 @@ variable "praefect_postgres_data_disks" {
   default = []
 }
 
+variable "praefect_postgres_iam_instance_profile" {
+  type    = string
+  default = null
+}
+
 variable "redis_node_count" {
   type    = number
   default = 0
@@ -449,6 +509,11 @@ variable "redis_disk_kms_key_arn" {
 variable "redis_data_disks" {
   type    = list(any)
   default = []
+}
+
+variable "redis_iam_instance_profile" {
+  type    = string
+  default = null
 }
 
 variable "redis_cache_node_count" {
@@ -480,6 +545,11 @@ variable "redis_cache_data_disks" {
   default = []
 }
 
+variable "redis_cache_iam_instance_profile" {
+  type    = string
+  default = null
+}
+
 variable "redis_persistent_node_count" {
   type    = number
   default = 0
@@ -507,6 +577,11 @@ variable "redis_persistent_disk_kms_key_arn" {
 variable "redis_persistent_data_disks" {
   type    = list(any)
   default = []
+}
+
+variable "redis_persistent_iam_instance_profile" {
+  type    = string
+  default = null
 }
 
 variable "sidekiq_node_count" {
@@ -538,6 +613,11 @@ variable "sidekiq_data_disks" {
   default = []
 }
 
+variable "sidekiq_iam_instance_profile" {
+  type    = string
+  default = null
+}
+
 # EKS - Kubernetes \ Helm
 ## Defaults
 variable "eks_default_subnet_count" {
@@ -558,6 +638,15 @@ variable "webservice_node_pool_disk_size" {
   type    = string
   default = "100"
 }
+## Cluster Autoscaling (Optional)
+variable "webservice_node_pool_max_count" {
+  type    = number
+  default = 0
+}
+variable "webservice_node_pool_min_count" {
+  type    = number
+  default = 0
+}
 
 ## Sidekiq
 variable "sidekiq_node_pool_count" {
@@ -572,6 +661,15 @@ variable "sidekiq_node_pool_disk_size" {
   type    = string
   default = "100"
 }
+## Cluster Autoscaling (Optional)
+variable "sidekiq_node_pool_max_count" {
+  type    = number
+  default = 0
+}
+variable "sidekiq_node_pool_min_count" {
+  type    = number
+  default = 0
+}
 
 ## Supporting
 variable "supporting_node_pool_count" {
@@ -583,6 +681,26 @@ variable "supporting_node_pool_instance_type" {
   default = ""
 }
 variable "supporting_node_pool_disk_size" {
+  type    = string
+  default = null
+}
+
+## Cluster Autoscaling (Optional)
+variable "supporting_node_pool_max_count" {
+  type    = number
+  default = 0
+}
+variable "supporting_node_pool_min_count" {
+  type    = number
+  default = 0
+}
+
+# Secrets Envelope Encryption (Optional)
+variable "eks_envelope_encryption" {
+  type    = bool
+  default = false
+}
+variable "eks_envelope_kms_key_arn" {
   type    = string
   default = null
 }
@@ -612,7 +730,7 @@ variable "rds_postgres_database_name" {
 }
 variable "rds_postgres_version" {
   type    = string
-  default = "12.6"
+  default = "12"
 }
 variable "rds_postgres_allocated_storage" {
   type    = number
@@ -678,7 +796,7 @@ variable "rds_praefect_postgres_database_name" {
 }
 variable "rds_praefect_postgres_version" {
   type    = string
-  default = "12.6"
+  default = "12"
 }
 variable "rds_praefect_postgres_allocated_storage" {
   type    = number
@@ -740,7 +858,7 @@ variable "rds_geo_tracking_postgres_database_name" {
 }
 variable "rds_geo_tracking_postgres_version" {
   type    = string
-  default = "12.6"
+  default = "12"
 }
 variable "rds_geo_tracking_postgres_allocated_storage" {
   type    = number
@@ -903,11 +1021,6 @@ variable "elasticache_redis_persistent_snapshot_window" {
 
 # Networking
 ## Default network
-variable "default_allowed_egress_cidr_blocks" {
-  type    = list(string)
-  default = ["0.0.0.0/0"]
-}
-
 variable "default_allowed_ingress_cidr_blocks" {
   type    = list(string)
   default = ["0.0.0.0/0"]
@@ -924,11 +1037,6 @@ variable "ssh_allowed_ingress_cidr_blocks" {
 }
 
 variable "external_ssh_allowed_ingress_cidr_blocks" {
-  type    = list(any)
-  default = []
-}
-
-variable "monitor_allowed_ingress_cidr_blocks" {
   type    = list(any)
   default = []
 }
@@ -977,8 +1085,30 @@ variable "subnet_priv_ids" {
   default = null
 }
 
-## AWS Load Balancers
-### Internal
+## Peering
+variable "peer_region" {
+  description = "AWS region for the VPC network to create a peering connection with"
+  type        = string
+  default     = null
+}
+variable "peer_connection_id" {
+  description = "ID for the peering connection made between each VPC"
+  type        = string
+  default     = null
+}
+variable "peer_vpc_id" {
+  description = "VPC ID for the VPC network to create a peering connection with"
+  type        = string
+  default     = null
+}
+variable "peer_vpc_cidr" {
+  description = "CIDR for the VPC network to create a peering connection with"
+  type        = string
+  default     = null
+}
+
+# AWS Load Balancers
+## Internal
 variable "elb_internal_create" {
   type    = bool
   default = false
@@ -987,4 +1117,9 @@ variable "elb_internal_create" {
 variable "additional_tags" {
   type    = map(any)
   default = {}
+}
+
+variable "default_iam_instance_profile" {
+  type    = string
+  default = null
 }

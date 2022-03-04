@@ -8,7 +8,7 @@
 - [GitLab Environment Toolkit - Advanced - Network Setup](environment_advanced_network.md)
 - [**GitLab Environment Toolkit - Advanced - Component Cloud Services / Custom (Load Balancers, PostgreSQL, Redis)**](environment_advanced_services.md)
 - [GitLab Environment Toolkit - Advanced - Geo](environment_advanced_geo.md)
-- [GitLab Environment Toolkit - Advanced - Custom Config, Data Disks, Advanced Search and more](environment_advanced.md)
+- [GitLab Environment Toolkit - Advanced - Custom Config / Tasks, Data Disks, Advanced Search and more](environment_advanced.md)
 - [GitLab Environment Toolkit - Upgrade Notes](environment_upgrades.md)
 - [GitLab Environment Toolkit - Legacy Setups](environment_legacy.md)
 - [GitLab Environment Toolkit - Considerations After Deployment - Backups, Security](environment_post_considerations.md)
@@ -139,14 +139,14 @@ The variables for this service start with the prefix `rds_postgres_*` and should
 - `rds_postgres_username` - The username for the instance. Optional, default is `gitlab`.
 - `rds_postgres_database_name` - The name of the main database in the instance for use by GitLab. Optional, default is `gitlabhq_production`.
 - `rds_postgres_port` - The password for the instance. Should only be changed if desired. Optional, default is `5432`.
-- `rds_postgres_version` - The version of the PostgreSQL instance. Should only be changed to versions that are supported by GitLab. Optional, default is `12.6`.
+- `rds_postgres_version` - The version of the PostgreSQL instance. Should only be changed to versions that are supported by GitLab. Optional, default is `12`.
 - `rds_postgres_allocated_storage` - The initial disk size for the instance. Optional, default is `100`.
 - `rds_postgres_max_allocated_storage` - The max disk size for the instance. Optional, default is `1000`.
 - `rds_postgres_multi_az` - Specifies if the RDS instance is multi-AZ. Should only be disabled when HA isn't required. Optional, default is `true`.
 - `rds_postgres_default_subnet_count` - Specifies the number of default subnets to use when running on the default network. Optional, default is `2`.
 - `rds_postgres_iops` - The amount of provisioned IOPS. Setting this implies a storage_type of "io1". Optional, default is `1000`.
 - `rds_postgres_storage_type` - The type of storage to use. Optional, default is `io1`.
-- `rds_postgres_kms_key_arn` - The ARN for an existing [AWS KMS Key](https://aws.amazon.com/kms/) to be used to encrypt the database instance. If not provided a new one the default AWS KMS key will be used. Optional, default is `null`.
+- `rds_postgres_kms_key_arn` - The ARN for an existing [AWS KMS Key](https://aws.amazon.com/kms/) to be used to encrypt the database instance. If not provided `default_kms_key_arm` or the default AWS KMS key will be used in that order. Optional, default is `null`.
   - **Warning** Changing this value after the initial creation will result in the database being recreated and will lead to **data loss**.
 - [`rds_postgres_backup_retention_period`](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/db_instance#backup_retention_period) - The number of days to retain backups for. Must be between 0 and 35. Must be greater than 0 for Geo primary instances. Optional, default is `null`.
 - [`rds_postgres_backup_window`](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/db_instance#backup_window) - The daily time range where backups will be taken, e.g. `09:46-10:16`. Optional, default is `null`.
@@ -282,7 +282,7 @@ For required variables they need to be set for each Redis service you are provis
   - `elasticache_redis_cache_instance_type` or `elasticache_redis_persistent_instance_type` when setting up separate services.
 - `elasticache_redis_node_count` - The number of replicas of the Redis instance to have for failover purposes. This should be set to at least `2` or higher for HA and `1` if this isn't a requirement. **Required**.
   - `elasticache_redis_cache_node_count` or `elasticache_redis_persistent_node_count` when setting up separate services.
-- `elasticache_redis_kms_key_arn` - The ARN for an existing [AWS KMS Key](https://aws.amazon.com/kms/) to be used to encrypt the Redis instance. If not provided the default AWS KMS key will be used instead. Optional, default is `null`.
+- `elasticache_redis_kms_key_arn` - The ARN for an existing [AWS KMS Key](https://aws.amazon.com/kms/) to be used to encrypt the Redis instance. If not provided `default_kms_key_arm` or the default AWS KMS key will be used in that order. Optional, default is `null`.
   - `elasticache_redis_cache_kms_key_arn` or `elasticache_redis_persistent_kms_key_arn` when setting up separate services.
   - **Warning** Changing this value after the initial creation will result in the Redis instance being recreated and may lead to **data loss**.
 

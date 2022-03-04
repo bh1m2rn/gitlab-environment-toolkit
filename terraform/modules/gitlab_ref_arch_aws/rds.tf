@@ -33,10 +33,13 @@ resource "aws_db_instance" "gitlab" {
   iops           = var.rds_postgres_iops
   storage_type   = var.rds_postgres_storage_type
 
-  name                 = var.rds_postgres_database_name
-  port                 = var.rds_postgres_port
-  username             = var.rds_postgres_username
-  password             = var.rds_postgres_password
+  name     = var.rds_postgres_database_name
+  port     = var.rds_postgres_port
+  username = var.rds_postgres_username
+  password = var.rds_postgres_password
+
+  iam_database_authentication_enabled = true
+
   db_subnet_group_name = aws_db_subnet_group.gitlab[0].name
   vpc_security_group_ids = [
     aws_security_group.gitlab_internal_networking.id
@@ -48,13 +51,12 @@ resource "aws_db_instance" "gitlab" {
   allocated_storage     = var.rds_postgres_allocated_storage
   max_allocated_storage = var.rds_postgres_max_allocated_storage
   storage_encrypted     = true
-  kms_key_id            = coalesce(var.rds_postgres_kms_key_arn, var.default_kms_key_arn, data.aws_kms_key.aws_rds[0].arn)
+  kms_key_id            = coalesce(var.rds_postgres_kms_key_arn, var.default_kms_key_arn, try(data.aws_kms_key.aws_rds[0].arn, null))
 
   backup_window           = var.rds_postgres_backup_window
   backup_retention_period = var.rds_postgres_backup_retention_period
 
   allow_major_version_upgrade = true
-  auto_minor_version_upgrade  = false
 
   skip_final_snapshot = true
 }
@@ -67,5 +69,6 @@ output "rds_postgres_connection" {
     "rds_database_username" = try(aws_db_instance.gitlab[0].username, "")
     "rds_database_arn"      = try(aws_db_instance.gitlab[0].arn, "")
     "rds_kms_key_arn"       = try(aws_db_instance.gitlab[0].kms_key_id, "")
+    "rds_version"           = try(aws_db_instance.gitlab[0].engine_version_actual, "")
   }
 }

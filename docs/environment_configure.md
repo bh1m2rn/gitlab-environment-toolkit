@@ -8,7 +8,7 @@
 - [GitLab Environment Toolkit - Advanced - Network Setup](environment_advanced_network.md)
 - [GitLab Environment Toolkit - Advanced - Component Cloud Services / Custom (Load Balancers, PostgreSQL, Redis)](environment_advanced_services.md)
 - [GitLab Environment Toolkit - Advanced - Geo](environment_advanced_geo.md)
-- [GitLab Environment Toolkit - Advanced - Custom Config, Data Disks, Advanced Search and more](environment_advanced.md)
+- [GitLab Environment Toolkit - Advanced - Custom Config / Tasks, Data Disks, Advanced Search and more](environment_advanced.md)
 - [GitLab Environment Toolkit - Upgrade Notes](environment_upgrades.md)
 - [GitLab Environment Toolkit - Legacy Setups](environment_legacy.md)
 - [GitLab Environment Toolkit - Considerations After Deployment - Backups, Security](environment_post_considerations.md)
@@ -52,9 +52,9 @@ The Toolkit uses these extensively to dynamically configure each GitLab machine 
 
 As mentioned there are various ways variables can be configured. The Toolkit uses the following locations for variables (in order of precedence):
 
-- Role Defaults (`role/default/main.yml`) - Contains default variables specific to the Role, e.g. Postgres specific settings. These can be overridden.
 - Inventory File vars - Contains variables specific to the environment. Can contain overrides for Role Defaults.
-- Group Vars - Variables that are shared between Roles. Most variables can be found here such as IP lists, etc...
+- Role Defaults (`<role>/default/main.yml`) - Contains default variables specific to the Role, e.g. Postgres specific settings. These can be overridden.
+- Common Vars (`role/common_vars/default/main.yml`) - Variables that are shared between Roles, which are configured themselves in a Role and imported. Most variables can be found here such as IP lists, etc...
 - Environment Variables - The Playbooks have been configured to use certain env vars if available.
 
 It's worth noting the Toolkit tweaks the default group variable precedence to better allow for different configurations per environment's inventory. Inventory group variables take a higher precedence here than playbook ones.
@@ -430,7 +430,7 @@ As mentioned earlier, we may also refer to additional variables in detail later 
 
 ## 3. Run the GitLab Environment Toolkit's Docker container (optional)
 
-Before running the [Docker container](https://gitlab.com/gitlab-org/gitlab-environment-toolkit/container_registry/2697240) you will need to setup your Inventory files by following [2. Setup the Environment's Inventory and Config](#2-setup-the-environments-inventory-and-config). The container can be started once the Inventory has been configured. When starting the container it is important to pass in your inventory files and keys, as well as set any authentication based environment variables.
+Before running the [Docker container](https://gitlab.com/gitlab-org/gitlab-environment-toolkit/container_registry/2697240) you will need to setup your environment files by following [2. Setup the Environment's Inventory and Config](#2-setup-the-environments-inventory-and-config). The container can be started once the files have been configured. When starting the container it is important to pass in your environment files and keys, as well as set any authentication based environment variables.
 
 Below is an example of how to run the container when using a GCP service account:
 
@@ -438,11 +438,11 @@ Below is an example of how to run the container when using a GCP service account
 docker run -it \
   -e GOOGLE_APPLICATION_CREDENTIALS="/gitlab-environment-toolkit/keys/<service account file>" \
   -v <path to keys directory>:/gitlab-environment-toolkit/keys \
-  -v <path to Ansible inventory>:/gitlab-environment-toolkit/ansible/environments/<environment name> \
+  -v <path to Ansible environment>:/gitlab-environment-toolkit/ansible/environments/<environment name> \
   registry.gitlab.com/gitlab-org/gitlab-environment-toolkit:latest
 ```
 
-You can also use a simplified command if you store your Inventory outside of the toolkit. Using the folder structure below you're able to store multiple environments alongside each other and when using the Toolkit's container you can simply pass in a single folder and still have access to all your different environments.
+You can also use a simplified command if you store your environment outside of the toolkit. Using the folder structure below you're able to store multiple environments alongside each other and when using the Toolkit's container you can simply pass in a single folder and still have access to all your different environments.
 
 ```sh
 get_environments
@@ -450,8 +450,9 @@ get_environments
 └──<environment name>
 |  └──ansible
 |     └── inventory
-|         ├── <environment name>.gcp.yml
-|         └── vars.yml
+|     |   ├── <environment name>.gcp.yml
+|     |   └── vars.yml
+|     └── files
 └──<environment name>
    └──ansible
       └── inventory

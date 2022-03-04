@@ -30,6 +30,8 @@ resource "aws_db_instance" "gitlab_geo_tracking" {
   username = var.rds_geo_tracking_postgres_username
   password = var.rds_geo_tracking_postgres_password
 
+  iam_database_authentication_enabled = true
+
   db_subnet_group_name = aws_db_subnet_group.gitlab_geo[0].name
   vpc_security_group_ids = [
     aws_security_group.gitlab_internal_networking.id
@@ -38,13 +40,12 @@ resource "aws_db_instance" "gitlab_geo_tracking" {
   allocated_storage     = var.rds_geo_tracking_postgres_allocated_storage
   max_allocated_storage = var.rds_geo_tracking_postgres_max_allocated_storage
   storage_encrypted     = true
-  kms_key_id            = coalesce(var.rds_geo_tracking_postgres_kms_key_arn, var.default_kms_key_arn, data.aws_kms_key.aws_rds[0].arn)
+  kms_key_id            = coalesce(var.rds_geo_tracking_postgres_kms_key_arn, var.default_kms_key_arn, try(data.aws_kms_key.aws_rds[0].arn, null))
 
   backup_window           = var.rds_geo_tracking_postgres_backup_window
   backup_retention_period = var.rds_geo_tracking_postgres_backup_retention_period
 
   allow_major_version_upgrade = true
-  auto_minor_version_upgrade  = false
 
   skip_final_snapshot = true
 }
@@ -57,5 +58,6 @@ output "rds_geo_tracking_postgres_connection" {
     "rds_geo_database_username" = try(aws_db_instance.gitlab_geo_tracking[0].username, "")
     "rds_geo_database_arn"      = try(aws_db_instance.gitlab_geo_tracking[0].arn, "")
     "rds_geo_kms_key_arn"       = try(aws_db_instance.gitlab_geo_tracking[0].kms_key_id, "")
+    "rds_geo_version"           = try(aws_db_instance.gitlab[0].engine_version_actual, "")
   }
 }

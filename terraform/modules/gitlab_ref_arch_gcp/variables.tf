@@ -453,6 +453,15 @@ variable "webservice_node_pool_disk_size" {
   type    = string
   default = null
 }
+## Cluster Autoscaling (Optional)
+variable "webservice_node_pool_max_count" {
+  type    = number
+  default = 0
+}
+variable "webservice_node_pool_min_count" {
+  type    = number
+  default = 0
+}
 
 variable "sidekiq_node_pool_count" {
   type    = number
@@ -470,6 +479,15 @@ variable "sidekiq_node_pool_disk_size" {
   type    = string
   default = null
 }
+## Cluster Autoscaling (Optional)
+variable "sidekiq_node_pool_max_count" {
+  type    = number
+  default = 0
+}
+variable "sidekiq_node_pool_min_count" {
+  type    = number
+  default = 0
+}
 
 variable "supporting_node_pool_count" {
   type    = number
@@ -486,6 +504,15 @@ variable "supporting_node_pool_disk_type" {
 variable "supporting_node_pool_disk_size" {
   type    = string
   default = null
+}
+## Cluster Autoscaling (Optional)
+variable "supporting_node_pool_max_count" {
+  type    = number
+  default = 0
+}
+variable "supporting_node_pool_min_count" {
+  type    = number
+  default = 0
 }
 
 variable "cluster_release_channel" {
@@ -505,11 +532,6 @@ variable "create_network" {
 }
 
 ## Default network
-variable "default_allowed_egress_cidr_blocks" {
-  type    = list(string)
-  default = ["0.0.0.0/0"]
-}
-
 variable "default_allowed_ingress_cidr_blocks" {
   type    = list(string)
   default = ["0.0.0.0/0"]
@@ -526,11 +548,6 @@ variable "ssh_allowed_ingress_cidr_blocks" {
 }
 
 variable "external_ssh_allowed_ingress_cidr_blocks" {
-  type    = list(any)
-  default = []
-}
-
-variable "monitor_allowed_ingress_cidr_blocks" {
   type    = list(any)
   default = []
 }

@@ -81,6 +81,7 @@
   when:
     - "'postgres' in groups and groups['postgres'] | length > 1"
     - postgres_replication_manager == 'patroni'
+    - not postgres_external
   tags:
     - reconfigure
     - db_migrate
@@ -214,7 +215,24 @@
   loop: "{{ gitlab_rails_feature_flags }}"
   run_once: true
 
-- name: Enable Feature Flags
+- name: Enable Feature force_no_sharing_primary_model
   shell: |
     gitlab-rails runner "Feature.enable_percentage_of_time(:force_no_sharing_primary_model, 50)"
   run_once: true
+
+- name: Run Custom Tasks
+  block:
+    - name: Check if Custom Tasks file exists
+      stat:
+        path: "{{ gitlab_rails_custom_tasks_file }}"
+      register: gitlab_rails_custom_tasks_file_path
+      delegate_to: localhost
+      become: false
+
+    - name: Run Custom Tasks
+      include_tasks:
+        file: "{{ gitlab_rails_custom_tasks_file }}"
+        apply:
+          tags: custom_tasks
+      when: gitlab_rails_custom_tasks_file_path.stat.exists
+  tags: custom_tasks

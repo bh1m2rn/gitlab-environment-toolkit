@@ -8,7 +8,7 @@
 - [GitLab Environment Toolkit - Advanced - Network Setup](environment_advanced_network.md)
 - [GitLab Environment Toolkit - Advanced - Component Cloud Services / Custom (Load Balancers, PostgreSQL, Redis)](environment_advanced_services.md)
 - [GitLab Environment Toolkit - Advanced - Geo](environment_advanced_geo.md)
-- [GitLab Environment Toolkit - Advanced - Custom Config, Data Disks, Advanced Search and more](environment_advanced.md)
+- [GitLab Environment Toolkit - Advanced - Custom Config / Tasks, Data Disks, Advanced Search and more](environment_advanced.md)
 - [GitLab Environment Toolkit - Upgrade Notes](environment_upgrades.md)
 - [GitLab Environment Toolkit - Legacy Setups](environment_legacy.md)
 - [GitLab Environment Toolkit - Considerations After Deployment - Backups, Security](environment_post_considerations.md)
@@ -64,7 +64,7 @@ In this setup you have the Modules saved locally on disk, typically through a Gi
 
 For example, to configure the `gitlab_ref_arch_gcp` module using a relative path that follows this repo's structure you would configure it follows:
 
-```hcl
+```tf
 module "gitlab_ref_arch_gcp" {
   source = "../../modules/gitlab_ref_arch_gcp"
 
@@ -78,7 +78,7 @@ Terraform can also pull the Modules directly from this repo via a [Git URL](http
 
 For example, to configure the `gitlab_ref_arch_gcp` module to pull from the repo you would configure it follows:
 
-```hcl
+```tf
 module "gitlab_ref_arch_gcp" {
   source = "git::https://gitlab.com/gitlab-org/gitlab-environment-toolkit.git//modules/gitlab_ref_arch_gcp"
 
@@ -92,7 +92,7 @@ The Toolkit's Modules are also made available via this Project's [Terraform Modu
 
 For example, to configure the `gitlab_ref_arch_gcp` module to pull from the registry you would configure it follows:
 
-```hcl
+```tf
 module "gitlab_ref_arch_gcp" {
   source = "gitlab.com/gitlab-org/gitlab-environment-toolkit/gitlab//modules/gitlab_ref_arch_gcp"
   version = ">= 2.0.0"
@@ -274,11 +274,12 @@ Next in the file are the various machine settings, separated the same as the Ref
 
 In addition to the above, the following optional settings are also available:
 
-- `machine_image` - The [GCP machine image name] to use for the VMs. Ubuntu 18.04+ and RHEL 8 images are supported at this time. Defaults to `ubuntu-1804-lts`
+- `machine_image` - The [GCP machine image name](https://cloud.google.com/compute/docs/images/os-details) to use for the VMs. Ubuntu 18.04+ and RHEL 8 images are supported at this time. Defaults to `ubuntu-1804-lts`
+- `machine_secure_boot` - Controls whether [Secure Boot](https://cloud.google.com/security/shielded-cloud/shielded-vm#secure-boot) is enabled on the VMs. Can only be enabled for OS Images that support the `Shielded VM` feature. Defaults to `false`.
 - `object_storage_location` - The [GCS Location](https://cloud.google.com/storage/docs/locations) buckets are created in. Refer to the [Object Storage Location (GCP)](#object-storage-location) below for more info.
 - `object_storage_force_destroy` - Controls whether Terraform can delete all objects (including any locked objects) from the bucket so that the bucket can be destroyed without error. Consider setting this value to `false` for production systems. Defaults to `true`.
 - `object_storage_labels` - Labels to apply to object storage buckets.
-- `allow_stopping_for_update` - Controls whether Terraform can restart VMs when making changes (required in some cases). Should only be disabled for additional resilience. Refer to [Allow Stopping for Updates (GCP)](#allow-stopping-for-updates-gcp) for more info. Defaults to `true`.
+- `allow_stopping_for_update` - Controls whether Terraform can restart VMs when making changes if required. Should only be disabled for additional resilience. Defaults to `true`.
 
 :information_source:&nbsp; Redis prefixes depend on the target Reference Architecture - set `redis_*` for combined Redis, `redis_cache_*` and `redis_persistent_*` for separated Redis setup.
 
@@ -302,25 +303,11 @@ To ensure good performance you should select a [location](https://cloud.google.c
 
 :warning:&nbsp; **{- Changing this setting on an existing environment must be treated with the utmost caution as it will destroy the previous bucket(s) and lead to data loss-}**+
 
-##### Allow Stopping for Updates (GCP)
-
-For GCP, changing some settings such as `*_machine_type` on a started instance will require restarting it.
-
-As an additional level of resilience you can disable this behaviour by setting `allow_stopping_for_update` to `false` in the [module's environment config file](#configure-module-settings-environmenttf). Note though that when you wish to upgrade in the future you may need to re-enable this setting.
-
-##### Machine Secure Boot (GCP)
-
-Compute instances in GCP can be configured to run with [Secure Boot](https://cloud.google.com/security/shielded-cloud/shielded-vm#secure-boot). This feature is enabled by default and can be disabled by setting the variable `machine_secure_boot = false`.
-
-> Secure Boot helps ensure that the system only runs authentic software by verifying the digital signature of all boot components, and halting the boot process if signature verification fails.
-
-Secure boot can only be enabled for OS Images that support the `Shielded VM` feature. The default value for the variable `machine_image` contain the value of an image that supports this feature. If you plan on changing this, you can find which OS images on [Google's documentation]([GCP documentation](https://cloud.google.com/compute/docs/images/os-details#security-features)).
-
-##### Configure network setup (GCP)
+##### Configure Network Setup (GCP)
 
 By default the toolkit sets up the infrastructure on the default network stack as provided by GCP. However, it can also support other advanced setups such as creating a new network or using an existing one. To learn more refer to [Configure network setup (GCP)](environment_advanced_network.md#configure-network-setup-gcp).
 
-##### Zones
+##### Configure Network Zones (GCP)
 
 With GCP you can spread optionally spread resources across multiple [Availability Zones](https://cloud.google.com/compute/docs/regions-zones) in the selected region, overriding the default Zone configured in `variables.tf`. By doing this it adds additional resilience for the environment in the case a Zone ever went down.
 
@@ -526,12 +513,12 @@ By default the toolkit sets up the infrastructure on the default network stack a
 
 By default AWS doesn't encrypt storages such as disks or object storage buckets.
 
-The Toolkit will aim to encrypt these by default where possible utilizing the built in AWS [default KMS keys](https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#kms_keys). It also allows for you to pass in your own KMS key(s) as desired in a flexible manner.
+The Toolkit will aim to encrypt these by default where possible utilizing the built in AWS [default KMS keys](https://docs.aws.amazon.com/kms/latest/developerguide/concepts.html#kms_keys) or creating ones where that isn't possible. It also allows for you to pass in your own KMS key(s) as desired in a flexible manner.
 
 An overview of how the Toolkit handles this encryption is as follows:
 
 - By default it will aim to encrypt all storages and services with AWS managed KMS keys.
-  - Note that for Root Block Devices this is currently disabled by default to ensure backwards compatibility as changing this will cause disks to be deleted and data loss to occur.
+  - If an AWS managed KMS key isn't available for that particular service the Toolkit will create one.
 - A custom KMS key ARN (one that's available in AWS KMS) can be configured for use instead for all storages and services.
 - Additionally it's possible to pass custom KMS key(s) for individual storages and services as desired.
 
@@ -543,25 +530,9 @@ There are several variables available to configure in the [module's environment 
 
 ###### Default Encryption
 
-Encryption is enabled by default for all storages and services except for Root Block Devices (RBS - the main disks on VMS).
+Encryption is enabled by default for all storages and services using either AWS managed or created KMS keys.
 
-To configure encryption for RBS all that's required is to set the `default_disk_encrypt` variable to `true` in the [module's environment config file](#configure-module-settings-environmenttf) as follows:
-
-```tf
-module "gitlab_ref_arch_aws" {
-  source = "../../modules/gitlab_ref_arch_aws"
-
-  prefix = var.prefix
-  ssh_public_key_file = file(var.ssh_public_key_file)
-
-  default_disk_encrypt = true
-
-  [...]
-```
-
-It's also possible to specify this setting for each component, e.g. `gitaly_disk_encrypt`, for more control as desired.
-
-:warning:&nbsp; **{- Changing this setting on an existing environment will trigger the recreation of all nodes and will lead to data loss-}**. Snapshots should be taken before doing this and then restores onto the new encrypted disks, refer to the [AWS docs for more info](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSEncryption.html#encrypt-unencrypted).
+:information_source:&nbsp; For backwards compatibility, encryption of Root Block Device disks can be controlled via the `default_disk_encrypt` setting. It's also possible to specify this setting for each component, e.g. `gitaly_disk_encrypt`. **{- Changing these settings on an existing environment will trigger the recreation of all nodes and will lead to data loss-}**. Snapshots should be taken before doing this and then restored onto the new encrypted disks, refer to the [AWS docs for more info](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/EBSEncryption.html#encrypt-unencrypted).
 
 ###### Encryption with user provided KMS keys
 
@@ -570,10 +541,10 @@ Encryption for all storage and services with your own KMS keys is supported by t
 Note that these keys must be [available in AWS KMS](https://docs.aws.amazon.com/kms/latest/developerguide/create-keys.html) beforehand. Once available, you can configure them to be used with the following variables be configured with the following variables. Note that for individual storages or services the same variable suffix is used throughout, for readability this is defined once only:
 
 - `default_kms_key_arn` - The AWS KMS key ARN to use for all storages and services unless configured otherwise. Defaults to `null`.
-  - This setting is also used for any [cloud services](environment_advanced_services.md).
+  - This setting is also used for [Cloud Native Hybrid EKS clusters](environment_advanced_hybrid.md) and / or any [cloud services](environment_advanced_services.md) and Cloud Native Hybrid EKS clusters.
 - `*_kms_key_arn` - The AWS KMS key ARN to be used for a specific storage. For example `gitaly_kms_key_arn` will configure a specific key for all its disk(s) and `object_storage_kms_key_arn` configures a key for all buckets.
-  - Note that the key used for `object_storage_kms_key_arn` should have the default policy applied to allow for IAM authentication by GitLab.
-  - For cloud services specific variables [refer to their specific docs](environment_advanced_services.md).
+
+:information_source:&nbsp; Note that the key used for `object_storage_kms_key_arn` needs to have the [correct policy document applied](https://aws.amazon.com/premiumsupport/knowledge-center/s3-bucket-access-default-encryption/) to allow for IAM authentication by GitLab. The policy document should allow access to the IAM role created by the Toolkit for S3 access.
 
 #### Configure Authentication (AWS)
 
@@ -775,7 +746,7 @@ However this can be changed via the `source_image_reference` dictionary setting 
 
 When the image has been selected the setting will need the `publisher`, `offer`, `sku` and `version` fields set. For example:
 
-```hcl
+```tf
 module "gitlab_ref_arch_azure" {
   source = "../../modules/gitlab_ref_arch_azure"
   
