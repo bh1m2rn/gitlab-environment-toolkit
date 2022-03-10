@@ -35,7 +35,7 @@ variable "project" {
 # Object Storage
 variable "object_storage_buckets" {
   type    = list(string)
-  default = ["artifacts", "backups", "dependency-proxy", "lfs", "mr-diffs", "packages", "terraform-state", "uploads"]
+  default = ["artifacts", "backups", "dependency-proxy", "lfs", "mr-diffs", "packages", "pages", "terraform-state", "uploads"]
 }
 variable "object_storage_location" {
   type    = string

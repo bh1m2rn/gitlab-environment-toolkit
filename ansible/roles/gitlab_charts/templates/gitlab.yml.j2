@@ -74,6 +74,9 @@ gitlab:
 {% endif %}
 
 global:
+  pages:
+    objectStore:
+      bucket: "{{ gitlab_object_storage_pages_bucket }}"
   appConfig:
 {% if cloud_provider != 'none' %}
     object_store:

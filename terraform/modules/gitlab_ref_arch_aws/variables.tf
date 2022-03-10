@@ -55,7 +55,7 @@ variable "ssh_public_key_file" {
 
 variable "object_storage_buckets" {
   type    = list(string)
-  default = ["artifacts", "backups", "dependency-proxy", "lfs", "mr-diffs", "packages", "terraform-state", "uploads", "registry"]
+  default = ["artifacts", "backups", "dependency-proxy", "lfs", "mr-diffs", "packages", "pages", "terraform-state", "uploads", "registry"]
 }
 variable "object_storage_force_destroy" {
   description = "Toggle to enable force-destruction of S3 Bucket. Consider setting this value to false for production systems"
