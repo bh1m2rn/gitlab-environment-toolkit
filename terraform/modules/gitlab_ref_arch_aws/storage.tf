@@ -24,8 +24,6 @@ locals {
 
   gitlab_s3_policy_arns = flatten([
     local.gitlab_s3_policy_create ? [aws_iam_policy.gitlab_s3_policy[0].arn] : [],
-    local.gitlab_s3_registry_policy_create ? [aws_iam_policy.gitlab_s3_registry_policy[0].arn] : [],
-    local.gitlab_s3_kms_policy_create ? [aws_iam_policy.gitlab_s3_kms_policy[0].arn] : []
   ])
 }
 
@@ -44,6 +42,24 @@ resource "aws_iam_policy" "gitlab_s3_policy" {
         ]
         Effect   = "Allow"
         Resource = concat([for bucket in aws_s3_bucket.gitlab_object_storage_buckets : bucket.arn], [for bucket in aws_s3_bucket.gitlab_object_storage_buckets : "${bucket.arn}/*"])
+      },
+    ]
+  })
+}
+resource "aws_iam_role" "gitlab_s3_role" {
+  count = min(length(var.object_storage_buckets), 1)
+  name  = "${var.prefix}-s3-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Action = "sts:AssumeRole"
+        Effect = "Allow"
+        Sid    = ""
+        Principal = {
+          Service = "ec2.amazonaws.com"
+        }
       },
     ]
   })
