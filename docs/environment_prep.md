@@ -14,13 +14,15 @@
 - [GitLab Environment Toolkit - Considerations After Deployment - Backups, Security](environment_post_considerations.md)
 - [GitLab Environment Toolkit - Troubleshooting](environment_troubleshooting.md)
 
-To start using the Toolkit to build an environment you'll first need to do some preparation for the environment itself, depending on how you intend to host it. These docs assume working knowledge of the selected host provider the environment is to run on, such as a specific Cloud provider.
+To start using the Toolkit to build an environment you'll first need to do some preparation for the environment itself, depending on how you intend to host it. These docs assume working knowledge of GitLab projects, the selected host provider the environment is to run on, and a specific Cloud provider.
 
 This page starts off with general guidance around fundamentals but then will split off into the steps for each supported specific provider. As such, you should only follow the section for your provider after the general sections.
 
 [[_TOC_]]
 
 ## Overview
+
+It might be obvious, but you will need a GitLab project to save your environment variables.
 
 Before you begin preparing your environment there are several fundamentals that are worth calling out regardless of provider.
 
