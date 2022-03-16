@@ -1,5 +1,7 @@
 locals {
   create_network = var.create_network && var.vpc_id == null && var.subnet_ids == null
+
+  zones = length(var.availability_zones) > 0 ? var.availability_zones : data.aws_availability_zones.defaults.names
 }
 
 resource "aws_default_vpc" "default" {
@@ -37,7 +39,7 @@ resource "aws_subnet" "gitlab_vpc_sn_pub" {
   count                   = local.create_network ? var.subnet_pub_count : 0
   vpc_id                  = aws_vpc.gitlab_vpc[0].id
   cidr_block              = var.subpub_pub_cidr_block[count.index]
-  availability_zone       = data.aws_availability_zones.defaults.names[(count.index + length(data.aws_availability_zones.defaults.names)) % length(data.aws_availability_zones.defaults.names)]
+  availability_zone       = local.zones[count.index % length(local.zones)]
   map_public_ip_on_launch = true
 
   tags = {

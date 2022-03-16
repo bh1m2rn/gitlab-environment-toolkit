@@ -929,6 +929,10 @@ variable "subnet_pub_count" {
   type    = number
   default = 2
 }
+variable "availability_zones" {
+  type    = list(string)
+  default = []
+}
 
 ## Existing network
 variable "vpc_id" {
