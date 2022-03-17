@@ -95,6 +95,48 @@ variable "elastic_disks" {
   default = []
 }
 
+variable "geo_node_count" {
+  type    = number
+  default = 0
+}
+variable "geo_machine_type" {
+  type    = string
+  default = ""
+}
+variable "geo_disk_type" {
+  type    = string
+  default = null
+}
+variable "geo_disk_size" {
+  type    = string
+  default = null
+}
+variable "geo_disks" {
+  type    = list(any)
+  default = []
+}
+
+variable "geo_postgres_node_count" {
+  type    = number
+  default = 0
+}
+variable "geo_postgres_machine_type" {
+  type    = string
+  default = ""
+}
+variable "geo_postgres_disk_type" {
+  type    = string
+  default = null
+}
+variable "geo_postgres_disk_size" {
+  type    = string
+  default = null
+}
+variable "geo_postgres_disks" {
+  type    = list(any)
+  default = []
+}
+
 variable "gitaly_node_count" {
   type    = number
   default = 0
