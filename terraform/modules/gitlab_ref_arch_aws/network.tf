@@ -37,7 +37,7 @@ resource "aws_vpc" "gitlab_vpc" {
   enable_dns_hostnames = true
 
   timeouts {
-    delete                = "30m"
+    delete = "30m"
   }
 
   tags = {
