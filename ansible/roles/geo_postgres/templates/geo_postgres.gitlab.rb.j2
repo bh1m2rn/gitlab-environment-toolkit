@@ -1,0 +1,38 @@
+# Disable all components except PostgreSQL and Consul
+roles ['postgres_role']
+
+repmgr['enable'] = false
+patroni['enable'] = false
+
+# Enable Tracking DB
+geo_postgresql['enable'] = true
+
+geo_postgresql['listen_address'] = '0.0.0.0'
+geo_postgresql['sql_user_password'] = '{{ (geo_tracking_postgres_password + 'gitlab_geo') | md5 }}'
+geo_postgresql['md5_auth_cidr_addresses'] = {{ geo_tracking_postgres_md5_auth_cidr_blocks }}
+
+gitlab_rails['db_host'] = '0.0.0.0'
+
+gitlab_rails['auto_migrate'] = false
+
+# Consul
+consul['enable'] = true
+consul['configuration'] = {
+  bind_addr: '{{ ansible_default_ipv4.address }}',
+  retry_join: %w({{ (consul_int_ips if 'consul' in groups else gitlab_rails_int_ips) | join(' ') }})
+}
+consul['monitoring_service_discovery'] = true
+
+# Monitoring
+postgres_exporter['listen_address'] = '0.0.0.0:9187'
+node_exporter['listen_address'] = '0.0.0.0:9100'
+
+geo_confs = Dir.glob(File.join("/etc/gitlab/", "gitlab.geo.*.rb"))
+geo_confs.each { |conf|
+  from_file conf
+}
+
+custom_confs = Dir.glob(File.join("/etc/gitlab/", "gitlab.praefect_postgres.*.rb"))
+custom_confs.each { |conf|
+  from_file conf
+}

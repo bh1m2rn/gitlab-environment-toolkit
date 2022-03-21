@@ -1,0 +1,52 @@
+---
+- name: Setup GitLab config file
+  template:
+    src: templates/geo_postgres.gitlab.rb.j2
+    dest: /etc/gitlab/gitlab.rb
+  tags: reconfigure
+
+- name: Check if custom config exists
+  stat:
+    path: "{{ geo_postgres_custom_config_file }}"
+  delegate_to: localhost
+  become: false
+  tags: reconfigure
+  register: geo_postgres_custom_config_file_path
+
+- name: Setup custom GitLab config file
+  template:
+    src: "{{ geo_postgres_custom_config_file }}"
+    dest: "/etc/gitlab/gitlab.geo_postgres.custom.rb"
+    mode: 0644
+  tags: reconfigure
+  when: geo_postgres_custom_config_file_path.stat.exists
+
+- name: Reconfigure Geo PostgreSQL
+  command: gitlab-ctl reconfigure
+  tags: reconfigure
+
+- name: Restart Geo PostgreSQL
+  command: gitlab-ctl restart
+  register: result
+  retries: 2
+  until: result is success
+  tags:
+    - reconfigure
+    - restart
+
+- name: Run Custom Tasks
+  block:
+    - name: Check if Custom Tasks file exists
+      stat:
+        path: "{{ geo_postgres_custom_tasks_file }}"
+      register: geo_postgres_custom_tasks_file_path
+      delegate_to: localhost
+      become: false
+
+    - name: Run Custom Tasks
+      include_tasks:
+        file: "{{ geo_postgres_custom_tasks_file }}"
+        apply:
+          tags: custom_tasks
+      when: geo_postgres_custom_tasks_file_path.stat.exists
+  tags: custom_tasks
