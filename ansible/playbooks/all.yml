@@ -6,6 +6,7 @@
 - import_playbook: postgres.yml
 - import_playbook: pgbouncer.yml
 - import_playbook: redis.yml
+- import_playbook: geo_postgres.yml
 - import_playbook: praefect_postgres.yml
 - import_playbook: praefect.yml
 - import_playbook: gitaly.yml

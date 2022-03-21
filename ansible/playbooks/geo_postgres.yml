@@ -1,0 +1,5 @@
+---
+- hosts: geo_postgres
+  roles:
+    - geo_postgres
+  become: true
