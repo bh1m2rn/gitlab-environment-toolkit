@@ -50,7 +50,9 @@ resource "aws_eks_cluster" "gitlab_cluster" {
   ]
 }
 
-## Optional KMS Key for EKS Envelope Encryption if enabled and none provided
+## Optional KMS Key for EKS Envelope Encryption if enabled and none provided (deprecated)
+## kics: Terraform AWS - KMS Key With Vulnerable Policy - Key is deprecated and will be removed in future
+## kics-scan ignore-block
 resource "aws_kms_key" "gitlab_cluster_key" {
   count = var.eks_envelope_encryption && local.total_node_pool_count > 0 && var.eks_envelope_kms_key_arn == null && var.default_kms_key_arn == null ? 1 : 0
 
@@ -394,21 +396,9 @@ resource "aws_iam_role_policy_attachment" "gitlab_addon_vpc_cni_policy" {
 
 # Object Storage Role Policy
 resource "aws_iam_role_policy_attachment" "gitlab_s3_eks_role_policy_attachment" {
-  count = min(local.total_node_pool_count, length(var.object_storage_buckets), 1)
+  count = min(local.total_node_pool_count, length(local.gitlab_s3_policy_arns))
 
-  policy_arn = aws_iam_policy.gitlab_s3_policy[0].arn
-  role       = aws_iam_role.gitlab_eks_node_role[0].name
-}
-
-resource "aws_iam_role_policy_attachment" "gitlab_s3_eks_role_registry_policy_attachment" {
-  count      = contains(var.object_storage_buckets, "registry") ? min(local.total_node_pool_count, 1) : 0
-  policy_arn = aws_iam_policy.gitlab_s3_registry_policy[0].arn
-  role       = aws_iam_role.gitlab_eks_node_role[0].name
-}
-
-resource "aws_iam_role_policy_attachment" "gitlab_s3_eks_role_kms_policy_attachment" {
-  count      = var.object_storage_kms_key_arn != null || var.default_kms_key_arn != null ? min(local.total_node_pool_count, length(var.object_storage_buckets), 1) : 0
-  policy_arn = aws_iam_policy.gitlab_s3_kms_policy[0].arn
+  policy_arn = local.gitlab_s3_policy_arns[count.index]
   role       = aws_iam_role.gitlab_eks_node_role[0].name
 }
 

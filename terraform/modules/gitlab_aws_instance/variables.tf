@@ -21,9 +21,9 @@ variable "ami_id" {
   default = null
 }
 
-variable "iam_instance_profile" {
-  type    = string
-  default = null
+variable "iam_instance_policy_arns" {
+  type    = list(string)
+  default = []
 }
 
 variable "instance_type" {
@@ -67,7 +67,7 @@ variable "disk_kms_key_arn" {
 }
 
 variable "data_disks" {
-  type    = list(any)
+  type    = any
   default = []
 }
 

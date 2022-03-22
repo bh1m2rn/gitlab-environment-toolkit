@@ -39,10 +39,13 @@ variable "default_disk_encrypt" {
   type    = bool
   default = true
 }
-
 variable "default_kms_key_arn" {
   type    = string
   default = null
+}
+variable "default_iam_instance_policy_arns" {
+  type    = list(string)
+  default = []
 }
 
 variable "ssh_public_key_file" {
@@ -63,6 +66,21 @@ variable "object_storage_tags" {
   description = "Tags to apply to S3 buckets"
   type        = map(any)
   default     = {}
+}
+variable "object_storage_versioning" {
+  description = "Enable S3 bucket versioning"
+  type        = bool
+  default     = false
+}
+variable "object_storage_destination_buckets" {
+  description = "A map of buckets to replicate to, format: name = arn"
+  type        = map(string)
+  default     = null
+}
+variable "object_storage_replica_kms_key_id" {
+  description = "KMS key arn used to encrypt the destination object storage buckets"
+  type        = string
+  default     = null
 }
 variable "object_storage_kms_key_arn" {
   type    = string
@@ -98,10 +116,9 @@ variable "consul_data_disks" {
   type    = list(any)
   default = []
 }
-
-variable "consul_iam_instance_profile" {
-  type    = string
-  default = null
+variable "consul_iam_instance_policy_arns" {
+  type    = list(string)
+  default = []
 }
 
 variable "elastic_node_count" {
@@ -132,10 +149,9 @@ variable "elastic_data_disks" {
   type    = list(any)
   default = []
 }
-
-variable "elastic_iam_instance_profile" {
-  type    = string
-  default = null
+variable "elastic_iam_instance_policy_arns" {
+  type    = list(string)
+  default = []
 }
 
 variable "gitaly_node_count" {
@@ -163,13 +179,12 @@ variable "gitaly_disk_kms_key_arn" {
   default = null
 }
 variable "gitaly_data_disks" {
-  type    = list(any)
+  type    = any
   default = []
 }
-
-variable "gitaly_iam_instance_profile" {
-  type    = string
-  default = null
+variable "gitaly_iam_instance_policy_arns" {
+  type    = list(string)
+  default = []
 }
 
 variable "gitlab_nfs_node_count" {
@@ -200,10 +215,9 @@ variable "gitlab_nfs_data_disks" {
   type    = list(any)
   default = []
 }
-
-variable "gitlab_nfs_iam_instance_profile" {
-  type    = string
-  default = null
+variable "gitlab_nfs_iam_instance_policy_arns" {
+  type    = list(string)
+  default = []
 }
 
 variable "gitlab_rails_node_count" {
@@ -234,10 +248,9 @@ variable "gitlab_rails_data_disks" {
   type    = list(any)
   default = []
 }
-
-variable "gitlab_rails_iam_instance_profile" {
-  type    = string
-  default = null
+variable "gitlab_rails_iam_instance_policy_arns" {
+  type    = list(string)
+  default = []
 }
 
 variable "haproxy_external_node_count" {
@@ -272,10 +285,9 @@ variable "haproxy_external_elastic_ip_allocation_ids" {
   type    = list(string)
   default = []
 }
-
-variable "haproxy_external_iam_instance_profile" {
-  type    = string
-  default = null
+variable "haproxy_external_iam_instance_policy_arns" {
+  type    = list(string)
+  default = []
 }
 
 variable "haproxy_internal_node_count" {
@@ -306,10 +318,9 @@ variable "haproxy_internal_data_disks" {
   type    = list(any)
   default = []
 }
-
-variable "haproxy_internal_iam_instance_profile" {
-  type    = string
-  default = null
+variable "haproxy_internal_iam_instance_policy_arns" {
+  type    = list(string)
+  default = []
 }
 
 variable "monitor_node_count" {
@@ -340,10 +351,9 @@ variable "monitor_data_disks" {
   type    = list(any)
   default = []
 }
-
-variable "monitor_iam_instance_profile" {
-  type    = string
-  default = null
+variable "monitor_iam_instance_policy_arns" {
+  type    = list(string)
+  default = []
 }
 
 variable "pgbouncer_node_count" {
@@ -374,10 +384,9 @@ variable "pgbouncer_data_disks" {
   type    = list(any)
   default = []
 }
-
-variable "pgbouncer_iam_instance_profile" {
-  type    = string
-  default = null
+variable "pgbouncer_iam_instance_policy_arns" {
+  type    = list(string)
+  default = []
 }
 
 variable "postgres_node_count" {
@@ -408,10 +417,9 @@ variable "postgres_data_disks" {
   type    = list(any)
   default = []
 }
-
-variable "postgres_iam_instance_profile" {
-  type    = string
-  default = null
+variable "postgres_iam_instance_policy_arns" {
+  type    = list(string)
+  default = []
 }
 
 variable "praefect_node_count" {
@@ -442,10 +450,9 @@ variable "praefect_data_disks" {
   type    = list(any)
   default = []
 }
-
-variable "praefect_iam_instance_profile" {
-  type    = string
-  default = null
+variable "praefect_iam_instance_policy_arns" {
+  type    = list(string)
+  default = []
 }
 
 variable "praefect_postgres_node_count" {
@@ -476,10 +483,9 @@ variable "praefect_postgres_data_disks" {
   type    = list(any)
   default = []
 }
-
-variable "praefect_postgres_iam_instance_profile" {
-  type    = string
-  default = null
+variable "praefect_postgres_iam_instance_policy_arns" {
+  type    = list(string)
+  default = []
 }
 
 variable "redis_node_count" {
@@ -510,10 +516,9 @@ variable "redis_data_disks" {
   type    = list(any)
   default = []
 }
-
-variable "redis_iam_instance_profile" {
-  type    = string
-  default = null
+variable "redis_iam_instance_policy_arns" {
+  type    = list(string)
+  default = []
 }
 
 variable "redis_cache_node_count" {
@@ -544,10 +549,9 @@ variable "redis_cache_data_disks" {
   type    = list(any)
   default = []
 }
-
-variable "redis_cache_iam_instance_profile" {
-  type    = string
-  default = null
+variable "redis_cache_iam_instance_policy_arns" {
+  type    = list(string)
+  default = []
 }
 
 variable "redis_persistent_node_count" {
@@ -578,10 +582,9 @@ variable "redis_persistent_data_disks" {
   type    = list(any)
   default = []
 }
-
-variable "redis_persistent_iam_instance_profile" {
-  type    = string
-  default = null
+variable "redis_persistent_iam_instance_policy_arns" {
+  type    = list(string)
+  default = []
 }
 
 variable "sidekiq_node_count" {
@@ -612,10 +615,9 @@ variable "sidekiq_data_disks" {
   type    = list(any)
   default = []
 }
-
-variable "sidekiq_iam_instance_profile" {
-  type    = string
-  default = null
+variable "sidekiq_iam_instance_policy_arns" {
+  type    = list(string)
+  default = []
 }
 
 # EKS - Kubernetes \ Helm
@@ -1119,7 +1121,3 @@ variable "additional_tags" {
   default = {}
 }
 
-variable "default_iam_instance_profile" {
-  type    = string
-  default = null
-}
