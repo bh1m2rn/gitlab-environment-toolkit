@@ -50,4 +50,6 @@
         namespace: "{{ gitlab_charts_release_namespace }}"
         command: |
           gitlab-rails runner "GeoNode.find_by(name: '{{ geo_primary_site_name }}').update(internal_url: '{{ geo_primary_internal_url }}')"
-  when: cloud_native_hybrid_geo
+  when:
+   - cloud_native_hybrid_geo
+   - (geo_primary_site_group_name in group_names)
