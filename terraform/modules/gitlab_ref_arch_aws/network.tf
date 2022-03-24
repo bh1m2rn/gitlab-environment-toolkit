@@ -202,3 +202,13 @@ output "network" {
     "peer_connection_id"  = try(aws_vpc_peering_connection.gitlab_vpc_peering_requester[0].id, "")
   }
 }
+
+output "vpc_id" {
+  value = local.vpc_id
+}
+output "vpc_cidr_block" {
+  value = var.vpc_cidr_block
+}
+output "vpc_subnet_ids" {
+  value = local.subnet_pub_ids
+}
