@@ -9,42 +9,40 @@
   tags: nfs
   when: ('gitlab_nfs' in groups)
 
-- name: Configure SSH Fast Lookup
-  blockinfile:
-    path: /etc/ssh/sshd_config
-    marker: "# {mark} ANSIBLE MANAGED BLOCK"
-    block: |
-      Match User git   # Apply the AuthorizedKeysCommands to the git user only
-        AuthorizedKeysCommand /opt/gitlab/embedded/service/gitlab-shell/bin/gitlab-shell-authorized-keys-check git %u %k
-        AuthorizedKeysCommandUser git
-      Match all        # End match, settings apply to all users again
+- name: Configure SSH
+  block:
+    - name: Configure SSH Fast Lookup
+      blockinfile:
+        path: /etc/ssh/sshd_config
+        marker: "# {mark} ANSIBLE MANAGED BLOCK"
+        block: |
+          Match User git   # Apply the AuthorizedKeysCommands to the git user only
+            AuthorizedKeysCommand /opt/gitlab/embedded/service/gitlab-shell/bin/gitlab-shell-authorized-keys-check git %u %k
+            AuthorizedKeysCommandUser git
+          Match all        # End match, settings apply to all users again
 
-- name: Create SSH directory on GitLab NFS if missing
-  file:
-    path: "{{ gitlab_nfs_path }}/ssh"
-    state: directory
-  when: "'gitlab_rails_primary' in group_names"
+    - name: Find all SSH keys on Primary
+      find:
+        paths: /etc/ssh
+        patterns: ssh_host_*_key*
+      register: ssh_keys
+      when: "'gitlab_rails_primary' in group_names"
+
+    - name: Synchronize SSH keys to secondaries
+      synchronize:
+        src: "{{ item.path }}"
+        dest: "{{ item.path }}"
+      with_items: "{{ ssh_keys.files }}"
+      delegate_to: "{{ groups['gitlab_rails_primary'][0] }}"
+      delegate_facts: true
+      become: true
+      when: "'gitlab_rails_secondary' in group_names"
+
+    - name: Reload SSH service
+      service:
+        name: "{{ 'sshd' if ansible_facts['os_family'] == 'RedHat' else 'ssh' }}"
+        state: reloaded
   tags: ssh
-
-- name: Copy SSH keys to NFS if missing
-  shell: "cp -n /etc/ssh/ssh_host_*_key* {{ gitlab_nfs_path }}/ssh"
-  when: "'gitlab_rails_primary' in group_names"
-  tags: ssh
-
-- name: Copy SSH keys from NFS
-  shell: "cp {{ gitlab_nfs_path }}/ssh/ssh_host_*_key* /etc/ssh"
-  when: "'gitlab_rails_secondary' in group_names"
-  tags: ssh
-
-- name: Reload SSH service
-  service:
-    name: "{{ 'sshd' if ansible_facts['os_family'] == 'RedHat' else 'ssh' }}"
-    state: reloaded
-  tags: ssh
-
-- name: Copy secrets file from NFS
-  shell: "cp {{ gitlab_nfs_path }}/gitlab-secrets.json /etc/gitlab/gitlab-secrets.json 2>/dev/null || true"
-  tags: secrets
 
 - name: Copy GCP service account file
   copy:
@@ -181,6 +179,8 @@
   until: result is success
   tags: reconfigure
 
+
+
 - name: Restart GitLab
   shell: gitlab-ctl stop && gitlab-ctl start
   register: result
@@ -189,6 +189,12 @@
   tags:
     - reconfigure
     - restart
+
+- name: Enable Incremental Logging
+  command: "gitlab-rails runner 'Feature.enable(:ci_enable_live_trace)'"
+  run_once: true
+  tags:
+    - reconfigure
 
 - name: Copy secrets file to NFS if missing
   shell: "cp -n /etc/gitlab/gitlab-secrets.json {{ gitlab_nfs_path }}"
