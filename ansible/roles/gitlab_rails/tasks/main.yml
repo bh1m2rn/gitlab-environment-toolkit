@@ -179,7 +179,11 @@
   until: result is success
   tags: reconfigure
 
-
+- name: Propagate secrets
+  include_role:
+    name: common
+    tasks_from: secrets
+  tags: reconfigure
 
 - name: Restart GitLab
   shell: gitlab-ctl stop && gitlab-ctl start
@@ -195,11 +199,6 @@
   run_once: true
   tags:
     - reconfigure
-
-- name: Copy secrets file to NFS if missing
-  shell: "cp -n /etc/gitlab/gitlab-secrets.json {{ gitlab_nfs_path }}"
-  tags: secrets
-  run_once: true
 
 - name: Create skip-auto-reconfigure file
   file:
