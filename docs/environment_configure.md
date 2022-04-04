@@ -1,5 +1,6 @@
 # Configuring the environment with Ansible
 
+- [GitLab Environment Toolkit - Quick Start Guide](environment_quick_start_guide.md)
 - [GitLab Environment Toolkit - Preparing the environment](environment_prep.md)
 - [GitLab Environment Toolkit - Provisioning the environment with Terraform](environment_provision.md)
 - [**GitLab Environment Toolkit - Configuring the environment with Ansible**](environment_configure.md)
@@ -136,6 +137,10 @@ ansible
 :information_source:&nbsp; Previously we suggested a different folder structure under the `inventories` folder. While this will continue to work we recommend moving to the above structure moving forward.
 
 With the above structure in place we can now look at the files to be configured. The rest of this guide will assume this structure is being used.
+
+### Config Examples
+
+[Full config examples are available for select Reference Architectures](../examples). The rest of this section will describe what the config does and how to use it.
 
 ### Configure Dynamic Inventory
 
