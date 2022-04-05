@@ -21,22 +21,31 @@
             AuthorizedKeysCommandUser git
           Match all        # End match, settings apply to all users again
 
-    - name: Find all SSH keys on Primary
+    - name: Find any SSH keys
       find:
         paths: /etc/ssh
         patterns: ssh_host_*_key*
       register: ssh_keys
-      when: "'gitlab_rails_primary' in group_names"
+      run_once: true
 
-    - name: Synchronize SSH keys to secondaries
-      synchronize:
-        src: "{{ item.path }}"
-        dest: "{{ item.path }}"
-      with_items: "{{ ssh_keys.files }}"
-      delegate_to: "{{ groups['gitlab_rails_primary'][0] }}"
-      delegate_facts: true
-      become: true
-      when: "'gitlab_rails_secondary' in group_names"
+    - name: Lookup SSH Keys
+      slurp:
+        path: "{{ item.path }}"
+      diff: false
+      register: ssh_keys_contents
+      loop: "{{ ssh_keys.files }}"
+      loop_control:
+        label: "{{ item.path }}"
+      run_once: true
+
+    - name: Propagate SSH keys
+      copy:
+        content: "{{ item.content | b64decode }}\n"
+        dest: "{{ item.source }}"
+        mode: "{{ '0644' if '.pub' in item.source else '0600' }}"
+      loop: "{{ ssh_keys_contents.results }}"
+      loop_control:
+        label: "{{ item.source }}"
 
     - name: Reload SSH service
       service:
