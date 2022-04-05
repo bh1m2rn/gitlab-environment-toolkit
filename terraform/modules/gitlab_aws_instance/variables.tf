@@ -71,6 +71,11 @@ variable "data_disks" {
   default = []
 }
 
+variable "data_disks_prevent_destroy" {
+  type    = bool
+  default = false
+}
+
 variable "label_secondaries" {
   type    = bool
   default = false

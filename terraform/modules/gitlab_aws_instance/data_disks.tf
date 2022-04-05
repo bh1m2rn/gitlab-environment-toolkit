@@ -19,10 +19,18 @@ locals {
       if data_disk.name != null
     ]
   ])
+
+  # These two variables are mutually exclusive
+  node_data_disks_destroyable     = !var.data_disks_prevent_destroy ? local.node_data_disks : []
+  node_data_disks_non_destroyable = var.data_disks_prevent_destroy ? local.node_data_disks : []
 }
 
-resource "aws_ebs_volume" "gitlab" {
-  for_each = { for d in local.node_data_disks : "${d.instance_name}-${d.name}" => d }
+# NOTE XXX
+# If GET used Terraform 1.1.x, we could make this a non-destructive change by adding a
+# moved { } block
+
+resource "aws_ebs_volume" "gitlab_destroyable" {
+  for_each = { for d in local.node_data_disks_destroyable : "${d.instance_name}-${d.name}" => d }
 
   type              = each.value.type
   size              = each.value.size
@@ -38,12 +46,49 @@ resource "aws_ebs_volume" "gitlab" {
   }
 }
 
-resource "aws_volume_attachment" "gitlab" {
-  for_each = { for d in local.node_data_disks : "${d.instance_name}-${d.name}" => d }
+resource "aws_volume_attachment" "gitlab_destroyable" {
+  for_each = { for d in local.node_data_disks_destroyable : "${d.instance_name}-${d.name}" => d }
 
   device_name = each.value.device_name
-  volume_id   = aws_ebs_volume.gitlab[each.key].id
+  volume_id   = aws_ebs_volume.gitlab_destroyable[each.key].id
   instance_id = each.value.instance_id
+}
+
+# gitlab_non_destroyable should be identical to gitlab_non_destroyable,
+# except with a lifecycle attribute set
+resource "aws_ebs_volume" "gitlab_non_destroyable" {
+  for_each = { for d in local.node_data_disks_non_destroyable : "${d.instance_name}-${d.name}" => d }
+
+  type              = each.value.type
+  size              = each.value.size
+  iops              = each.value.iops
+  availability_zone = each.value.availability_zone
+
+  encrypted  = true
+  kms_key_id = var.disk_kms_key_arn
+
+  tags = {
+    Name                       = each.key
+    gitlab_node_data_disk_role = "${var.prefix}-${var.node_type}-${each.value.name}"
+  }
+
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
+# gitlab_non_destroyable should be identical to gitlab_non_destroyable,
+# except with a lifecycle attribute set
+resource "aws_volume_attachment" "gitlab_non_destroyable" {
+  for_each = { for d in local.node_data_disks_non_destroyable : "${d.instance_name}-${d.name}" => d }
+
+  device_name = each.value.device_name
+  volume_id   = aws_ebs_volume.gitlab_non_destroyable[each.key].id
+  instance_id = each.value.instance_id
+
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 ## Data Disk Snapshots (DLM)

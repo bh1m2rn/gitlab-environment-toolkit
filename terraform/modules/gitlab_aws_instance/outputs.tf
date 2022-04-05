@@ -15,5 +15,8 @@ output "iam_instance_role_arn" {
 }
 
 output "data_disk_device_names" {
-  value = [for k, v in aws_volume_attachment.gitlab : "${k} = ${v.device_name}"]
+  value = [
+    for k, v in concat(aws_volume_attachment.gitlab_destroyable, aws_volume_attachment.gitlab_non_destroyable) :
+    "${k} = ${v.device_name}"
+  ]
 }
