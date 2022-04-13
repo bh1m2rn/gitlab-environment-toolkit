@@ -275,6 +275,28 @@ global:
 # Run Prometheus
 prometheus:
   install: true
+  extraScrapeConfigs:
+    - job_name: gitaly_nodes
+      ec2_sd_configs:
+        - region: eu-west-2
+          port: 9236
+          filters:
+            - name: tag:gitlab_node_type
+              values:
+                - gitaly
+        - region: eu-west-2
+          port: 9100
+          filters:
+            - name: tag:gitlab_node_type
+              values:
+                - gitaly
+                - praefect
+        - region: eu-west-2
+          port: 9652
+          filters:
+            - name: tag:gitlab_node_type
+              values:
+                - praefect
 
 {% if external_url_ssl and external_ssl_source == 'letsencrypt' %}
 certmanager:
