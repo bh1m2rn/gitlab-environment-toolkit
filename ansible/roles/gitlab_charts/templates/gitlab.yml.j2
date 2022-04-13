@@ -278,20 +278,20 @@ prometheus:
   extraScrapeConfigs:
     - job_name: gitaly_nodes
       ec2_sd_configs:
-        - region: eu-west-2
+        - region: {{ aws_region }}
           port: 9236
           filters:
             - name: tag:gitlab_node_type
               values:
                 - gitaly
-        - region: eu-west-2
+        - region: {{ aws_region }}
           port: 9100
           filters:
             - name: tag:gitlab_node_type
               values:
                 - gitaly
                 - praefect
-        - region: eu-west-2
+        - region: {{ aws_region }}
           port: 9652
           filters:
             - name: tag:gitlab_node_type
