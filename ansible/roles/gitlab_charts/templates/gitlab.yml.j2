@@ -275,6 +275,7 @@ global:
 # Run Prometheus
 prometheus:
   install: true
+{% if cloud_provider == 'aws' %}
   extraScrapeConfigs: |
     - job_name: gitaly_nodes
       ec2_sd_configs:
@@ -297,6 +298,7 @@ prometheus:
             - name: tag:gitlab_node_type
               values:
                 - praefect
+{% endif %}
 
 {% if external_url_ssl and external_ssl_source == 'letsencrypt' %}
 certmanager:
