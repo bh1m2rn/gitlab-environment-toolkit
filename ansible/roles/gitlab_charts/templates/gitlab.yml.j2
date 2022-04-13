@@ -275,7 +275,7 @@ global:
 # Run Prometheus
 prometheus:
   install: true
-  extraScrapeConfigs:
+  extraScrapeConfigs: |
     - job_name: gitaly_nodes
       ec2_sd_configs:
         - region: {{ aws_region }}
