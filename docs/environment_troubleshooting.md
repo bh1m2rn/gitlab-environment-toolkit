@@ -94,3 +94,14 @@ Error: Error creating instance: googleapi: Error 400: The resource 'projects/git
 This looks to be a race condition issue on Google's end and is [currently being investigated by them](https://github.com/hashicorp/terraform-provider-google/issues/10972).
 
 This error only happens once and rerunning should succeed without issue.
+
+## Ansible crashes frequently on macOS
+
+macOS users may experience [Ansible crashing while running a task with the `cloudalchemy.node_exporter` plugin](https://gitlab.com/gitlab-org/gitlab-environment-toolkit/-/issues/419).
+To avoid this, run Ansible with `OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES` in the environment:
+
+```shell
+OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES ansible-playbook -i environments/10k/inventory playbooks/all.yml
+```
+
+This works around a [long-standing Python fork() bug with macOS](https://github.com/python/cpython/issues/75999).
