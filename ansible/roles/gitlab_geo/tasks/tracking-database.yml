@@ -54,6 +54,18 @@
         name: "{{ item }}"
         db: "{{ geo_tracking_postgres_database }}"
       loop: ['pg_trgm', 'btree_gist', 'plpgsql', 'pg_stat_statements']
+
+    - name: Configure Postgres
+      community.postgresql.postgresql_set:
+        login_host: "{{ geo_secondary_praefect_postgres_host }}"
+        login_port: "{{ praefect_postgres_port }}"
+        login_user: "{{ praefect_postgres_admin_username }}"
+        login_password: "{{ praefect_postgres_admin_password }}"
+        db: "template1"
+        name: "{{ item.name }}"
+        value: "{{ item.value }}"
+      loop:
+        - { name: "password_encryption", value: "scram-sha-256" }
   when:
     - deploy_host is defined
     - inventory_hostname == deploy_host

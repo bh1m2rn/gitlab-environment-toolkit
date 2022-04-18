@@ -80,6 +80,18 @@
         name: "{{ item }}"
         db: "{{ postgres_database_name }}"
       loop: ['pg_trgm', 'btree_gist', 'plpgsql']
+
+    - name: Configure Postgres
+      community.postgresql.postgresql_set:
+        login_host: "{{ postgres_host }}"
+        login_port: "{{ postgres_port }}"
+        login_user: "{{ postgres_admin_username }}"
+        login_password: "{{ postgres_admin_password }}"
+        db: "template1"
+        name: "{{ item.name }}"
+        value: "{{ item.value }}"
+      loop:
+        - { name: "password_encryption", value: "scram-sha-256" }
   delegate_to: "{{ groups['gitaly'][0] }}"
   delegate_facts: true
   become: true
