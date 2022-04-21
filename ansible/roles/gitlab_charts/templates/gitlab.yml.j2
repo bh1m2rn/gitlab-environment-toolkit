@@ -288,10 +288,9 @@ prometheus:
         - region: {{ aws_region }}
           port: 9100
           filters:
-            - name: tag:gitlab_node_type
+            - name: tag:gitlab_node_prefix
               values:
-                - gitaly
-                - praefect
+                - {{ prefix }}
         - region: {{ aws_region }}
           port: 9652
           filters:
@@ -316,7 +315,12 @@ prometheus:
             - name: tag:gitlab_node_type
               values:
                 - pgbouncer
-
+        - region: {{ aws_region }}
+          port: 1936
+          filters:
+            - name: tag:gitlab_node_type
+              values:
+                - haproxy-internal
 {% endif %}
 
 {% if external_url_ssl and external_ssl_source == 'letsencrypt' %}
