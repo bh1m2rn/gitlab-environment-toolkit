@@ -298,6 +298,25 @@ prometheus:
             - name: tag:gitlab_node_type
               values:
                 - praefect
+        - region: {{ aws_region }}
+          port: 9187
+          filters:
+            - name: tag:gitlab_node_type
+              values:
+                - postgres
+        - region: {{ aws_region }}
+          port: 9121
+          filters:
+            - name: tag:gitlab_node_type
+              values:
+                - redis
+        - region: {{ aws_region }}
+          port: 9188
+          filters:
+            - name: tag:gitlab_node_type
+              values:
+                - pgbouncer
+
 {% endif %}
 
 {% if external_url_ssl and external_ssl_source == 'letsencrypt' %}
