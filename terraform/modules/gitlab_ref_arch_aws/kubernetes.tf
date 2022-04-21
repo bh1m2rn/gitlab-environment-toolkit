@@ -214,6 +214,9 @@ resource "aws_iam_role" "gitlab_eks_role" {
   count = min(local.total_node_pool_count, 1)
   name  = "${var.prefix}-eks-role"
 
+  permissions_boundary = "arn:aws:iam::123456:policy/TeamPermissionsBounda
+ry"
+
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -231,6 +234,9 @@ resource "aws_iam_role" "gitlab_eks_role" {
 resource "aws_iam_role" "gitlab_eks_node_role" {
   count = min(local.total_node_pool_count, 1)
   name  = "${var.prefix}-eks-node-role"
+
+  permissions_boundary = "arn:aws:iam::123456:policy/TeamPermissionsBounda
+ry"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -362,6 +368,9 @@ resource "aws_iam_openid_connect_provider" "gitlab_cluster_openid" {
 
 data "aws_iam_policy_document" "assume_role_policy" {
   count = min(local.total_node_pool_count, 1)
+
+  permissions_boundary = "arn:aws:iam::123456:policy/TeamPermissionsBounda
+ry"
 
   statement {
     actions = ["sts:AssumeRoleWithWebIdentity"]
