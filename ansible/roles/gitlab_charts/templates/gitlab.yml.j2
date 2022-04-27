@@ -130,13 +130,23 @@ global:
     external:
     - name: default
       hostname: "{{ gitaly_primary_int_ip }}"
+{% if gitaly_tls_enabled %}
+      port: 9075
+      tlsEnabled: true
+{% else %}
       port: 8075
       tlsEnabled: false
+{% endif %}
 {% for gitaly_secondary_ip in gitaly_secondary_int_ips %}
     - name: "storage{{loop.index + 1}}"
       hostname: "{{ gitaly_secondary_ip }}"
+{% if gitaly_tls_enabled %}
+      port: 9075
+      tlsEnabled: true
+{% else %}
       port: 8075
       tlsEnabled: false
+{% endif %}
 {% endfor %}
 {% endif %}
   grafana:

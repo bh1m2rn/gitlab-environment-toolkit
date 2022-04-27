@@ -257,7 +257,11 @@ gitlab_workhorse['env'] = {
 gitaly['enable'] = false
 git_data_dirs({
   "default" => {
+{% if gitaly_tls_enabled %}
+    "gitaly_address" => "tls://{{ internal_lb_host }}:3305",
+{% else %}
     "gitaly_address" => "tcp://{{ internal_lb_host }}:2305",
+{% endif %}
     "gitaly_token" => '{{ praefect_external_token }}'
   }
 })
@@ -267,10 +271,19 @@ gitaly['enable'] = false
 gitlab_rails['gitaly_token'] = '{{ gitaly_token }}'
 
 git_data_dirs({
+{% if gitaly_tls_enabled %}
+  'default' => { 'gitaly_address' => 'tls://{{ gitaly_primary_int_ip }}:9075' },
+  'storage1' => { 'gitaly_address' => 'tls://{{ gitaly_primary_int_ip }}:9075' },
+{% else %}
   'default' => { 'gitaly_address' => 'tcp://{{ gitaly_primary_int_ip }}:8075' },
   'storage1' => { 'gitaly_address' => 'tcp://{{ gitaly_primary_int_ip }}:8075' },
+{% endif %}
 {% for gitaly_secondary_ip in gitaly_secondary_int_ips %}
+{% if gitaly_tls_enabled %}
+  "storage{{loop.index + 1}}" => { 'gitaly_address' => 'tls://{{ gitaly_secondary_ip }}:9075' },
+{% else %}
   "storage{{loop.index + 1}}" => { 'gitaly_address' => 'tcp://{{ gitaly_secondary_ip }}:8075' },
+{% endif %}
 {% endfor %}
 })
 {% else %}

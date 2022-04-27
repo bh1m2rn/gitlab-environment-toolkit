@@ -26,6 +26,12 @@ gitaly['ruby_num_workers'] = {{ gitaly_ruby_num_workers }}
 
 gitaly['pack_objects_cache_enabled'] = {{ gitaly_pack_objects_cache | lower }}
 
+{% if gitaly_tls_enabled %}
+gitaly['tls_listen_addr'] = "0.0.0.0:9075"
+gitaly['certificate_path'] = "/etc/gitlab/ssl/cert.pem"
+gitaly['key_path'] = "/etc/gitlab/ssl/key.pem"
+{% endif %}
+
 {% if 'jaeger' in groups %}
 gitaly['env'] = {
   "GITLAB_TRACING" => "opentracing://jaeger?http_endpoint=http%3A%2F%2F{{ jaeger_int_ip }}%3A14268%2Fapi%2Ftraces&sampler=const&sampler_param=0.1"

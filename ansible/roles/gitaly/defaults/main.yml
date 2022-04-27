@@ -5,3 +5,5 @@ gitaly_pack_objects_cache: true
 
 gitaly_cluster_storage_path: "/var/opt/gitlab/git-data"
 gitaly_sharded_storage_path: "/mnt/gitlab"
+
+gitaly_tls_enabled: false
