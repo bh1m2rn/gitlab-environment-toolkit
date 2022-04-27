@@ -12,6 +12,7 @@ module "haproxy_external" {
   disk_type        = coalesce(var.haproxy_external_disk_type, var.default_disk_type)
   disk_encrypt     = coalesce(var.haproxy_external_disk_encrypt, var.default_disk_encrypt)
   disk_kms_key_arn = var.haproxy_external_disk_kms_key_arn != null ? var.haproxy_external_disk_kms_key_arn : var.default_kms_key_arn
+  disk_disk_delete_on_termination = var.haproxy_external_disk_disk_delete_on_termination != null ? var.haproxy_external_disk_disk_delete_on_termination : var.default_disk_disk_delete_on_termination
   data_disks       = var.haproxy_external_data_disks
 
   iam_instance_policy_arns = flatten([
@@ -53,6 +54,7 @@ module "haproxy_internal" {
   disk_type        = coalesce(var.haproxy_internal_disk_type, var.default_disk_type)
   disk_encrypt     = coalesce(var.haproxy_internal_disk_encrypt, var.default_disk_encrypt)
   disk_kms_key_arn = var.haproxy_internal_disk_kms_key_arn != null ? var.haproxy_internal_disk_kms_key_arn : var.default_kms_key_arn
+  disk_disk_delete_on_termination = var.haproxy_internal_disk_disk_delete_on_termination != null ? var.haproxy_internal_disk_disk_delete_on_termination : var.default_disk_disk_delete_on_termination
   data_disks       = var.haproxy_internal_data_disks
   subnet_ids       = local.backend_subnet_ids
 

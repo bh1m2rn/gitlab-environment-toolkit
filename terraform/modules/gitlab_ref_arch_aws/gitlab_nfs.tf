@@ -12,6 +12,7 @@ module "gitlab_nfs" {
   disk_type        = coalesce(var.gitlab_nfs_disk_type, var.default_disk_type)
   disk_encrypt     = coalesce(var.gitlab_nfs_disk_encrypt, var.default_disk_encrypt)
   disk_kms_key_arn = var.gitlab_nfs_disk_kms_key_arn != null ? var.gitlab_nfs_disk_kms_key_arn : var.default_kms_key_arn
+  disk_disk_delete_on_termination = var.gitlab_nfs_disk_disk_delete_on_termination != null ? var.gitlab_nfs_disk_disk_delete_on_termination : var.default_disk_disk_delete_on_termination
   data_disks       = var.gitlab_nfs_data_disks
   subnet_ids       = local.backend_subnet_ids
 

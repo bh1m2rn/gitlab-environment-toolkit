@@ -12,6 +12,7 @@ module "pgbouncer" {
   disk_type        = coalesce(var.pgbouncer_disk_type, var.default_disk_type)
   disk_encrypt     = coalesce(var.pgbouncer_disk_encrypt, var.default_disk_encrypt)
   disk_kms_key_arn = var.pgbouncer_disk_kms_key_arn != null ? var.pgbouncer_disk_kms_key_arn : var.default_kms_key_arn
+  disk_disk_delete_on_termination = var.pgbouncer_disk_disk_delete_on_termination != null ? var.pgbouncer_disk_disk_delete_on_termination : var.default_disk_disk_delete_on_termination
   data_disks       = var.pgbouncer_data_disks
   subnet_ids       = local.backend_subnet_ids
 
